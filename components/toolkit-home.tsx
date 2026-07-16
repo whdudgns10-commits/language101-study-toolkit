@@ -3,15 +3,15 @@ import { ArrowRight, BookOpenText, Compass, Dices, ListFilter, MessageCircleQues
 import { MobileHeader } from "@/components/mobile-header";
 
 const features = [
-  { href:"/missions", title:"오늘의 미션 3개", description:"오늘 대화에서 도전할 목표를 확인하세요.", icon:Target },
-  { href:"/expressions", title:"오늘의 영어표현", description:"초급·중급·상급 표현을 매일 배워보세요.", icon:BookOpenText },
-  { href:"/practice-expressions", title:"오늘 실전에서 사용할 표현 5개", description:"오늘 꼭 사용해 볼 표현을 직접 정해보세요.", icon:Sparkles },
+  { href:"/missions", title:"오늘의 미션 3개", description:"오늘 대화에서 직접 도전할 목표를 확인하세요.", icon:Target },
+  { href:"/expressions", title:"오늘의 영어표현", description:"오늘 꼭 익혀볼 표현을 확인하세요.", icon:BookOpenText },
+  { href:"/practice-expressions", title:"오늘 실전에서 사용할 표현 5개", description:"오늘 대화에서 직접 사용할 표현을 연습하세요.", icon:Sparkles },
   { href:"/conversation-help", title:"대화가 막혔나요?", description:"랜덤 질문으로 바로 대화를 이어가세요.", icon:MessageCircleQuestion },
   { href:"/recommended", title:"Recommended for Today", description:"오늘 하기 좋은 활동을 빠르게 확인하세요.", icon:Compass },
 ];
 
 export function ToolkitHome(){return <><MobileHeader/><main className="mobile-home section-shell">
-  <section className="compact-hero"><span>LANGUAGE101</span><h1>Study Toolkit</h1><p>Choose an activity and start talking.</p></section>
+  <section className="compact-hero"><span>LANGUAGE EXCHANGE 101</span><h1>언어교환101</h1><p>오늘의 대화와 영어 학습을 가볍게 시작해 보세요.</p></section>
   <section className="primary-actions" aria-label="주요 기능">
     <Link href="/random" className="primary-action is-random"><Dices/><span><b>Random Activity</b><small>돌림판으로 바로 골라보세요</small></span><ArrowRight/></Link>
     <Link href="/tools" className="primary-action"><Sparkles/><span><b>Study Tools</b><small>목적에 맞는 도구 찾기</small></span><ArrowRight/></Link>

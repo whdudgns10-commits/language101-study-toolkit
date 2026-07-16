@@ -7,7 +7,7 @@ import { getExpressionFavorites,toggleExpressionFavorite } from "@/lib/storage";
 import { useDailyContent } from "@/hooks/use-daily-content";
 import { usePracticeExpressions } from "@/hooks/use-practice-expressions";
 import type { Expression } from "@/types/expression";
-import { saveExpression,studyId } from "@/lib/2026-07-16-study-storage";
+import { saveExpression,studyId } from "@/lib/study-storage";
 
 export function DailyExpressionCard({item}:{item:Expression}) { const related=getRelatedExpressions(item); const {usedExpressionIds,toggleDailyExpression}=useDailyContent(); const {items,addExpressions}=usePracticeExpressions(); const [favorites,setFavorites]=useState<string[]>([]); const [copied,setCopied]=useState(false); const [message,setMessage]=useState(""); const used=usedExpressionIds.includes(item.id);
   useEffect(()=>{const timer=setTimeout(()=>setFavorites(getExpressionFavorites()),0);return()=>clearTimeout(timer);},[]);

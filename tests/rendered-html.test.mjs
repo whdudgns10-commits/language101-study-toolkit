@@ -17,7 +17,8 @@ test("renders the activity toolkit home", async () => {
   const response = await render();
   assert.equal(response.status, 200);
   const html = await response.text();
-  assert.match(html, /Language101 Study Toolkit/);
+  assert.match(html, /언어교환101/);
+  assert.match(html, /Language Exchange 101/);
   assert.match(html, /Recommended for Today/);
   assert.match(html, /Random Activity/);
   assert.match(html, /Browse All Activities/);
@@ -59,7 +60,7 @@ test("renders the mobile-first My Study profile and preserves legacy storage key
   const html=await response.text();
   for(const label of ["오늘","내 표현","학습메모","즐겨찾기","학습기록"]) assert.match(html,new RegExp(label));
   assert.match(html,/오늘의 학습 진행률/);
-  const storage=await readFile(new URL("../lib/2026-07-16-study-storage.ts",import.meta.url),"utf8");
+  const storage=await readFile(new URL("../lib/study-storage.ts",import.meta.url),"utf8");
   for(const key of ["studyNotes","savedExpressions","language101-favorites","language101-expression-favorites","missionProgress","expressionUsageLogs"]) assert.match(storage,new RegExp(key));
 });
 
@@ -79,6 +80,47 @@ test("daily content is deterministic, changes by date, and uses Seoul time", asy
   assert.notEqual(daily.selectDailyItem(items, "2026-07-17", "expression"), first);
   assert.equal(daily.getSeoulDateKey(new Date("2026-07-15T14:59:59.000Z")), "2026-07-15");
   assert.equal(daily.getSeoulDateKey(new Date("2026-07-15T15:00:00.000Z")), "2026-07-16");
+});
+
+test("browser-local date keys are stable and do not use UTC date slicing", async () => {
+  const daily=await import(new URL(`../lib/daily-content.ts?local=${Date.now()}`,import.meta.url));
+  const local=new Date(2026,6,16,0,5,0);
+  assert.equal(daily.getLocalDateKey(local),"2026-07-16");
+  assert.equal(daily.getLocalDateKey(new Date(2026,6,17,0,0,0)),"2026-07-17");
+});
+
+test("mission rerolls are deterministic, unique, and avoid the previous set", async()=>{
+  const daily=await import(new URL(`../lib/daily-content.ts?reroll=${Date.now()}`,import.meta.url));
+  const items=Array.from({length:60},(_,index)=>({id:`m-${index}`,category:`c-${index%6}`}));
+  const first=daily.selectDistinctCategoryItems(items,3,"2026-07-16","missions",0);
+  const same=daily.selectDistinctCategoryItems(items,3,"2026-07-16","missions",0);
+  const rerolled=daily.selectDistinctCategoryItems(items,3,"2026-07-16","missions",1);
+  assert.deepEqual(same,first); assert.equal(new Set(first.map(item=>item.id)).size,3);
+  assert.equal(new Set(rerolled.map(item=>item.id)).size,3);
+  assert.equal(rerolled.some(item=>first.some(previous=>previous.id===item.id)),false);
+  assert.notDeepEqual(daily.selectDistinctCategoryItems(items,3,"2026-07-17","missions",0),first);
+  assert.equal(daily.dailyStorageKey("2026-07-16"),"language101-daily-2026-07-16");
+  assert.notEqual(daily.dailyStorageKey("2026-07-17"),daily.dailyStorageKey("2026-07-16"));
+});
+
+test("daily practice selection returns five deterministic expressions without duplicates",async()=>{
+  const daily=await import(new URL(`../lib/daily-content.ts?practiceDaily=${Date.now()}`,import.meta.url));
+  const items=Array.from({length:50},(_,index)=>({id:`e-${index}`}));
+  const first=daily.selectDistinctDailyItems(items,5,"2026-07-16","daily-practice",7);
+  assert.deepEqual(daily.selectDistinctDailyItems(items,5,"2026-07-16","daily-practice",7),first);
+  assert.equal(first.length,5); assert.equal(new Set(first.map(item=>item.id)).size,5);
+  assert.notDeepEqual(daily.selectDistinctDailyItems(items,5,"2026-07-17","daily-practice",7),first);
+});
+
+test("My Study and daily pages share progress and synchronization contracts",async()=>{
+  const [hook,storage,profile]=await Promise.all([
+    readFile(new URL("../hooks/use-daily-content.ts",import.meta.url),"utf8"),
+    readFile(new URL("../lib/study-storage.ts",import.meta.url),"utf8"),
+    readFile(new URL("../hooks/use-study-profile.ts",import.meta.url),"utf8"),
+  ]);
+  assert.match(hook,/language101-study-change/); assert.match(hook,/storage/);
+  assert.match(storage,/completedMissionIds/); assert.match(storage,/usedExpressionIds/);
+  assert.match(profile,/STUDY_EVENT/); assert.match(profile,/storage/);
 });
 
 test("daily missions have distinct categories and storage is date-scoped", async () => {

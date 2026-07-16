@@ -3,8 +3,8 @@ const NOTES_KEY = "language101-learning-notes";
 const EXPRESSION_KEY = "language101-expression-favorites";
 const SESSION_KEY = "language101-session-activities";
 
-import { getSeoulDateKey } from "@/lib/daily-content";
-export const todayKey = () => getSeoulDateKey();
+import { getLocalDateKey } from "@/lib/daily-content";
+export const todayKey = () => getLocalDateKey();
 const read = <T,>(key: string, fallback: T): T => { if (typeof window === "undefined") return fallback; try { return JSON.parse(localStorage.getItem(key) || "") as T; } catch { return fallback; } };
 const write = (key: string, value: unknown) => { localStorage.setItem(key, JSON.stringify(value)); window.dispatchEvent(new CustomEvent("language101-study-change")); };
 

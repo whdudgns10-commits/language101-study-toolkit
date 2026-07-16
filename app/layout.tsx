@@ -5,16 +5,16 @@ import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.siteUrl),
-  title: "Language101 Study Toolkit | Language Exchange Activities",
+  title: "언어교환101 | Language Exchange 101",
   description: siteConfig.description,
   icons: { icon: "/favicon.svg", shortcut: "/favicon.svg" },
   openGraph: {
-    title: "Language101 Study Toolkit | Language Exchange Activities",
+    title: "언어교환101 | Language Exchange 101",
     description: "Choose an activity and start talking. Free meetup materials for every table.",
     type: "website",
-    siteName: "Language101 Study Toolkit",
+    siteName: "언어교환101",
   },
-  twitter: { card: "summary_large_image", title: "Language101 Study Toolkit", description: "Choose an activity and start talking." },
+  twitter: { card: "summary_large_image", title: "언어교환101 | Language Exchange 101", description: "Choose an activity and start talking." },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

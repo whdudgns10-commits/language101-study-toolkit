@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
-import { STUDY_EVENT } from "@/lib/2026-07-16-study-storage";
+import { STUDY_EVENT } from "@/lib/study-storage";
 
 export function useStudyProfileRefresh() {
   const [, setVersion] = useState(0);

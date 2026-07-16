@@ -1,5 +1,5 @@
-import { dailyStorageKey, getSeoulDateKey } from "@/lib/daily-content";
-import type { DailyStudyProgress, ExpressionUsageLog, SavedExpression, StudyNote, StudyProgressEntry, StudyStatus } from "@/types/2026-07-16-study";
+import { dailyStorageKey, getLocalDateKey } from "@/lib/daily-content";
+import type { DailyStudyProgress, ExpressionUsageLog, SavedExpression, StudyNote, StudyProgressEntry, StudyStatus } from "@/types/study";
 
 export const STUDY_EVENT = "language101-study-change";
 export const STUDY_KEYS = {
@@ -32,8 +32,8 @@ export const toggleId = (key: string, id: string) => { const next = new Set(getI
 
 const blankProgress = (date: string): DailyStudyProgress => ({ date, missions: {}, dailyExpression: {}, practiceExpressions: {} });
 export const getProgressMap = () => read<Record<string, DailyStudyProgress>>(STUDY_KEYS.progress, {});
-export const getDailyProgress = (date = getSeoulDateKey()) => getProgressMap()[date] || blankProgress(date);
-export function setProgress(group: "missions" | "dailyExpression" | "practiceExpressions", id: string, status: StudyStatus, memo?: string, date = getSeoulDateKey()) {
+export const getDailyProgress = (date = getLocalDateKey()) => getProgressMap()[date] || blankProgress(date);
+export function setProgress(group: "missions" | "dailyExpression" | "practiceExpressions", id: string, status: StudyStatus, memo?: string, date = getLocalDateKey()) {
   const all = getProgressMap(); const current = all[date] || blankProgress(date);
   const entry: StudyProgressEntry = { ...current[group][id], status, memo: memo ?? current[group][id]?.memo };
   if (status !== "not-started") entry.completedAt = new Date().toISOString();
@@ -47,6 +47,8 @@ export function setProgress(group: "missions" | "dailyExpression" | "practiceExp
     window.dispatchEvent(new CustomEvent(STUDY_EVENT));
   }
 }
+
+export function clearMissionProgress(date=getLocalDateKey()) { const all=getProgressMap();if(!all[date])return;all[date]={...all[date],missions:{}};write(STUDY_KEYS.progress,all); }
 
 export function migrateLegacyNotes() {
   if (typeof window === "undefined" || localStorage.getItem("language101-study-notes-migrated")) return;
