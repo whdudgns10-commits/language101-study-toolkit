@@ -35,11 +35,47 @@ test("renders an activity detail with source notice and timer", async () => {
   assert.equal(response.status, 200);
   const html = await response.text();
   assert.match(html, /30 Second Speaking/);
-  assert.match(html, /Opens an interactive activity in a new tab/);
+  assert.match(html, /독립 실행형 도구가 외부 페이지에서 열립니다/);
   assert.match(html, /Three simple steps/);
   assert.match(html, /Timer/);
   assert.match(html, /테이블 모드/);
   assert.match(html, /학습 메모/);
+});
+
+test("Naver Cafe text activities use internal content while operational links remain",async()=>{
+  const activities=await readFile(new URL("../data/activities.ts",import.meta.url),"utf8");
+  assert.doesNotMatch(activities,/cafe\.naver\.com|m\.cafe\.naver\.com/);
+  assert.ok((activities.match(/sourceType: "internal"/g)??[]).length>=11);
+  assert.ok((activities.match(/sourceType: "interactive"/g)??[]).length>=6);
+  const response=await render("/activities/true-or-false");assert.equal(response.status,200);
+  const html=await response.text();assert.match(html,/사이트에서 바로 대화하기/);assert.match(html,/대화 시작/);assert.doesNotMatch(html,/네이버 로그인|카페 가입/);
+});
+
+test("conversation content has valid unique ids and non-empty prompts",async()=>{
+  const files=await Promise.all(["discussion-questions.ts","roleplays.ts","useful-expressions.ts","icebreakers.ts"].map(file=>readFile(new URL(`../data/${file}`,import.meta.url),"utf8")));
+  const source=files.join("\n");const ids=[...source.matchAll(/id:"([^"]+)"/g)].map(match=>match[1]);
+  assert.ok(ids.length>=20);assert.equal(new Set(ids).size,ids.length);assert.doesNotMatch(source,/title:""|prompt:""/);
+  const legacy=await readFile(new URL("../data/conversation-topics.ts",import.meta.url),"utf8");assert.ok((legacy.match(/question:/g)??[]).length>=80);
+});
+
+test("conversation filters are exact and random selection avoids immediate repeats",async()=>{
+  const content=await import(new URL(`../lib/conversation-content-rules.ts?filters=${Date.now()}`,import.meta.url));
+  const items=[{id:"a",language:"en",level:"beginner",category:"역할극",groupSizes:["1:1"],moods:["가볍게"]},{id:"b",language:"en",level:"beginner",category:"역할극",groupSizes:["1:1","그룹"],moods:["진지하게"]},{id:"c",language:"ja",level:"advanced",category:"토론",groupSizes:["그룹"],moods:["토론용"]}];
+  const english=content.filterConversationContent(items,{language:"en",level:"beginner"});
+  assert.ok(english.length>0);assert.ok(english.every(item=>item.language==="en"&&item.level==="beginner"));
+  const roleplays=content.filterConversationContent(items,{category:"역할극",group:"1:1"});
+  assert.ok(roleplays.length>0);assert.ok(roleplays.every(item=>item.category==="역할극"&&item.groupSizes.includes("1:1")));
+  const current=english[0];assert.notEqual(content.chooseRandomContent(english,current.id,()=>0).id,current.id);
+});
+
+test("conversation favorites, recent items, progress and notes use persistent My Study keys",async()=>{
+  const storage=await readFile(new URL("../lib/conversation-content-storage.ts",import.meta.url),"utf8");
+  for(const key of ["favoriteConversationContent","favoriteQuestions","favoriteRoleplays","recentConversationContent","completedConversationContent","usedConversationContent","conversationContentNotes","language101-study-change","localStorage"])assert.match(storage,new RegExp(key));
+});
+
+test("conversation practice UI includes mobile responsive controls",async()=>{
+  const css=await readFile(new URL("../app/globals.css",import.meta.url),"utf8");
+  assert.match(css,/@media\(max-width:760px\)/);assert.match(css,/\.content-actions \{ display:grid; grid-template-columns:1fr 1fr/);assert.match(css,/\.session-question/);assert.match(css,/\.conversation-session>footer \.button \{ flex:1/);
 });
 
 test("contains at least 80 local conversation questions", async () => {

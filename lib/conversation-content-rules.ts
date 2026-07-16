@@ -1,0 +1,4 @@
+export type ContentFilterable={id:string;language:string;level:string;category:string;groupSizes:string[];moods:string[]};
+export type ContentFilters={language?:string;level?:string;category?:string;group?:string;mood?:string};
+export function filterConversationContent<T extends ContentFilterable>(items:T[],filters:ContentFilters){return items.filter(item=>(!filters.language||item.language===filters.language)&&(!filters.level||item.level===filters.level)&&(!filters.category||item.category===filters.category)&&(!filters.group||item.groupSizes.includes(filters.group))&&(!filters.mood||item.moods.includes(filters.mood)))}
+export function chooseRandomContent<T extends {id:string}>(items:T[],currentId?:string,random:()=>number=Math.random){if(items.length<2)return items[0];const candidates=items.filter(item=>item.id!==currentId);return candidates[Math.min(candidates.length-1,Math.floor(random()*candidates.length))]}
