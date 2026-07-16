@@ -233,6 +233,7 @@ export const activities: Activity[] = [
   },
   {
     id: "describing-picture-game",
+    slug: "describing-picture-game",
     title: "Situation Sentence Game",
     category: "Speaking",
     level: "All Level",
@@ -244,7 +245,12 @@ export const activities: Activity[] = [
     sourceType: "internal",
     tags: ["speaking", "story", "sentence", "game"],
     featured: false,
+    shortTitle: "Sentence Game",
+    translations:{en:{title:"Situation Sentence Game",description:"Connect the words and build an English sentence or story.",shortTitle:"Sentence Game"},ko:{title:"상황 문장 만들기",description:"주어진 단어를 연결해 영어 문장과 이야기를 만들어 보세요.",shortTitle:"상황 문장"},zh:{title:"情境造句游戏",description:"连接给出的词语，组成英语句子或故事。",shortTitle:"情境造句"},ja:{title:"シチュエーション英文作り",description:"表示された単語をつなげて英語の文や物語を作りましょう。",shortTitle:"英文作り"}},
   },
 ];
 
-export const getActivity = (id: string) => activities.find((activity) => activity.id === id);
+const uniqueById=(items:Activity[])=>[...new Map(items.map(item=>[item.id,item])).values()];
+export const activeActivities=uniqueById(activities).filter(activity=>activity.enabled!==false&&activity.id.trim()&&activity.title.trim());
+export const randomEligibleActivities=activeActivities.filter(activity=>activity.randomEligible!==false);
+export const getActivity = (id: string) => activeActivities.find((activity) => activity.id === id||(activity.slug||activity.id)===id);

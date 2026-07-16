@@ -1,0 +1,2 @@
+import type { Activity } from "@/types/activity";import type { SupportedLanguage } from "@/types/language";
+export function localizeActivity(activity:Activity,language:SupportedLanguage){const translated=activity.translations?.[language]||activity.translations?.en;return{title:translated?.title||activity.title||activity.id,description:translated?.description||activity.description,shortTitle:translated?.shortTitle||activity.shortTitle||translated?.title||activity.title||activity.id}}

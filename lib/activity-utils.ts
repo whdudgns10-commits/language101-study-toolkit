@@ -15,6 +15,7 @@ export const defaultFilters: ActivityFilters = {
   groupSize: "All",
   category: "All",
 };
+export const activityFilterOptions={level:["All","All Level","Beginner","Intermediate","Upper-Intermediate"],duration:["All","5","10","15","20+"],groupSize:["All","2 people","3–4 people","5–8 people","9+ people"],category:["All","Ice Breaking","Speaking","Games","Discussion","Expression Practice","Picture Activities"]} as const;
 
 export function filterActivities(items: Activity[], filters: ActivityFilters) {
   const query = filters.search.trim().toLowerCase();

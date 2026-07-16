@@ -20,6 +20,7 @@ export type SourceType = "interactive" | "naver-cafe" | "internal";
 
 export type Activity = {
   id: string;
+  slug?: string;
   title: string;
   category: ActivityCategory;
   level: ActivityLevel;
@@ -31,4 +32,8 @@ export type Activity = {
   sourceType: SourceType;
   tags: string[];
   featured: boolean;
+  enabled?: boolean;
+  randomEligible?: boolean;
+  shortTitle?: string;
+  translations?:Partial<Record<"en"|"ko"|"zh"|"ja",{title:string;description?:string;shortTitle?:string}>>;
 };

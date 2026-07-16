@@ -1,4 +1,7 @@
 import type { Activity } from "@/types/activity";
-export function selectWheelItems(items:Activity[],limit=10,random=Math.random){return [...items].sort(()=>random()-.5).slice(0,limit)}
+export function uniqueActivities(items:Activity[]){return [...new Map(items.filter(item=>String(item.id||"").trim()&&String(item.title||item.id).trim()&&item.enabled!==false&&item.randomEligible!==false).map(item=>[item.id,item])).values()]}
+export function selectWheelItems(items:Activity[],limit=12,random=Math.random,previous:string[]=[]){const unique=uniqueActivities(items);const different=unique.filter(item=>!previous.includes(item.id));const pool=different.length>=Math.min(limit,unique.length)?different:unique;return [...pool].sort(()=>random()-.5).slice(0,limit)}
 export function pickWheelIndex(length:number,lastId:string|null,items:Activity[],random=Math.random){if(!length)return -1;const allowed=items.map((_,i)=>i).filter(i=>items[i]?.id!==lastId);const pool=allowed.length?allowed:items.map((_,i)=>i);return pool[Math.floor(random()*pool.length)]}
+export function pickActivity(items:Activity[],history:string[],random=Math.random){const unique=uniqueActivities(items);if(!unique.length)return null;let pool=unique.filter(item=>!history.slice(0,5).includes(item.id));if(!pool.length)pool=unique.filter(item=>item.id!==history[0]);if(!pool.length)pool=unique;return pool[Math.floor(random()*pool.length)]}
+export function nextRandomHistory(history:string[],id:string){return [id,...history.filter(value=>value!==id)].slice(0,5)}
 export function wheelRotation(index:number,total:number,turns=6){const slice=360/total;return turns*360-(index*slice+slice/2)}
