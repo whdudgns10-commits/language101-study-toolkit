@@ -47,11 +47,20 @@ test("contains at least 80 local conversation questions", async () => {
   for (const category of ["일상","여행","음식","문화","취미","일과 직장","워킹홀리데이","재미있는 질문"]) assert.match(source, new RegExp(`category:\\"${category}\\"`));
 });
 
-test("renders notes and end-session routes", async () => {
+test("renders integrated notes and end-session routes", async () => {
   const [notesResponse,endResponse] = await Promise.all([render("/notes"),render("/end-session")]);
   assert.equal(notesResponse.status,200); assert.equal(endResponse.status,200);
-  assert.match(await notesResponse.text(),/전체 학습 메모/);
+  assert.match(await notesResponse.text(),/My Study/);
   assert.match(await endResponse.text(),/오늘도 좋은 대화였어요/);
+});
+
+test("renders the mobile-first My Study profile and preserves legacy storage keys", async () => {
+  const response=await render("/my-study"); assert.equal(response.status,200);
+  const html=await response.text();
+  for(const label of ["오늘","내 표현","학습메모","즐겨찾기","학습기록"]) assert.match(html,new RegExp(label));
+  assert.match(html,/오늘의 학습 진행률/);
+  const storage=await readFile(new URL("../lib/2026-07-16-study-storage.ts",import.meta.url),"utf8");
+  for(const key of ["studyNotes","savedExpressions","language101-favorites","language101-expression-favorites","missionProgress","expressionUsageLogs"]) assert.match(storage,new RegExp(key));
 });
 
 test("renders the dynamic QR page", async () => {
@@ -91,7 +100,7 @@ test("practice day keys reset by date and yesterday can be derived",async()=>{co
 
 test("renders every mobile feature route",async()=>{for(const [path,text] of [["/activities","Browse Activities"],["/missions","오늘의 미션 3개"],["/expressions","오늘의 영어표현"],["/practice-expressions","오늘 실전 표현 5개"],["/conversation-help","대화가 막혔나요"],["/recommended","Recommended for Today"],["/random","Random Activity"],["/tools","Study Tools"]]){const response=await render(path);assert.equal(response.status,200,path);assert.match(await response.text(),new RegExp(text));}});
 
-test("home links and mobile navigation target the new pages",async()=>{const html=await(await render()).text();for(const href of ["/missions","/expressions","/practice-expressions","/conversation-help","/recommended","/random","/tools","/activities"]){assert.match(html,new RegExp(`href=\\"${href}`));}});
+test("home links and mobile navigation target the new pages",async()=>{const html=await(await render()).text();for(const href of ["/missions","/expressions","/practice-expressions","/conversation-help","/recommended","/random","/tools","/activities","/my-study"]){assert.match(html,new RegExp(`href=\\"${href}`));}});
 
 test("wheel filters items, avoids immediate repeats, and aligns the result",async()=>{const wheel=await import(new URL(`../lib/random-wheel.ts?wheel=${Date.now()}`,import.meta.url));const items=Array.from({length:12},(_,index)=>({id:`a${index}`}));assert.equal(wheel.selectWheelItems(items,10,()=>.5).length,10);const index=wheel.pickWheelIndex(3,"a0",items.slice(0,3),()=>0);assert.notEqual(items[index].id,"a0");assert.equal(wheel.wheelRotation(2,10,6),2070);});
 

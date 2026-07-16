@@ -6,7 +6,7 @@ const SESSION_KEY = "language101-session-activities";
 import { getSeoulDateKey } from "@/lib/daily-content";
 export const todayKey = () => getSeoulDateKey();
 const read = <T,>(key: string, fallback: T): T => { if (typeof window === "undefined") return fallback; try { return JSON.parse(localStorage.getItem(key) || "") as T; } catch { return fallback; } };
-const write = (key: string, value: unknown) => localStorage.setItem(key, JSON.stringify(value));
+const write = (key: string, value: unknown) => { localStorage.setItem(key, JSON.stringify(value)); window.dispatchEvent(new CustomEvent("language101-study-change")); };
 
 export const getNotes = () => read<LearningNote[]>(NOTES_KEY, []);
 export const saveNote = (note: LearningNote) => { const notes = getNotes().filter((item) => item.id !== note.id); write(NOTES_KEY, [note, ...notes]); };

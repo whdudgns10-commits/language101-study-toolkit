@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Heart, Home, NotebookPen, Search } from "lucide-react";
+import { Home, Search, UserRound } from "lucide-react";
 
 export function SiteHeader({ onSearch, showSearch = true }: { onSearch?: () => void; showSearch?: boolean }) {
   return (
@@ -13,8 +13,7 @@ export function SiteHeader({ onSearch, showSearch = true }: { onSearch?: () => v
         </Link>
         <nav className="header-actions" aria-label="Quick navigation">
           {showSearch && <button className="icon-button" onClick={onSearch} aria-label="Search activities"><Search size={20} /></button>}
-          <Link className="icon-button" href="/?favorites=true#activities" aria-label="View favorites"><Heart size={20} /></Link>
-          <Link className="icon-button" href="/notes" aria-label="전체 학습 메모"><NotebookPen size={20} /></Link>
+          <Link className="my-study-desktop-link" href="/my-study" aria-label="My Study"><UserRound size={20} /><span>My Study</span></Link>
           <Link className="icon-button" href="/" aria-label="Go home"><Home size={20} /></Link>
         </nav>
       </div>

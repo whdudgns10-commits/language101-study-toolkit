@@ -8,12 +8,13 @@ import { dailyStorageKey, getSeoulDateKey, selectDailyItem, selectDistinctCatego
 export type DailyBrowserState = { expressionOffset: number; missionOffset: number; expressionUsed: boolean; usedExpressionIds:string[]; completedMissionIds: string[] };
 const emptyState: DailyBrowserState = { expressionOffset: 0, missionOffset: 0, expressionUsed: false, usedExpressionIds:[], completedMissionIds: [] };
 const readState = (dateKey: string): DailyBrowserState => { try { return { ...emptyState, ...JSON.parse(localStorage.getItem(dailyStorageKey(dateKey)) || "{}") }; } catch { return emptyState; } };
-const writeState = (dateKey: string, value: DailyBrowserState) => localStorage.setItem(dailyStorageKey(dateKey), JSON.stringify(value));
+const writeState = (dateKey: string, value: DailyBrowserState) => { localStorage.setItem(dailyStorageKey(dateKey), JSON.stringify(value)); window.dispatchEvent(new CustomEvent("language101-study-change")); };
 
 export function useDailyContent() {
   const [dateKey, setDateKey] = useState(() => getSeoulDateKey());
   const [browserState, setBrowserState] = useState<DailyBrowserState>(emptyState);
   useEffect(() => { const timer = setTimeout(() => setBrowserState(readState(dateKey)), 0); return () => clearTimeout(timer); }, [dateKey]);
+  useEffect(() => { const sync=()=>setBrowserState(readState(dateKey)); window.addEventListener("language101-study-change",sync); return()=>window.removeEventListener("language101-study-change",sync); },[dateKey]);
   useEffect(() => {
     const refreshDate = () => { const next = getSeoulDateKey(); if (next !== dateKey) setDateKey(next); };
     const nextMidnight = new Date(`${shiftDateKey(dateKey, 1)}T00:00:00+09:00`).getTime();

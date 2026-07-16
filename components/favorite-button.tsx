@@ -24,6 +24,7 @@ export function FavoriteButton({ id, label = false, onChange }: { id: string; la
     if (next) values.add(id);
     else values.delete(id);
     localStorage.setItem(KEY, JSON.stringify([...values]));
+    window.dispatchEvent(new CustomEvent("language101-study-change"));
     setActive(next);
     onChange?.(next);
   }
