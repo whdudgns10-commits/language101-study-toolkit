@@ -2,7 +2,7 @@ export type StudyStatus = "not-started" | "completed" | "used";
 export type SavedExpressionStatus = "new" | "reviewing" | "used" | "mastered";
 
 export type ExpressionUsageLog = {
-  id: string; expressionId: string; expression: string; date: string;
+  id: string; expressionId: string; expression: string; date: string; language?: string;
   situation: string; partner: string; confidence: 1 | 2 | 3 | 4 | 5; note: string; createdAt: string;
 };
 

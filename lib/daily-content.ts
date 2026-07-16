@@ -64,4 +64,4 @@ export function selectDistinctDailyItems<T extends { id: string }>(items: readon
   return [...ranked.filter(item=>!recentIds.has(item.id)),...ranked.filter(item=>recentIds.has(item.id))].slice(0,Math.min(count,items.length));
 }
 
-export const dailyStorageKey = (dateKey: string) => `language101-daily-${dateKey}`;
+export const dailyStorageKey = (dateKey: string,language?:string) => language?`language101-daily-${language}-${dateKey}`:`language101-daily-${dateKey}`;

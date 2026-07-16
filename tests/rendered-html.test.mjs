@@ -22,10 +22,10 @@ test("renders the activity toolkit home", async () => {
   assert.match(html, /Recommended for Today/);
   assert.match(html, /Random Activity/);
   assert.match(html, /Browse All Activities/);
-  assert.match(html, /오늘의 영어표현/);
-  assert.match(html, /대화가 막혔나요/);
-  assert.match(html, /오늘의 미션/);
-  assert.match(html, /오늘 실전에서 사용할 표현 5개/);
+  assert.match(html, /Today’s English Expression/);
+  assert.match(html, /Need a conversation starter/);
+  assert.match(html, /Today’s 3 Missions/);
+  assert.match(html, /5 Expressions to Use Today/);
   assert.doesNotMatch(html, /질문을 뽑아 보세요|미션 다시 뽑기|Find your activity|Today’s missions/);
   assert.doesNotMatch(html, /codex-preview|Your site is taking shape/);
 });
@@ -48,7 +48,7 @@ test("Naver Cafe text activities use internal content while operational links re
   assert.ok((activities.match(/sourceType: "internal"/g)??[]).length>=11);
   assert.ok((activities.match(/sourceType: "interactive"/g)??[]).length>=6);
   const response=await render("/activities/true-or-false");assert.equal(response.status,200);
-  const html=await response.text();assert.match(html,/사이트에서 바로 대화하기/);assert.match(html,/대화 시작/);assert.doesNotMatch(html,/네이버 로그인|카페 가입/);
+  const html=await response.text();assert.match(html,/Start a conversation here/);assert.match(html,/Start conversation/);assert.doesNotMatch(html,/네이버 로그인|카페 가입/);
 });
 
 test("conversation content has valid unique ids and non-empty prompts",async()=>{
@@ -94,8 +94,8 @@ test("renders integrated notes and end-session routes", async () => {
 test("renders the mobile-first My Study profile and preserves legacy storage keys", async () => {
   const response=await render("/my-study"); assert.equal(response.status,200);
   const html=await response.text();
-  for(const label of ["오늘","내 표현","학습메모","즐겨찾기","학습기록"]) assert.match(html,new RegExp(label));
-  assert.match(html,/오늘의 학습 진행률/);
+  for(const label of ["Today","My Expressions","Study Notes","Favorites","Study History"]) assert.match(html,new RegExp(label));
+  assert.match(html,/Today’s progress/);
   const storage=await readFile(new URL("../lib/study-storage.ts",import.meta.url),"utf8");
   for(const key of ["studyNotes","savedExpressions","language101-favorites","language101-expression-favorites","missionProgress","expressionUsageLogs"]) assert.match(storage,new RegExp(key));
 });
@@ -168,6 +168,32 @@ test("daily missions have distinct categories and storage is date-scoped", async
   assert.equal(new Set(selected.map((item) => item.category)).size, 3);
   assert.equal(daily.dailyStorageKey("2026-07-16"), "language101-daily-2026-07-16");
   assert.notEqual(daily.dailyStorageKey("2026-07-16"), daily.dailyStorageKey("2026-07-17"));
+  assert.notEqual(daily.dailyStorageKey("2026-07-16","en"),daily.dailyStorageKey("2026-07-16","ja"));
+});
+
+test("multilingual dictionaries are complete and English is the server default",async()=>{
+  const [dictionary,layout,provider,selector]=await Promise.all([
+    readFile(new URL("../data/translations.ts",import.meta.url),"utf8"),
+    readFile(new URL("../app/layout.tsx",import.meta.url),"utf8"),
+    readFile(new URL("../components/language-provider.tsx",import.meta.url),"utf8"),
+    readFile(new URL("../components/language-selector.tsx",import.meta.url),"utf8"),
+  ]);
+  const blocks=["en","ko","ja","zh"].map((language,index,languages)=>dictionary.slice(dictionary.indexOf(`${language}:{`),index===languages.length-1?dictionary.length:dictionary.indexOf(`${languages[index+1]}:{`)));
+  const keys=blocks.map(block=>new Set([...block.matchAll(/"([a-z]+\.[A-Za-z]+)":/g)].map(match=>match[1])));
+  assert.ok(keys[0].size>50);for(const set of keys.slice(1))assert.deepEqual([...set].sort(),[...keys[0]].sort());
+  assert.match(layout,/lang="en-US"/);assert.match(provider,/useState<SupportedLanguage>\("en"\)/);assert.match(provider,/document\.documentElement\.lang/);assert.match(provider,/StorageEvent/);assert.match(provider,/language101-language-change/);
+  assert.match(selector,/Globe2/);assert.match(selector,/aria-haspopup="listbox"/);assert.match(selector,/event\.key==="Escape"/);
+});
+
+test("content and learning state are scoped by the selected language",async()=>{
+  const [viewer,daily,study,content]=await Promise.all([
+    readFile(new URL("../components/conversation-content-viewer.tsx",import.meta.url),"utf8"),
+    readFile(new URL("../hooks/use-daily-content.ts",import.meta.url),"utf8"),
+    readFile(new URL("../lib/study-storage.ts",import.meta.url),"utf8"),
+    readFile(new URL("../lib/conversation-content-storage.ts",import.meta.url),"utf8"),
+  ]);
+  assert.match(viewer,/filterConversationContent\(source,\{language,/);assert.match(daily,/dailyStorageKey\(dateKey,language\)/);assert.match(daily,/`\$\{language\}:missions`/);
+  assert.match(study,/`\$\{language\}:\$\{date\}`/);assert.match(content,/getStoredLanguage/);assert.match(content,/getStoredLanguage\(\)!=="en"/);
 });
 
 test("expressions contain at least 300 items in each level and 300 practice recommendations",async()=>{const core=await readFile(new URL("../data/expressions.ts",import.meta.url),"utf8");const generated=await readFile(new URL("../data/generated-content.ts",import.meta.url),"utf8");const topicBlock=generated.split("const topics=[")[1].split("] as const;")[0];const topics=(topicBlock.match(/\["/g)??[]).length;assert.equal(topics,32);for(const level of ["beginner","intermediate","advanced"]){const coreCount=(core.match(new RegExp(`e\\([^\\n]+\\"${level}\\"`,"g"))??[]).length;assert.ok(coreCount+topics*10>=300,`${level} below 300`);}assert.ok(topics*4*3>=300);});

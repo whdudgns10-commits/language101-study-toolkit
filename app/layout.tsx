@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { siteConfig } from "@/config/site";
 import { MobileBottomNav } from "@/components/mobile-bottom-nav";
+import { LanguageProvider } from "@/components/language-provider";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.siteUrl),
@@ -18,5 +19,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="ko"><body style={{ "--purple": siteConfig.brandColor } as React.CSSProperties}>{children}<MobileBottomNav/></body></html>;
+  return <html lang="en-US" suppressHydrationWarning><body style={{ "--purple": siteConfig.brandColor } as React.CSSProperties}><LanguageProvider>{children}<MobileBottomNav/></LanguageProvider></body></html>;
 }
