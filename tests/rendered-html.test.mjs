@@ -178,11 +178,15 @@ test("multilingual dictionaries are complete and English is the server default",
     readFile(new URL("../components/language-provider.tsx",import.meta.url),"utf8"),
     readFile(new URL("../components/language-selector.tsx",import.meta.url),"utf8"),
   ]);
-  const blocks=["en","ko","ja","zh"].map((language,index,languages)=>dictionary.slice(dictionary.indexOf(`${language}:{`),index===languages.length-1?dictionary.length:dictionary.indexOf(`${languages[index+1]}:{`)));
+  const dictionaryCore=dictionary.split("Object.assign")[0];
+  const blocks=["en","ko","ja","zh"].map((language,index,languages)=>dictionaryCore.slice(dictionaryCore.indexOf(`${language}:{`),index===languages.length-1?dictionaryCore.length:dictionaryCore.indexOf(`${languages[index+1]}:{`)));
   const keys=blocks.map(block=>new Set([...block.matchAll(/"([a-z]+\.[A-Za-z]+)":/g)].map(match=>match[1])));
   assert.ok(keys[0].size>50);for(const set of keys.slice(1))assert.deepEqual([...set].sort(),[...keys[0]].sort());
   assert.match(layout,/lang="en-US"/);assert.match(provider,/useState<SupportedLanguage>\("en"\)/);assert.match(provider,/document\.documentElement\.lang/);assert.match(provider,/StorageEvent/);assert.match(provider,/language101-language-change/);
-  assert.match(selector,/Globe2/);assert.match(selector,/aria-haspopup="listbox"/);assert.match(selector,/event\.key==="Escape"/);
+  assert.match(selector,/Globe2/);assert.match(selector,/type="button"/);assert.match(selector,/aria-label="Select language"/);assert.match(selector,/aria-haspopup="menu"/);assert.match(selector,/role="menuitemradio"/);assert.match(selector,/language-backdrop/);assert.match(selector,/event\.key==="Escape"/);
+  const languageTypes=await readFile(new URL("../types/language.ts",import.meta.url),"utf8");
+  assert.match(languageTypes,/supportedLanguages:SupportedLanguage\[\]=\["en","ko","zh","ja"\]/);
+  assert.match(provider,/isLanguageMenuOpen/);assert.match(provider,/setLanguageMenuOpen\(false\)/);
 });
 
 test("content and learning state are scoped by the selected language",async()=>{
