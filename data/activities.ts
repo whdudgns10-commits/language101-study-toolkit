@@ -10,6 +10,7 @@ export const activities: Activity[] = [
   {
     id: "true-or-false",
     title: "True or False",
+    shortTitle: "True / False",
     category: "Ice Breaking",
     level: "All Level",
     durationMinutes: 10,
@@ -24,6 +25,7 @@ export const activities: Activity[] = [
   {
     id: "30-second-speaking",
     title: "30 Second Speaking",
+    shortTitle: "30 Sec Talk",
     category: "Ice Breaking",
     level: "All Level",
     durationMinutes: 10,
@@ -38,6 +40,7 @@ export const activities: Activity[] = [
   {
     id: "20-questions",
     title: "20 Questions",
+    shortTitle: "20 Questions",
     category: "Ice Breaking",
     level: "All Level",
     durationMinutes: 15,
@@ -52,6 +55,7 @@ export const activities: Activity[] = [
   {
     id: "what-if-challenge",
     title: "What If Challenge",
+    shortTitle: "What If",
     category: "Ice Breaking",
     level: "All Level",
     durationMinutes: 15,
@@ -66,6 +70,7 @@ export const activities: Activity[] = [
   {
     id: "funny-questions",
     title: "Funny Questions",
+    shortTitle: "Funny Questions",
     category: "Ice Breaking",
     level: "All Level",
     durationMinutes: 10,
@@ -80,6 +85,7 @@ export const activities: Activity[] = [
   {
     id: "ice-breaking-3",
     title: "Ice Breaking 3",
+    shortTitle: "Icebreakers",
     category: "Ice Breaking",
     level: "All Level",
     durationMinutes: 10,
@@ -94,6 +100,7 @@ export const activities: Activity[] = [
   {
     id: "fun-discuss",
     title: "Fun Discuss",
+    shortTitle: "Fun Discuss",
     category: "Games",
     level: "All Level",
     durationMinutes: 15,
@@ -108,6 +115,7 @@ export const activities: Activity[] = [
   {
     id: "guessing-words",
     title: "Guessing Words",
+    shortTitle: "Guess Word",
     category: "Games",
     level: "All Level",
     durationMinutes: 15,
@@ -122,6 +130,7 @@ export const activities: Activity[] = [
   {
     id: "word-battle",
     title: "Word Battle",
+    shortTitle: "Word Battle",
     category: "Games",
     level: "All Level",
     durationMinutes: 15,
@@ -136,6 +145,7 @@ export const activities: Activity[] = [
   {
     id: "balance-game",
     title: "Balance Game",
+    shortTitle: "Balance Game",
     category: "Games",
     level: "All Level",
     durationMinutes: 10,
@@ -150,6 +160,7 @@ export const activities: Activity[] = [
   {
     id: "balance-game-2",
     title: "Balance Game 2",
+    shortTitle: "Balance 2",
     category: "Games",
     level: "All Level",
     durationMinutes: 10,
@@ -164,6 +175,7 @@ export const activities: Activity[] = [
   {
     id: "words-game",
     title: "Words Game",
+    shortTitle: "Words Game",
     category: "Games",
     level: "All Level",
     durationMinutes: 15,
@@ -178,6 +190,7 @@ export const activities: Activity[] = [
   {
     id: "debate-pros-cons",
     title: "Debate: Pros & Cons",
+    shortTitle: "Pros & Cons",
     category: "Discussion",
     level: "Intermediate",
     durationMinutes: 20,
@@ -192,6 +205,7 @@ export const activities: Activity[] = [
   {
     id: "choose-one-out-of-three",
     title: "Choose One Out of Three",
+    shortTitle: "Choose One",
     category: "Discussion",
     level: "Intermediate",
     durationMinutes: 15,
@@ -206,6 +220,7 @@ export const activities: Activity[] = [
   {
     id: "useful-expressions",
     title: "Useful Expressions",
+    shortTitle: "Expressions",
     category: "Expression Practice",
     level: "All Level",
     durationMinutes: 15,
@@ -220,6 +235,7 @@ export const activities: Activity[] = [
   {
     id: "practice-of-expressing",
     title: "Practice of Expressing",
+    shortTitle: "Expressing",
     category: "Expression Practice",
     level: "All Level",
     durationMinutes: 15,
