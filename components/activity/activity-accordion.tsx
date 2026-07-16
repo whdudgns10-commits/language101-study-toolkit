@@ -1,0 +1,3 @@
+"use client";
+import { useId,useState } from "react";import { ChevronDown } from "lucide-react";
+export function ActivityAccordion({title,openTitle,defaultOpen=false,children,icon}:{title:string;openTitle?:string;defaultOpen?:boolean;children:React.ReactNode;icon?:React.ReactNode}){const [open,setOpen]=useState(defaultOpen);const id=useId();return <section className={open?"activity-accordion is-open":"activity-accordion"}><button type="button" aria-expanded={open} aria-controls={id} onClick={()=>setOpen(value=>!value)}>{icon}<span>{open&&openTitle?openTitle:title}</span><ChevronDown/></button><div id={id} hidden={!open}>{children}</div></section>}
