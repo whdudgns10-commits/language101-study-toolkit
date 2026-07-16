@@ -148,6 +148,22 @@ test("daily practice selection returns five deterministic expressions without du
   assert.notDeepEqual(daily.selectDistinctDailyItems(items,5,"2026-07-17","daily-practice",7),first);
 });
 
+test("English learning expressions stay identical across interface languages",async()=>{
+  const [dailyHook,dailyExpression,tabs,card,practiceStorage,studyStorage]=await Promise.all([
+    readFile(new URL("../hooks/use-daily-content.ts",import.meta.url),"utf8"),
+    readFile(new URL("../lib/daily-expression.ts",import.meta.url),"utf8"),
+    readFile(new URL("../components/daily-expression-tabs.tsx",import.meta.url),"utf8"),
+    readFile(new URL("../components/daily-expression-card.tsx",import.meta.url),"utf8"),
+    readFile(new URL("../lib/practice-expression-storage.ts",import.meta.url),"utf8"),
+    readFile(new URL("../lib/study-storage.ts",import.meta.url),"utf8"),
+  ]);
+  assert.match(dailyHook,/"daily-english-expression"/);assert.doesNotMatch(dailyHook,/language==="en"\?expressions\.filter/);
+  assert.match(dailyExpression,/"daily-english-practice"/);assert.doesNotMatch(dailyExpression,/\$\{language\}:daily-practice/);
+  assert.match(tabs,/const item=getDailyExpression\(level,dateKey\)/);assert.doesNotMatch(tabs,/common\.preparing/);
+  assert.match(card,/data-expression-id/);assert.match(card,/localizeEnglishExpression/);assert.match(card,/language:"en"/);
+  assert.match(practiceStorage,/`language101-practice-expressions-\$\{dateKey\}`/);assert.match(studyStorage,/`english:\$\{date\}`/);
+});
+
 test("My Study and daily pages share progress and synchronization contracts",async()=>{
   const [hook,storage,profile]=await Promise.all([
     readFile(new URL("../hooks/use-daily-content.ts",import.meta.url),"utf8"),

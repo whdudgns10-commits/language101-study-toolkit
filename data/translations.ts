@@ -9,3 +9,12 @@ Object.assign(translations.en,{"home.helpDesc":"Continue with a random conversat
 Object.assign(translations.ko,{"home.helpDesc":"랜덤 질문으로 바로 대화를 이어가세요.","home.recommendedDesc":"오늘 하기 좋은 활동을 빠르게 확인하세요.","home.notes":"학습 메모","home.endSession":"모임 마무리","home.qr":"QR 페이지","home.primaryAria":"주요 기능"});
 Object.assign(translations.zh,{"home.helpDesc":"使用随机问题继续对话。","home.recommendedDesc":"快速查看适合今天的活动。","home.notes":"学习笔记","home.endSession":"结束学习","home.qr":"二维码页面","home.primaryAria":"主要功能"});
 Object.assign(translations.ja,{"home.helpDesc":"ランダムな質問で会話を続けましょう。","home.recommendedDesc":"今日に合うアクティビティを確認します。","home.notes":"学習メモ","home.endSession":"学習を終了","home.qr":"QRページ","home.primaryAria":"主な機能"});
+Object.assign(translations.en,{"expression.meaning":"Meaning","expression.example":"Example","expression.practiceAction":"Practice this expression","expression.learned":"Learned","expression.saveStudy":"Save to My Study","expression.saved":"Saved to My Study."});
+Object.assign(translations.ko,{"expression.meaning":"뜻","expression.example":"예문","expression.practiceAction":"이 표현 연습하기","expression.learned":"학습 완료","expression.saveStudy":"My Study에 저장","expression.saved":"My Study에 저장했어요."});
+Object.assign(translations.zh,{"expression.meaning":"含义","expression.example":"例句","expression.practiceAction":"练习这个表达","expression.learned":"已学习","expression.saveStudy":"保存到 My Study","expression.saved":"已保存到 My Study。"});
+Object.assign(translations.ja,{"expression.meaning":"意味","expression.example":"例文","expression.practiceAction":"この表現を練習する","expression.learned":"学習完了","expression.saveStudy":"My Studyに保存","expression.saved":"My Studyに保存しました。"});
+Object.assign(translations.en,{"practice.details":"Details","practice.edit":"Edit","practice.increase":"Increase usage count","practice.decrease":"Decrease usage count"});
+Object.assign(translations.ko,{"practice.details":"자세히","practice.edit":"수정","practice.increase":"사용 횟수 늘리기","practice.decrease":"사용 횟수 줄이기"});
+Object.assign(translations.zh,{"practice.details":"详情","practice.edit":"编辑","practice.increase":"增加使用次数","practice.decrease":"减少使用次数"});
+Object.assign(translations.ja,{"practice.details":"詳細","practice.edit":"編集","practice.increase":"使用回数を増やす","practice.decrease":"使用回数を減らす"});
+Object.assign(translations.en,{"common.back":"Back"});Object.assign(translations.ko,{"common.back":"뒤로 가기"});Object.assign(translations.zh,{"common.back":"返回"});Object.assign(translations.ja,{"common.back":"戻る"});

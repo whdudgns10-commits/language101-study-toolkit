@@ -24,27 +24,28 @@ export const saveStudyNote = (note: StudyNote) => write(STUDY_KEYS.notes, [note,
 export const deleteStudyNote = (id: string) => write(STUDY_KEYS.notes, getStudyNotes().filter((item) => item.id !== id));
 const normalizeLanguage=(value?:string)=>value==="영어"||!value?"en":value==="한국어"?"ko":value;
 const getAllSavedExpressions=()=>read<SavedExpression[]>(STUDY_KEYS.savedExpressions, []);
-export const getSavedExpressions = () => getAllSavedExpressions().filter(item=>normalizeLanguage(item.language)===getStoredLanguage());
-export const saveExpression = (entry: SavedExpression) => write(STUDY_KEYS.savedExpressions, [entry, ...getAllSavedExpressions().filter((item) => item.id !== entry.id && !(normalizeLanguage(item.language)===normalizeLanguage(entry.language)&&item.expression.toLowerCase() === entry.expression.toLowerCase()))]);
+export const getSavedExpressions = () => getAllSavedExpressions().filter(item=>{const itemLanguage=normalizeLanguage(item.language);return itemLanguage==="en"||itemLanguage===getStoredLanguage()});
+export const saveExpression = (entry: SavedExpression) => {const saved=entry.source==="daily"||entry.source==="dailyExpression"||entry.source==="practiceExpressions"?{...entry,language:"en",id:`saved-en-${entry.expression.toLowerCase().replace(/[^a-z0-9]+/g,"-")}`} : entry;write(STUDY_KEYS.savedExpressions, [saved, ...getAllSavedExpressions().filter((item) => item.id !== saved.id && !(normalizeLanguage(item.language)===normalizeLanguage(saved.language)&&item.expression.toLowerCase() === saved.expression.toLowerCase()))])};
 export const deleteSavedExpression = (id: string) => write(STUDY_KEYS.savedExpressions, getAllSavedExpressions().filter((item) => item.id !== id));
 const getAllUsageLogs=()=>read<ExpressionUsageLog[]>(STUDY_KEYS.usageLogs, []);
-export const getUsageLogs = () => getAllUsageLogs().filter(item=>normalizeLanguage(item.language)===getStoredLanguage());
-export const saveUsageLog = (log: ExpressionUsageLog) => write(STUDY_KEYS.usageLogs, [{...log,language:log.language||getStoredLanguage()}, ...getAllUsageLogs()]);
+export const getUsageLogs = () => getAllUsageLogs().filter(item=>{const itemLanguage=normalizeLanguage(item.language);return itemLanguage==="en"||itemLanguage===getStoredLanguage()});
+export const saveUsageLog = (log: ExpressionUsageLog) => write(STUDY_KEYS.usageLogs, [{...log,language:log.language||"en"}, ...getAllUsageLogs()]);
 export const getIdList = (key: string) => read<string[]>(key, []);
 export const setIdList = (key: string, ids: string[]) => write(key, ids);
 export const toggleId = (key: string, id: string) => { const next = new Set(getIdList(key)); if (next.has(id)) next.delete(id); else next.add(id); setIdList(key, [...next]); };
 
 const blankProgress = (date: string): DailyStudyProgress => ({ date, missions: {}, dailyExpression: {}, practiceExpressions: {} });
 export const getProgressMap = () => read<Record<string, DailyStudyProgress>>(STUDY_KEYS.progress, {});
-export const getDailyProgress = (date = getLocalDateKey(),language:SupportedLanguage=getStoredLanguage()) => getProgressMap()[`${language}:${date}`] || (language==="en"?getProgressMap()[date]:undefined) || blankProgress(date);
+const sharedExpressionProgressKey=(date:string)=>`english:${date}`;
+export const getDailyProgress = (date = getLocalDateKey(),language:SupportedLanguage=getStoredLanguage()) => {const all=getProgressMap();const languageProgress=all[`${language}:${date}`]||(language==="en"?all[date]:undefined)||blankProgress(date);const shared=all[sharedExpressionProgressKey(date)]||all[`en:${date}`]||all[date]||languageProgress;return{...languageProgress,dailyExpression:shared.dailyExpression,practiceExpressions:shared.practiceExpressions}};
 export function setProgress(group: "missions" | "dailyExpression" | "practiceExpressions", id: string, status: StudyStatus, memo?: string, date = getLocalDateKey(),language:SupportedLanguage=getStoredLanguage()) {
-  const all = getProgressMap(); const progressKey=`${language}:${date}`;const current = all[progressKey] || (language==="en"?all[date]:undefined) || blankProgress(date);
+  const all = getProgressMap(); const progressKey=group==="missions"?`${language}:${date}`:sharedExpressionProgressKey(date);const current = all[progressKey] || (group!=="missions"?(all[`en:${date}`]||all[date]):language==="en"?all[date]:undefined) || blankProgress(date);
   const entry: StudyProgressEntry = { ...current[group][id], status, memo: memo ?? current[group][id]?.memo };
   if (status !== "not-started") entry.completedAt = new Date().toISOString();
   all[progressKey] = { ...current, [group]: { ...current[group], [id]: entry } };
   write(STUDY_KEYS.progress, all);
   if (group === "missions" || group === "dailyExpression") {
-    const key=dailyStorageKey(date,language); const legacy=read<{completedMissionIds?:string[];usedExpressionIds?:string[]}>(key,{});
+    const key=dailyStorageKey(date,group === "missions"?language:"en"); const legacy=read<{completedMissionIds?:string[];usedExpressionIds?:string[]}>(key,{});
     const field=group === "missions" ? "completedMissionIds" : "usedExpressionIds";
     const ids=new Set(legacy[field]||[]); if(status==="not-started")ids.delete(id);else ids.add(id);
     localStorage.setItem(key,JSON.stringify({...legacy,[field]:[...ids]}));
