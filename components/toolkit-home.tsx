@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowRight, BookOpenText, Compass, Dices, ListFilter, MessageCircleQuestion, Sparkles, Target } from "lucide-react";
 import { MobileHeader } from "@/components/mobile-header";
 import { useLanguage } from "@/hooks/use-language";
+import { TutorialBanner } from "@/components/tutorial/tutorial-banner";
 
 const features = [
   { href:"/missions", title:"오늘의 미션 3개", description:"오늘 대화에서 직접 도전할 목표를 확인하세요.", icon:Target },
@@ -13,12 +14,12 @@ const features = [
 ];
 
 export function ToolkitHome(){const {t}=useLanguage();const translatedFeatures=[{...features[0],title:t("home.missions"),description:t("home.missionsDesc")},{...features[1],title:t("home.expression"),description:t("home.expressionDesc")},{...features[2],title:t("home.practice"),description:t("home.practiceDesc")},{...features[3],title:t("home.help"),description:t("home.helpDesc")},{...features[4],title:t("home.recommended"),description:t("home.recommendedDesc")}];return <><MobileHeader/><main className="mobile-home section-shell">
-  <section className="compact-hero"><span>{t("brand.name")}</span><h1>{t("home.title")}</h1><p>{t("home.description")}</p></section>
-  <section className="primary-actions" aria-label={t("home.primaryAria")}>
+  <section className="compact-hero"><span>{t("brand.name")}</span><h1>{t("home.title")}</h1><p>{t("home.description")}</p></section><TutorialBanner/>
+  <section className="primary-actions" data-tutorial="activity-selector" aria-label={t("home.primaryAria")}>
     <Link href="/random" className="primary-action is-random"><Dices/><span><b>{t("home.random")}</b></span><ArrowRight/></Link>
     <Link href="/tools" className="primary-action"><Sparkles/><span><b>{t("home.tools")}</b></span><ArrowRight/></Link>
     <Link href="/activities" className="primary-action"><ListFilter/><span><b>{t("home.browse")}</b></span><ArrowRight/></Link>
   </section>
-  <section className="quick-feature-section"><h2>{t("home.quick")}</h2><div className="quick-feature-grid">{translatedFeatures.map(({href,title,description,icon:Icon})=><Link href={href} className="home-action-card" key={href}><span className="home-action-icon"><Icon/></span><span><b>{title}</b><small>{description}</small></span><ArrowRight/></Link>)}</div></section>
+  <section className="quick-feature-section" data-tutorial="daily-content"><h2>{t("home.quick")}</h2><div className="quick-feature-grid">{translatedFeatures.map(({href,title,description,icon:Icon})=><Link href={href} data-tutorial={href==="/conversation-help"?"conversation-start":undefined} className="home-action-card" key={href}><span className="home-action-icon"><Icon/></span><span><b>{title}</b><small>{description}</small></span><ArrowRight/></Link>)}</div></section>
   <div className="home-small-links"><Link href="/notes">{t("home.notes")}</Link><Link href="/end-session">{t("home.endSession")}</Link><Link href="/qr">{t("home.qr")}</Link></div>
  </main></>}

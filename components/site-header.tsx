@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Home, Search, UserRound } from "lucide-react";
 import { LanguageSelector } from "@/components/language-selector";import { useLanguage } from "@/hooks/use-language";
+import { TutorialHelpButton } from "@/components/tutorial/tutorial-help-button";
 
 export function SiteHeader({ onSearch, showSearch = true }: { onSearch?: () => void; showSearch?: boolean }) {
   const {t}=useLanguage();
@@ -15,7 +16,7 @@ export function SiteHeader({ onSearch, showSearch = true }: { onSearch?: () => v
         </Link>
         <nav className="header-actions" aria-label="Quick navigation">
           {showSearch && <button className="icon-button" onClick={onSearch} aria-label={t("common.search")}><Search size={20} /></button>}
-          <Link className="my-study-desktop-link" href="/my-study" aria-label={t("nav.myStudy")}><UserRound size={20} /><span>{t("nav.myStudy")}</span></Link><LanguageSelector/>
+          <Link className="my-study-desktop-link" data-tutorial="my-study" href="/my-study" aria-label={t("nav.myStudy")}><UserRound size={20} /><span>{t("nav.myStudy")}</span></Link><TutorialHelpButton/><LanguageSelector/>
           <Link className="icon-button" href="/" aria-label={t("common.home")}><Home size={20} /></Link>
         </nav>
       </div>

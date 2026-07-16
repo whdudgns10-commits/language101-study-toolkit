@@ -226,6 +226,34 @@ test("renders every mobile feature route",async()=>{for(const [path,text] of [["
 
 test("home links and mobile navigation target the new pages",async()=>{const html=await(await render()).text();for(const href of ["/missions","/expressions","/practice-expressions","/conversation-help","/recommended","/random","/tools","/activities","/my-study"]){assert.match(html,new RegExp(`href=\\"${href}`));}});
 
+test("first-visit tutorial has five ordered steps and persistent completion",async()=>{
+  const [provider,steps]=await Promise.all([
+    readFile(new URL("../components/tutorial/tutorial-provider.tsx",import.meta.url),"utf8"),
+    readFile(new URL("../data/tutorial-steps.ts",import.meta.url),"utf8"),
+  ]);
+  assert.match(provider,/language101-tutorial-completed/);assert.match(provider,/language101-tutorial-step/);
+  assert.match(provider,/pathname==="\/"/);assert.match(provider,/localStorage\.setItem\(TUTORIAL_COMPLETED_KEY,"true"\)/);
+  const ordered=["language-selector","daily-content","activity-selector","my-study","conversation-start"];
+  assert.deepEqual([...steps.matchAll(/target:"([^"]+)"/g)].map(match=>match[1]),ordered);
+});
+
+test("tutorial is accessible, responsive, multilingual, and connected to real controls",async()=>{
+  const [overlay,css,translations,home,language,headers]=await Promise.all([
+    readFile(new URL("../components/tutorial/tutorial-overlay.tsx",import.meta.url),"utf8"),
+    readFile(new URL("../app/globals.css",import.meta.url),"utf8"),
+    readFile(new URL("../data/translations.ts",import.meta.url),"utf8"),
+    readFile(new URL("../components/toolkit-home.tsx",import.meta.url),"utf8"),
+    readFile(new URL("../components/language-selector.tsx",import.meta.url),"utf8"),
+    readFile(new URL("../components/mobile-header.tsx",import.meta.url),"utf8")+await readFile(new URL("../components/site-header.tsx",import.meta.url),"utf8"),
+  ]);
+  for(const contract of [/aria-modal="true"/,/event\.key==="Escape"/,/event\.key!=="Tab"/,/scrollIntoView/,/addEventListener\("resize"/,/addEventListener\("scroll"/])assert.match(overlay,contract);
+  assert.match(css,/@media\(max-width:700px\).*\.tutorial-dialog/s);assert.match(css,/prefers-reduced-motion/);
+  for(const target of ["daily-content","activity-selector"])assert.match(home,new RegExp(`data-tutorial=\\"${target}\\"`));
+  assert.match(home,/\?"conversation-start":undefined/);
+  assert.match(language,/data-tutorial="language-selector"/);assert.match(headers,/TutorialHelpButton/);assert.match(headers,/data-tutorial="my-study"/);
+  for(const languageCode of ["en","ko","zh","ja"])assert.match(translations,new RegExp(`${languageCode}:\\{[\\s\\S]*?\\"tutorial\\.open\\"`));
+});
+
 test("wheel filters items, avoids immediate repeats, and aligns the result",async()=>{const wheel=await import(new URL(`../lib/random-wheel.ts?wheel=${Date.now()}`,import.meta.url));const items=Array.from({length:12},(_,index)=>({id:`a${index}`}));assert.equal(wheel.selectWheelItems(items,10,()=>.5).length,10);const index=wheel.pickWheelIndex(3,"a0",items.slice(0,3),()=>0);assert.notEqual(items[index].id,"a0");assert.equal(wheel.wheelRotation(2,10,6),2070);});
 
 test("mission expansion covers 12 categories with at least 20 each",async()=>{const source=await readFile(new URL("../data/generated-content.ts",import.meta.url),"utf8");const categories=[...source.matchAll(/missionCategoryNames=\[([^\]]+)\]/g)][0][1].match(/"[^"]+"/g);const contexts=[...source.matchAll(/const contexts=\[([^\]]+)\]/g)][0][1].match(/"[^"]+"/g);assert.equal(categories.length,12);assert.ok(contexts.length>=25);assert.ok(categories.length*contexts.length>=300);});
