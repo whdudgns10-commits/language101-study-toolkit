@@ -26,16 +26,16 @@ test("renders the activity toolkit home", async () => {
   assert.doesNotMatch(html, /codex-preview|Your site is taking shape/);
 });
 
-test("renders an activity detail with source notice and timer", async () => {
+test("renders a compact activity detail with external action and closed sections", async () => {
   const response = await render("/activities/30-second-speaking");
   assert.equal(response.status, 200);
   const html = await response.text();
   assert.match(html, /30 Second Speaking/);
-  assert.match(html, /독립 실행형 도구가 외부 페이지에서 열립니다/);
-  assert.match(html, /Three simple steps/);
-  assert.match(html, /Timer/);
-  assert.match(html, /테이블 모드/);
-  assert.match(html, /학습 메모/);
+  assert.match(html, /Open external activity/);
+  assert.match(html, /View How to Play/);
+  assert.match(html, /aria-expanded="false"/);
+  assert.match(html, /Table mode/);
+  assert.match(html, /Learning Notes/);
 });
 
 test("Naver Cafe text activities use internal content while operational links remain",async()=>{
@@ -268,9 +268,17 @@ test("Random Activity candidates are unique, filterable, and exclude disabled en
 
 test("Random Activity history prevents immediate repeats and keeps five entries",async()=>{const rules=await import(new URL(`../lib/random-wheel.ts?history=${Date.now()}`,import.meta.url));const items=Array.from({length:8},(_,index)=>({id:`a${index}`,title:`Activity ${index}`}));const selected=rules.pickActivity(items,["a0","a1","a2","a3","a4"],()=>0);assert.equal(selected.id,"a5");const history=rules.nextRandomHistory(["a0","a1","a2","a3","a4"],"a5");assert.deepEqual(history,["a5","a0","a1","a2","a3"]);assert.notEqual(rules.pickActivity(items,history,()=>0).id,"a5");});
 
-test("Random Activity UI exposes filters, count, empty state, shuffle, localized labels and matching route",async()=>{const [wheel,localization,css,stats]=await Promise.all([readFile(new URL("../components/activity-wheel.tsx",import.meta.url),"utf8"),readFile(new URL("../lib/activity-localization.ts",import.meta.url),"utf8"),readFile(new URL("../app/globals.css",import.meta.url),"utf8"),readFile(new URL("../app/admin/content-stats/page.tsx",import.meta.url),"utf8")]);for(const contract of ["randomActivity.available","randomActivity.noMatches","shuffle","router.push","target.slug||target.id","candidates.length===1","RANDOM_HISTORY_KEY"])assert.match(wheel,new RegExp(contract));assert.match(localization,/translations\?\.\[language\]\|\|activity\.translations\?\.en/);assert.match(css,/wheel-filter-panel/);assert.match(css,/text-overflow:ellipsis/);for(const label of ["전체 활성 활동","랜덤 선택 가능 활동","중복 slug","중복 id"])assert.match(stats,new RegExp(label));});
+test("Random Activity UI exposes filters, count, empty state, shuffle, localized labels and matching route",async()=>{const [wheel,localization,css,stats]=await Promise.all([readFile(new URL("../components/activity-wheel.tsx",import.meta.url),"utf8"),readFile(new URL("../lib/activity-localization.ts",import.meta.url),"utf8"),readFile(new URL("../app/globals.css",import.meta.url),"utf8"),readFile(new URL("../app/admin/content-stats/page.tsx",import.meta.url),"utf8")]);for(const contract of ["randomActivity.available","randomActivity.noMatches","shuffle","router.push","target.slug||target.id","SelectedWheelResult","RANDOM_HISTORY_KEY"])assert.match(wheel,new RegExp(contract));assert.match(localization,/translations\?\.\[language\]\|\|activity\.translations\?\.en/);assert.match(css,/wheel-filter-panel/);assert.match(css,/text-overflow:ellipsis/);for(const label of ["전체 활성 활동","랜덤 선택 가능 활동","중복 slug","중복 id"])assert.match(stats,new RegExp(label));});
 
-test("Random Activity waits for the result and automatically opens the matching activity",async()=>{const wheel=await readFile(new URL("../components/activity-wheel.tsx",import.meta.url),"utf8");assert.match(wheel,/setTimeout\(\(\)=>finish\(target\),reduced\?250:3600\)/);assert.match(wheel,/setTimeout\(\(\)=>router\.push\(`\/activities\/\$\{target\.slug\|\|target\.id\}`\),1000\)/);assert.match(wheel,/disabled=\{spinning\|\|Boolean\(selected\)\}/);assert.match(wheel,/clearTimeout\(redirectRef\.current\)/);});
+test("Random Activity waits for the result and automatically opens the matching activity",async()=>{const wheel=await readFile(new URL("../components/activity-wheel.tsx",import.meta.url),"utf8");assert.match(wheel,/onTransitionEnd=.*completeSpin\(selectedResult\)/);assert.match(wheel,/router\.push\(`\/activities\/\$\{result\.slug\}`\)/);assert.match(wheel,/disabled=\{spinning\|\|Boolean\(selectedResult\)\}/);assert.match(wheel,/clearTimeout\(redirectRef\.current\)/);assert.match(wheel,/clearTimeout\(spinFallbackRef\.current\)/);});
+
+test("wheel rotation always centers the selected segment after previous spins",async()=>{const wheel=await import(new URL(`../lib/random-wheel.ts?angle=${Date.now()}`,import.meta.url));for(const total of [2,5,12])for(let index=0;index<total;index++){const first=wheel.nextWheelRotation(0,index,total,6);const second=wheel.nextWheelRotation(first,index,total,6);const expected=(360-(index*360/total+180/total)+360)%360;const modulo=value=>((value%360)+360)%360;assert.ok(Math.abs(modulo(first)-expected)<1e-9);assert.ok(Math.abs(modulo(second)-expected)<1e-9)}});
+
+test("selected wheel result is the single source for display, history, and navigation",async()=>{const source=await readFile(new URL("../components/activity-wheel.tsx",import.meta.url),"utf8");assert.match(source,/const result:SelectedWheelResult=\{activity:target,id:target\.id,slug:target\.slug\|\|target\.id,title:localizeActivity\(target,language\)\.title,index:selectedIndex,rotation:finalRotation\}/);assert.match(source,/setSelectedResult\(result\)/);assert.match(source,/nextRandomHistory\(history,result\.id\)/);assert.match(source,/RECENT_RANDOM_KEY,result\.id/);assert.match(source,/router\.push\(`\/activities\/\$\{result\.slug\}`\)/);assert.match(source,/selectedResult\.title/);assert.equal((source.match(/pickActivity\(/g)||[]).length,1);});
+
+test("shuffle and filter changes clear stale result, rotation, and timers",async()=>{const source=await readFile(new URL("../components/activity-wheel.tsx",import.meta.url),"utf8");assert.match(source,/function clearSelection\(\)\{cancelTimers\(\);completedRef\.current=false;setSelectedResult\(null\);setSpinning\(false\);setRotation\(0\)\}/);assert.match(source,/function update[\s\S]*clearSelection\(\)/);assert.match(source,/function shuffle\(\)\{clearSelection\(\)/);});
+
+test("known activity titles resolve to unique existing detail slugs",async()=>{const registry=await import(new URL(`../data/activities.ts?slugs=${Date.now()}`,import.meta.url));const expected={"Fun Discuss":"fun-discuss","Balance Game":"balance-game","Word Battle":"word-battle","Situation Sentence Game":"describing-picture-game","What If Challenge":"what-if-challenge"};for(const [title,slug] of Object.entries(expected)){const activity=registry.activeActivities.find(item=>item.title===title);assert.ok(activity,title);assert.equal(activity.slug||activity.id,slug);assert.ok(registry.getActivity(slug))}const slugs=registry.activeActivities.map(item=>item.slug||item.id);assert.equal(new Set(slugs).size,slugs.length);});
 
 test("activity details use closed shared accordions and compact mobile summaries",async()=>{const [detail,accordion,viewer,css]=await Promise.all([readFile(new URL("../components/activity-detail.tsx",import.meta.url),"utf8"),readFile(new URL("../components/activity/activity-accordion.tsx",import.meta.url),"utf8"),readFile(new URL("../components/conversation-content-viewer.tsx",import.meta.url),"utf8"),readFile(new URL("../app/globals.css",import.meta.url),"utf8")]);assert.match(accordion,/defaultOpen=false/);assert.match(accordion,/aria-expanded=\{open\}/);assert.match(accordion,/aria-controls=\{id\}/);assert.match(accordion,/hidden=\{!open\}/);for(const key of ["activity.viewHowToPlay","activity.startPractice","activity.notes"])assert.match(detail,new RegExp(key));for(const key of ["activity.practiceSettings","activity.viewQuestions","activity.viewExpressions","activity.viewTips"])assert.match(viewer,new RegExp(key));assert.match(css,/-webkit-line-clamp:2/);assert.match(css,/min-height:52px/);assert.match(css,/compact-activity-detail.*padding-bottom:100px/s);});
 
