@@ -17,7 +17,6 @@ export function ToolkitHome(){const {t}=useLanguage();const translatedFeatures=[
   <section className="compact-hero"><span>{t("brand.name")}</span><h1>{t("home.title")}</h1><p>{t("home.description")}</p></section><TutorialBanner/>
   <section className="primary-actions" data-tutorial="activity-selector" aria-label={t("home.primaryAria")}>
     <Link href="/random" className="primary-action is-random"><Dices/><span><b>{t("home.random")}</b></span><ArrowRight/></Link>
-    <Link href="/tools" className="primary-action"><Sparkles/><span><b>{t("home.tools")}</b></span><ArrowRight/></Link>
     <Link href="/activities" className="primary-action"><ListFilter/><span><b>{t("home.browse")}</b></span><ArrowRight/></Link>
   </section>
   <section className="quick-feature-section" data-tutorial="daily-content"><h2>{t("home.quick")}</h2><div className="quick-feature-grid">{translatedFeatures.map(({href,title,description,icon:Icon})=><Link href={href} data-tutorial={href==="/conversation-help"?"conversation-start":undefined} className="home-action-card" key={href}><span className="home-action-icon"><Icon/></span><span><b>{title}</b><small>{description}</small></span><ArrowRight/></Link>)}</div></section>
