@@ -11,10 +11,12 @@ import { LearningNoteEditor } from "./learning-note-editor";
 import { TableMode } from "./table-mode";
 import { recordSessionActivity } from "@/lib/storage";
 import { ConversationContentViewer } from "@/components/conversation-content-viewer";
+import { SituationSentenceGame } from "@/components/situation-sentence-game";
 
 export function ActivityDetail({ activity }: { activity: Activity }) {
   const [tableMode,setTableMode] = useState(false);
   useEffect(() => { const timer = setTimeout(() => recordSessionActivity(activity.id),0); return () => clearTimeout(timer); },[activity.id]);
+  if(activity.id==="describing-picture-game")return <><SiteHeader showSearch={false}/><main className="detail-page"><div className="detail-shell"><Link href="/#activities" className="back-link"><ArrowLeft size={18}/> Back to Activities</Link><SituationSentenceGame/></div></main></>;
   const notice = activity.sourceType === "interactive" ? "독립 실행형 도구가 외부 페이지에서 열립니다." : "질문과 대화 자료를 이 페이지에서 바로 이용할 수 있습니다.";
   if (tableMode) return <TableMode activity={activity} onClose={() => setTableMode(false)} />;
   return <>

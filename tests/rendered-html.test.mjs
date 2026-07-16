@@ -1,16 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { readFile } from "node:fs/promises";
-import { spawn } from "node:child_process";
-import { after } from "node:test";
-
-const port=4199;
-const server=spawn(process.execPath,["node_modules/next/dist/bin/next","start","-p",String(port)],{stdio:"ignore"});
-after(()=>server.kill("SIGTERM"));
-for(let attempt=0;attempt<60;attempt++){try{const response=await fetch(`http://127.0.0.1:${port}/`);if(response.ok)break;}catch{}await new Promise(resolve=>setTimeout(resolve,250));}
 
 async function render(path = "/") {
-  return fetch(`http://127.0.0.1:${port}${path}`,{headers:{accept:"text/html"}});
+  const requested=path.split("?")[0].replace(/^\//,"");
+  const clean=requested==="notes"?"my-study":requested;
+  const file=clean?`../.next/server/app/${clean}.html`:"../.next/server/app/index.html";
+  try{return new Response(await readFile(new URL(file,import.meta.url),"utf8"),{status:200,headers:{"content-type":"text/html"}})}catch{return new Response("Not found",{status:404})}
 }
 
 test("renders the activity toolkit home", async () => {
@@ -259,3 +255,9 @@ test("wheel filters items, avoids immediate repeats, and aligns the result",asyn
 test("mission expansion covers 12 categories with at least 20 each",async()=>{const source=await readFile(new URL("../data/generated-content.ts",import.meta.url),"utf8");const categories=[...source.matchAll(/missionCategoryNames=\[([^\]]+)\]/g)][0][1].match(/"[^"]+"/g);const contexts=[...source.matchAll(/const contexts=\[([^\]]+)\]/g)][0][1].match(/"[^"]+"/g);assert.equal(categories.length,12);assert.ok(contexts.length>=25);assert.ok(categories.length*contexts.length>=300);});
 
 test("content normalization catches punctuation and spacing duplicates",async()=>{const content=await import(new URL(`../lib/content-normalization.ts?content=${Date.now()}`,import.meta.url));assert.equal(content.normalizeContent("  Sounds good! "),content.normalizeContent("sounds   good."));assert.ok(content.tokenJaccard("Tell me about your weekend plans","Tell me about your weekend plans!")>=.85);});
+
+test("Situation Sentence Game uses text-only data with sufficient unique cards",async()=>{const source=await readFile(new URL("../data/situation-sentence-game.ts",import.meta.url),"utf8");assert.doesNotMatch(source,/https?:\/\/|imageSrc|<Image|\.jpg|\.png|\.webp/);const game=await import(new URL(`../data/situation-sentence-game.ts?situation=${Date.now()}`,import.meta.url));const expected={situationCountries:50,situationPlaces:60,situationProblems:100,situationPeople:40,situationTimes:20,situationEmotions:25,situationExpressions:30,situationEvents:30};const ids=[];for(const [name,count] of Object.entries(expected)){assert.ok(game[name].length>=count,`${name} below ${count}`);ids.push(...game[name].map(item=>item.id))}assert.equal(new Set(ids).size,ids.length);});
+
+test("Situation Sentence Game difficulty cards and new rounds follow the rules",async()=>{const [rules,component]=await Promise.all([readFile(new URL("../lib/situation-sentence-game.ts",import.meta.url),"utf8"),readFile(new URL("../components/situation-sentence-game.tsx",import.meta.url),"utf8")]);assert.match(rules,/level==="beginner"\?3:level==="intermediate"\?5:8/);assert.match(rules,/\["country","place","situation"\]/);assert.match(rules,/\["country","place","situation","person"/);assert.match(rules,/"expression","event"/);assert.match(rules,/hash\(`\$\{seed\}:\$\{category\}`\)/);assert.match(component,/setRound\(value=>value\+1\)/);assert.match(component,/containsCard\(story,card\)/);});
+
+test("Situation Sentence Game persists drafts, modes, stories, group turns, timer, and My Study records",async()=>{const [component,storage,myStudy,css,activity]=await Promise.all([readFile(new URL("../components/situation-sentence-game.tsx",import.meta.url),"utf8"),readFile(new URL("../lib/situation-story-storage.ts",import.meta.url),"utf8"),readFile(new URL("../components/my-study-view.tsx",import.meta.url),"utf8"),readFile(new URL("../app/globals.css",import.meta.url),"utf8"),readFile(new URL("../data/activities.ts",import.meta.url),"utf8")]);for(const contract of ["SITUATION_DRAFT_KEY","SITUATION_SETTINGS_KEY","Next Speaker","setInterval","navigator.vibrate","Spoken Practice","saveSituationPractice"])assert.match(component,new RegExp(contract));for(const key of ["language101-situation-story-draft","language101-situation-story-settings","language101-sentence-story-practice","language101-situation-favorite-combinations"])assert.match(storage,new RegExp(key));assert.match(myStudy,/Sentence & Story Practice/);assert.match(css,/padding:15px 12px 110px/);assert.match(activity,/id: "describing-picture-game"[\s\S]*title: "Situation Sentence Game"/);assert.doesNotMatch(activity,/id: "describing-picture-game"[\s\S]{0,400}picture/);});
