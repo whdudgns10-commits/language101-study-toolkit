@@ -1,1 +1,1 @@
-import{DebatePractice}from"@/components/debate-practice";export const metadata={title:"Debate: Pros & Cons Practice | Language101"};export default function Page(){return <DebatePractice/>}
+import{DebatePractice}from"@/components/debate-practice";import{AccessGuard}from"@/components/access/2026-07-17-access-guard";export const metadata={title:"Debate: Pros & Cons Practice | Language101"};export default function Page(){return <AccessGuard><DebatePractice/></AccessGuard>}

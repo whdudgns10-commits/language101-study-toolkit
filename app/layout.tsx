@@ -4,6 +4,7 @@ import { siteConfig } from "@/config/site";
 import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 import { LanguageProvider } from "@/components/language-provider";
 import { TutorialProvider } from "@/components/tutorial/tutorial-provider";
+import { AccessProvider } from "@/components/access/2026-07-17-access-provider";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.siteUrl),
@@ -20,5 +21,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en-US" suppressHydrationWarning><body style={{ "--purple": siteConfig.brandColor } as React.CSSProperties}><LanguageProvider><TutorialProvider>{children}<MobileBottomNav/></TutorialProvider></LanguageProvider></body></html>;
+  return <html lang="en-US" suppressHydrationWarning><body style={{ "--purple": siteConfig.brandColor } as React.CSSProperties}><LanguageProvider><AccessProvider><TutorialProvider>{children}<MobileBottomNav/></TutorialProvider></AccessProvider></LanguageProvider></body></html>;
 }

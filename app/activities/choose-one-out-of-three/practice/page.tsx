@@ -1,1 +1,1 @@
-import{ChooseThreePractice}from"@/components/choose-three-practice";export const metadata={title:"Choose One Out of Three Practice | Language101"};export default function Page(){return <ChooseThreePractice/>}
+import{ChooseThreePractice}from"@/components/choose-three-practice";import{AccessGuard}from"@/components/access/2026-07-17-access-guard";export const metadata={title:"Choose One Out of Three Practice | Language101"};export default function Page(){return <AccessGuard><ChooseThreePractice/></AccessGuard>}

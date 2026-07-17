@@ -79,14 +79,17 @@ NEXT_PUBLIC_NAVER_CAFE_URL=https://cafe.naver.com/language101
 NEXT_PUBLIC_INSTAGRAM_URL=https://www.instagram.com/101language
 NEXT_PUBLIC_CONTACT_URL=https://example.com/contact
 NEXT_PUBLIC_BRAND_COLOR=#6C4CF1
+STUDY_TOOLKIT_ACCESS_CODE=0509
 ```
+
+`STUDY_TOOLKIT_ACCESS_CODE` is a server-only mock membership code and must not use the `NEXT_PUBLIC_` prefix. Protected Practice routes store a browser access token under `studyToolkitAccess` for 24 hours. Replace the mock membership object in `app/api/membership/validate/route.ts` with the Base44 or Supabase membership lookup when the membership API is ready.
 
 ## Deploy to Vercel
 
 1. Push this project to a Git repository.
 2. In Vercel, select **Add New → Project** and import the repository.
 3. Keep the detected framework as **Next.js** and the default build settings.
-4. Add the public environment variables listed above. `NEXT_PUBLIC_RESERVATION_URL` is required for the meetup application button; the others have defaults in `config/site.ts`.
+4. Add the environment variables listed above. `NEXT_PUBLIC_RESERVATION_URL` is required for the meetup application button. `STUDY_TOOLKIT_ACCESS_CODE` is server-only and is required for the membership gate in production.
 5. Deploy, then redeploy once the production URL is confirmed so QR, sitemap, and sharing URLs use the final domain.
 
 No database, login, or private server secret is required.
