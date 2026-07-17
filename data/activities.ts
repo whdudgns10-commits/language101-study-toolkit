@@ -90,18 +90,19 @@ export const activities: Activity[] = [
   {
     id: "ice-breaking-3",
     iconKey: "icebreaker",
-    title: "Ice Breaking 3",
-    shortTitle: "Icebreakers",
+    title: "Ice Breaking",
+    shortTitle: "Ice Breaking",
     category: "Ice Breaking",
     level: "All Level",
-    durationMinutes: 10,
-    groupSizes: ["3–4 people", "5–8 people"],
-    description: "A collection of additional questions for meeting new people.",
-    instructions: ["Pick one question from the collection.", "Answer in turns.", "Ask a natural follow-up question."],
+    durationMinutes: 15,
+    groupSizes: ["2–8 people"],
+    description: "Answer light and friendly questions to start a natural conversation.",
+    instructions: ["Read one friendly question.", "Answer in turns.", "Ask a follow-up question to continue naturally."],
     externalUrl: "",
     sourceType: "internal",
     tags: ["new people", "questions", "beginner"],
     featured: false,
+    translations:{ko:{title:"아이스브레이킹",shortTitle:"아이스브레이킹",description:"가볍고 재미있는 질문에 답하며 자연스럽게 대화를 시작해보세요."},zh:{title:"破冰话题",shortTitle:"破冰话题",description:"回答轻松有趣的问题，自然地开始对话。"},ja:{title:"アイスブレイク",shortTitle:"アイスブレイク",description:"気軽で楽しい質問に答えて、自然に会話を始めましょう。"}},
   },
   {
     id: "fun-discuss",
@@ -246,15 +247,16 @@ export const activities: Activity[] = [
     title: "Choose One Out of Three",
     shortTitle: "Choose One",
     category: "Discussion",
-    level: "Intermediate",
+    level: "All Level",
     durationMinutes: 15,
-    groupSizes: ["3–4 people", "5–8 people"],
-    description: "Choose one of three options and explain your reasoning.",
-    instructions: ["Read the three options.", "Choose independently.", "Explain your priorities and discuss different choices."],
+    groupSizes: ["2–8 people"],
+    description: "Read a question, choose one of three options, and explain your choice.",
+    instructions: ["Read the question and all three options.", "Choose A, B, or C.", "Explain your reason and compare choices."],
     externalUrl: "",
     sourceType: "internal",
     tags: ["choice", "reasoning", "discussion"],
     featured: false,
+    translations:{ko:{title:"세 가지 중 하나 선택하기",shortTitle:"하나 선택하기",description:"질문을 읽고 세 가지 보기 중 하나를 선택한 뒤 이유를 설명해보세요."},zh:{title:"三选一",shortTitle:"三选一",description:"阅读问题，从三个选项中选择一个并说明理由。"},ja:{title:"三つから一つ選ぶ",shortTitle:"三つから一つ",description:"質問を読み、3つの選択肢から1つを選んで理由を説明しましょう。"}},
   },
   {
     id: "useful-expressions",
@@ -309,6 +311,8 @@ export const activities: Activity[] = [
 ];
 
 const uniqueById=(items:Activity[])=>[...new Map(items.map(item=>[item.id,item])).values()];
-export const activeActivities=uniqueById(activities).filter(activity=>activity.enabled!==false&&activity.id.trim()&&activity.title.trim());
+export const FEATURED_ACTIVITY_IDS=["true-or-false","ice-breaking-3","30-second-speaking","20-questions","what-if-challenge","funny-questions","fun-discuss","guessing-words","word-battle","balance-game","conversation-starter","words-game","debate-pros-cons","choose-one-out-of-three","useful-expressions","practice-of-expressing","describing-picture-game"] as const;
+const enabledActivities=uniqueById(activities).filter(activity=>activity.enabled!==false&&activity.id.trim()&&activity.title.trim());
+export const activeActivities=FEATURED_ACTIVITY_IDS.map(id=>enabledActivities.find(activity=>activity.id===id)).filter((activity):activity is Activity=>Boolean(activity));
 export const randomEligibleActivities=activeActivities.filter(activity=>activity.randomEligible!==false);
 export const getActivity = (id: string) => activeActivities.find((activity) => activity.id === id||(activity.slug||activity.id)===id);

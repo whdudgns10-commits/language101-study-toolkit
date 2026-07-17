@@ -7,12 +7,12 @@ export function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
-  const id=(await params).id;if(id==="balance-game-2")return{title:"Balance Game | Language101 Study Toolkit",description:"Choose between A and B and explain your choice."};const activity = getActivity(id);
+  const id=(await params).id;if(id==="balance-game-2")return{title:"Balance Game | Language101 Study Toolkit",description:"Choose between A and B and explain your choice."};if(id==="ice-breaking")return{title:"Ice Breaking | Language101 Study Toolkit",description:"Answer light and friendly questions to start a natural conversation."};const activity = getActivity(id);
   return activity ? { title: `${activity.title} | Language101 Study Toolkit`, description: activity.description } : {};
 }
 
 export default async function ActivityPage({ params }: { params: Promise<{ id: string }> }) {
-  const id=(await params).id;if(id==="balance-game-2")redirect("/activities/balance-game");const activity = getActivity(id);
+  const id=(await params).id;if(id==="balance-game-2")redirect("/activities/balance-game");if(id==="ice-breaking")redirect("/activities/ice-breaking-3");const activity = getActivity(id);
   if (!activity) notFound();
   return <ActivityDetail activity={activity} />;
 }

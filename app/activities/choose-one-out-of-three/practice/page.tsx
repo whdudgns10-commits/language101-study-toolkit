@@ -1,0 +1,1 @@
+import{ChooseThreePractice}from"@/components/choose-three-practice";export const metadata={title:"Choose One Out of Three Practice | Language101"};export default function Page(){return <ChooseThreePractice/>}
