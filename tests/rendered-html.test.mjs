@@ -293,15 +293,15 @@ test("Alphabet Challenge replaces the legacy activity while preserving its compa
 test("Alphabet Challenge letter, scoring, winner, reset and circular turn rules are stable",async()=>{
   const rules=await import(new URL(`../lib/alphabet-challenge.ts?rules=${Date.now()}`,import.meta.url));
   assert.equal(rules.ALPHABET.length,26);assert.equal(new Set(rules.ALPHABET).size,26);
-  const first25=rules.ALPHABET.slice(0,25);assert.equal(rules.chooseRandomLetter(first25,()=>0),"Z");
-  assert.notEqual(rules.chooseRandomLetter(rules.ALPHABET,()=>0),"Z");
+  const recent=["A","B","C","D","E"];assert.equal(recent.includes(rules.chooseRandomLetter(recent,()=>0)),false);
   assert.equal(rules.nextAlphabetPlayer(3,4),0);
-  const base={id:"1",name:"A",correct:0,missed:0};
-  assert.deepEqual(rules.applyAlphabetResult(base,"correct"),{...base,correct:1});
-  assert.deepEqual(rules.applyAlphabetResult(base,"missed"),{...base,missed:1});
-  assert.equal(rules.applyAlphabetResult(base,"skip"),base);
-  const leaders=rules.alphabetWinners([{id:"1",name:"A",correct:2,missed:1},{id:"2",name:"B",correct:2,missed:0}]);assert.deepEqual(leaders.map(item=>item.name),["B"]);
-  assert.deepEqual(rules.resetAlphabetPlayers([{...base,correct:4,missed:2}]),[base]);
+  const base={id:"1",name:"A",correctCount:0,failedCount:0,penaltyCount:0,roundsStarted:0};
+  assert.deepEqual(rules.recordCorrect([base],0),[{...base,correctCount:1}]);
+  assert.deepEqual(rules.recordFailure([base],0),[{...base,failedCount:1,penaltyCount:1}]);
+  const leaders=rules.alphabetWinners([{...base,id:"1",name:"A",correctCount:9,penaltyCount:2},{...base,id:"2",name:"B",correctCount:2,penaltyCount:1}]);assert.deepEqual(leaders.map(item=>item.name),["B"]);
+  assert.deepEqual(rules.resetAlphabetPlayers([{...base,correctCount:4,failedCount:2,penaltyCount:2,roundsStarted:3}]),[base]);
+  assert.equal(rules.minimumWordLength("beginner",3),0);assert.equal(rules.minimumWordLength("intermediate",0),0);assert.equal(rules.minimumWordLength("intermediate",1),3);assert.equal(rules.minimumWordLength("intermediate",2),4);assert.equal(rules.minimumWordLength("intermediate",3),5);
+  assert.equal(rules.validateRoundWord("Apple","A",0,[]).valid,true);assert.equal(rules.validateRoundWord("apple","A",0,["Apple"]).error,"duplicate");
 });
 
 test("Alphabet Challenge includes timers, game controls, table mode, and persistent My Study records",async()=>{
@@ -311,9 +311,13 @@ test("Alphabet Challenge includes timers, game controls, table mode, and persist
     readFile(new URL("../components/activity-detail.tsx",import.meta.url),"utf8"),
     readFile(new URL("../app/globals.css",import.meta.url),"utf8"),
   ]);
-  for(const contract of ["chooseRandomLetter","const finalLetter","setLetter(finalLetter)","setInterval","800","setRemaining(5)","navigator.vibrate","Correct","Time’s Up","Table Mode","saveAlphabetPractice"])assert.match(component,new RegExp(contract.replace(/[()]/g,"\\$&")));
-  assert.doesNotMatch(component,/Type Mode|validateAlphabetWord|minimumLetters|Used Words|alphabet-word-input/);
+  for(const contract of ["chooseRandomLetter","const finalLetter","setCurrentLetter(finalLetter)","setInterval","800","setTimeLeft(5)","navigator.vibrate","Correct","Time’s Up","Start New Round","Table Mode","saveAlphabetPractice"])assert.match(component,new RegExp(contract.replace(/[()]/g,"\\$&")));
+  const correctBlock=component.split("function handleCorrect()")[1].split("function startNewRound")[0];assert.doesNotMatch(correctBlock,/setCurrentLetter|startShuffle|setPhase\("round-ended"\)/);assert.match(correctBlock,/setCurrentPlayerIndex/);assert.match(correctBlock,/setTimeLeft\(5\)/);
+  const failureBlock=component.split("const endRound=")[1].split("useEffect")[0];assert.match(failureBlock,/recordFailure/);assert.match(failureBlock,/setPhase\("round-ended"\)/);
+  assert.match(component,/type GamePhase = "setup" \| "ready" \| "letter-shuffling" \| "playing" \| "round-ended" \| "game-finished"/);
+  assert.doesNotMatch(component,/Type Mode|minimumLetters|Used Words|alphabet-word-input/);
   for(const key of ["language101-alphabet-challenge-practice","language101-study-change","localStorage"])assert.match(storage,new RegExp(key));
+  for(const field of ["activityName","difficulty","wordLengthLevel","minimumWordLength","roundHistory","penalties","failedPlayerIds","longestRound","winner"])assert.match(storage,new RegExp(field));
   assert.match(detail,/activity.id === "words-game" \? <AlphabetChallengeGame/);
   assert.match(css,/\.alphabet-game\.is-table-mode/);assert.match(css,/@media\(max-width:700px\).*\.alphabet-actions/s);
 });
