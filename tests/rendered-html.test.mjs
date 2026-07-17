@@ -40,6 +40,22 @@ test("renders a compact activity detail with a unified Start Practice action", a
   assert.match(html, /Learning Notes/);
 });
 
+test("Word Battle renders one Start Practice action and preserves its configured destination", async () => {
+  const registry = await import(new URL(`../data/activities.ts?word-battle=${Date.now()}`, import.meta.url));
+  const activity = registry.getActivity("word-battle");
+  assert.ok(activity);
+
+  const response = await render("/activities/word-battle");
+  assert.equal(response.status, 200);
+  const html = await response.text();
+  assert.equal((html.match(/Start Practice/g) ?? []).length, 1);
+  assert.ok(html.includes(`href="${activity.externalUrl}"`));
+
+  const betweenHowToPlayAndNotes = html.split("View How to Play")[1]?.split("Learning Notes")[0] ?? "";
+  assert.doesNotMatch(betweenHowToPlayAndNotes, /Start Practice/);
+  assert.match(html, /Table mode/);
+});
+
 test("Naver Cafe text activities use internal content while operational links remain",async()=>{
   const activities=await readFile(new URL("../data/activities.ts",import.meta.url),"utf8");
   assert.doesNotMatch(activities,/cafe\.naver\.com|m\.cafe\.naver\.com/);
