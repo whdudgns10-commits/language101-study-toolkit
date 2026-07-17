@@ -35,5 +35,10 @@ export type Activity = {
   enabled?: boolean;
   randomEligible?: boolean;
   shortTitle?: string;
-  translations?:Partial<Record<"en"|"ko"|"zh"|"ja",{title:string;description?:string;shortTitle?:string}>>;
+  translations?: Partial<
+    Record<
+      "en" | "ko" | "zh" | "ja",
+      { title: string; description?: string; shortTitle?: string; instructions?: string[] }
+    >
+  >;
 };

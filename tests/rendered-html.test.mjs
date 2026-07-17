@@ -278,4 +278,44 @@ test("known activity titles resolve to unique existing detail slugs",async()=>{c
 
 test("activity details use closed shared accordions and compact mobile summaries",async()=>{const [detail,accordion,viewer,css]=await Promise.all([readFile(new URL("../components/activity-detail.tsx",import.meta.url),"utf8"),readFile(new URL("../components/activity/activity-accordion.tsx",import.meta.url),"utf8"),readFile(new URL("../components/conversation-content-viewer.tsx",import.meta.url),"utf8"),readFile(new URL("../app/globals.css",import.meta.url),"utf8")]);assert.match(accordion,/defaultOpen=false/);assert.match(accordion,/aria-expanded=\{open\}/);assert.match(accordion,/aria-controls=\{id\}/);assert.match(accordion,/hidden=\{!open\}/);for(const key of ["activity.viewHowToPlay","activity.startPractice","activity.notes"])assert.match(detail,new RegExp(key));for(const key of ["activity.practiceSettings","activity.viewQuestions","activity.viewExpressions","activity.viewTips"])assert.match(viewer,new RegExp(key));assert.match(css,/-webkit-line-clamp:2/);assert.match(css,/min-height:52px/);assert.match(css,/compact-activity-detail.*padding-bottom:100px/s);});
 
+test("Alphabet Challenge replaces the legacy activity while preserving its compatible slug",async()=>{
+  const registry=await import(new URL(`../data/activities.ts?alphabet=${Date.now()}`,import.meta.url));
+  const activity=registry.getActivity("words-game");
+  assert.ok(activity);assert.equal(activity.id,"words-game");assert.equal(activity.title,"Alphabet Challenge");
+  assert.equal(activity.sourceType,"internal");assert.deepEqual(activity.groupSizes,["2–8 people"]);
+  assert.equal(registry.activeActivities.length,17);
+  assert.equal(registry.activeActivities.filter(item=>item.title==="Alphabet Challenge").length,1);
+  assert.equal(registry.randomEligibleActivities.filter(item=>item.title==="Alphabet Challenge").length,1);
+  const response=await render("/activities/words-game");assert.equal(response.status,200);
+  const html=await response.text();assert.match(html,/Alphabet Challenge/);assert.match(html,/Start Practice/);assert.match(html,/aria-expanded="false"/);
+});
+
+test("Alphabet Challenge letter, scoring, winner, reset and circular turn rules are stable",async()=>{
+  const rules=await import(new URL(`../lib/alphabet-challenge.ts?rules=${Date.now()}`,import.meta.url));
+  assert.equal(rules.ALPHABET.length,26);assert.equal(new Set(rules.ALPHABET).size,26);
+  const first25=rules.ALPHABET.slice(0,25);assert.equal(rules.chooseRandomLetter(first25,()=>0),"Z");
+  assert.notEqual(rules.chooseRandomLetter(rules.ALPHABET,()=>0),"Z");
+  assert.equal(rules.nextAlphabetPlayer(3,4),0);
+  const base={id:"1",name:"A",correct:0,missed:0};
+  assert.deepEqual(rules.applyAlphabetResult(base,"correct"),{...base,correct:1});
+  assert.deepEqual(rules.applyAlphabetResult(base,"missed"),{...base,missed:1});
+  assert.equal(rules.applyAlphabetResult(base,"skip"),base);
+  const leaders=rules.alphabetWinners([{id:"1",name:"A",correct:2,missed:1},{id:"2",name:"B",correct:2,missed:0}]);assert.deepEqual(leaders.map(item=>item.name),["B"]);
+  assert.deepEqual(rules.resetAlphabetPlayers([{...base,correct:4,missed:2}]),[base]);
+});
+
+test("Alphabet Challenge includes timers, game controls, table mode, and persistent My Study records",async()=>{
+  const [component,storage,detail,css]=await Promise.all([
+    readFile(new URL("../components/alphabet-challenge-game.tsx",import.meta.url),"utf8"),
+    readFile(new URL("../lib/alphabet-challenge-storage.ts",import.meta.url),"utf8"),
+    readFile(new URL("../components/activity-detail.tsx",import.meta.url),"utf8"),
+    readFile(new URL("../app/globals.css",import.meta.url),"utf8"),
+  ]);
+  for(const contract of ["chooseRandomLetter","const finalLetter","setLetter(finalLetter)","setInterval","800","setRemaining(5)","navigator.vibrate","Correct","Time’s Up","Table Mode","saveAlphabetPractice"])assert.match(component,new RegExp(contract.replace(/[()]/g,"\\$&")));
+  assert.doesNotMatch(component,/Type Mode|validateAlphabetWord|minimumLetters|Used Words|alphabet-word-input/);
+  for(const key of ["language101-alphabet-challenge-practice","language101-study-change","localStorage"])assert.match(storage,new RegExp(key));
+  assert.match(detail,/activity.id === "words-game" \? <AlphabetChallengeGame/);
+  assert.match(css,/\.alphabet-game\.is-table-mode/);assert.match(css,/@media\(max-width:700px\).*\.alphabet-actions/s);
+});
+
 test("Random Activity and activity accordion translation keys exist in all interface languages",async()=>{const source=await readFile(new URL("../data/translations.ts",import.meta.url),"utf8");const keys=["randomActivity.selected","randomActivity.opening","randomActivity.shuffle","randomActivity.noMatches","activity.viewHowToPlay","activity.hideHowToPlay","activity.startPractice","activity.closePractice","activity.viewExpressions","activity.hideExpressions","activity.viewQuestions","activity.hideQuestions","activity.viewTips","activity.hideTips","activity.viewExamples","activity.hideExamples","activity.practiceSettings","activity.saveToMyStudy"];for(const language of ["en","ko","zh","ja"]){const block=source.split(`Object.assign(translations.${language},{\"randomActivity.title\"`)[1];assert.ok(block,`missing ${language} activity translations`);for(const key of keys)assert.match(block.split("});")[0],new RegExp(`\\"${key.replace(".","\\.")}\\"`))}});
