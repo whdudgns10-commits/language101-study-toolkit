@@ -10,7 +10,7 @@ const modes = [
   { id:"casual",label:"가볍게 대화하고 싶어요",icon:Coffee,ids:["what-if-challenge","fun-discuss","balance-game"],reason:"정답 없이 편하게 이야기를 이어갈 수 있어요." },
   { id:"game",label:"게임하고 싶어요",icon:Gamepad2,ids:["guessing-words","word-battle","words-game"],reason:"규칙이 간단하고 모두가 빠르게 참여할 수 있어요." },
   { id:"debate",label:"진지하게 토론하고 싶어요",icon:Scale,ids:["debate-pros-cons","choose-one-out-of-three","20-questions"],reason:"이유를 설명하고 서로의 관점을 깊게 들을 수 있어요." },
-  { id:"expression",label:"영어 표현을 연습하고 싶어요",icon:BookOpenText,ids:["useful-expressions","practice-of-expressing","30-second-speaking"],reason:"새 표현을 바로 문장과 대화에 적용할 수 있어요." },
+  { id:"expression",label:"영어 표현을 연습하고 싶어요",icon:BookOpenText,ids:["useful-expressions","30-second-speaking","conversation-starter"],reason:"새 표현을 바로 문장과 대화에 적용할 수 있어요." },
 ] as const;
 
 export function QuickStartModes() {

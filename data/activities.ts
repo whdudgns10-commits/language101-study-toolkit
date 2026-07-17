@@ -78,14 +78,15 @@ export const activities: Activity[] = [
     shortTitle: "Funny Questions",
     category: "Ice Breaking",
     level: "All Level",
-    durationMinutes: 10,
-    groupSizes: ["3–4 people", "5–8 people"],
-    description: "Start conversations with funny and unexpected questions.",
-    instructions: ["Choose a question from the material.", "Everyone gives a short answer.", "Vote for the most surprising answer."],
+    durationMinutes: 40,
+    groupSizes: ["2–10 people"],
+    description: "Pick a funny question, share your answer, and keep the conversation going.",
+    instructions: ["Choose a random question, category, or number.", "Answer in at least three sentences.", "Explain your reason and add an example.", "Other players react and ask follow-up questions.", "Pass any question that makes you uncomfortable.", "Continue with the next player or question."],
     externalUrl: "",
     sourceType: "internal",
-    tags: ["funny", "questions", "icebreaker"],
+    tags: ["Icebreaker", "Speaking", "Group Activity", "Fun", "All Levels"],
     featured: false,
+    translations:{ko:{title:"재미있는 질문",shortTitle:"재미있는 질문",description:"재미있는 질문을 뽑아 최소 세 문장으로 답하고 자연스럽게 대화를 이어가 보세요.",instructions:["랜덤 질문, 카테고리 또는 번호를 선택합니다.","최소 세 문장 이상으로 답변합니다.","이유와 관련된 예시를 덧붙입니다.","다른 참가자는 영어로 반응하고 후속 질문을 합니다.","불편한 질문은 언제든 건너뛸 수 있습니다.","다음 참가자 또는 새로운 질문으로 진행합니다."]},zh:{title:"趣味问题",shortTitle:"趣味问题",description:"抽取一个有趣的问题，用至少三句话回答并继续对话。"},ja:{title:"面白い質問",shortTitle:"面白い質問",description:"面白い質問を選び、少なくとも3文で答えて会話を続けましょう。"}},
   },
   {
     id: "ice-breaking-3",
@@ -281,22 +282,6 @@ export const activities: Activity[] = [
     translations:{ko:{title:"실전 영어 표현",shortTitle:"영어 표현",description:"영어 표현의 뜻을 추측하고 자연스러운 예문을 확인한 뒤 실제 대화 질문에 답해 보세요.",instructions:["정답을 열지 않고 영어 표현을 읽습니다.","뜻을 자신의 말로 추측합니다.","한국어 뜻과 자연스러운 예문을 확인합니다.","열린 대화 질문 두 개에 답합니다.","도움이 필요할 때만 Answer Hint를 엽니다.","필요한 표현을 즐겨찾기하고 다음 카드로 이동합니다."]},zh:{title:"实用英语表达",shortTitle:"英语表达",description:"猜测英语表达的含义，查看自然例句，并回答真实对话问题。"},ja:{title:"実用英語表現",shortTitle:"英語表現",description:"英語表現の意味を推測し、自然な例文を確認して会話の質問に答えましょう。"}},
   },
   {
-    id: "practice-of-expressing",
-    iconKey: "expression-practice",
-    title: "Practice of Expressing",
-    shortTitle: "Expressing",
-    category: "Expression Practice",
-    level: "All Level",
-    durationMinutes: 15,
-    groupSizes: ["2 people", "3–4 people", "5–8 people"],
-    description: "Practice expressing opinions, reactions, and feelings.",
-    instructions: ["Choose an expression and read its example.", "Make a personal example.", "Use it naturally in a short exchange."],
-    externalUrl: "",
-    sourceType: "internal",
-    tags: ["feelings", "reactions", "opinions"],
-    featured: false,
-  },
-  {
     id: "describing-picture-game",
     iconKey: "situation-story",
     slug: "describing-picture-game",
@@ -317,7 +302,7 @@ export const activities: Activity[] = [
 ];
 
 const uniqueById=(items:Activity[])=>[...new Map(items.map(item=>[item.id,item])).values()];
-export const FEATURED_ACTIVITY_IDS=["true-or-false","ice-breaking-3","30-second-speaking","20-questions","what-if-challenge","funny-questions","fun-discuss","guessing-words","word-battle","balance-game","conversation-starter","words-game","debate-pros-cons","choose-one-out-of-three","useful-expressions","practice-of-expressing","describing-picture-game"] as const;
+export const FEATURED_ACTIVITY_IDS=["true-or-false","ice-breaking-3","30-second-speaking","20-questions","what-if-challenge","funny-questions","fun-discuss","guessing-words","word-battle","balance-game","conversation-starter","words-game","debate-pros-cons","choose-one-out-of-three","useful-expressions","describing-picture-game"] as const;
 const enabledActivities=uniqueById(activities).filter(activity=>activity.enabled!==false&&activity.id.trim()&&activity.title.trim());
 export const activeActivities=FEATURED_ACTIVITY_IDS.map(id=>enabledActivities.find(activity=>activity.id===id)).filter((activity):activity is Activity=>Boolean(activity));
 export const randomEligibleActivities=activeActivities.filter(activity=>activity.randomEligible!==false);
