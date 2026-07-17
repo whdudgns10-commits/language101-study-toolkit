@@ -9,6 +9,7 @@ import type { Activity } from "@/types/activity";
 export const activities: Activity[] = [
   {
     id: "true-or-false",
+    iconKey: "true-false",
     title: "True or False",
     shortTitle: "True / False",
     category: "Ice Breaking",
@@ -24,6 +25,7 @@ export const activities: Activity[] = [
   },
   {
     id: "30-second-speaking",
+    iconKey: "timed-speaking",
     title: "30 Second Speaking",
     shortTitle: "30 Sec Talk",
     category: "Ice Breaking",
@@ -39,6 +41,7 @@ export const activities: Activity[] = [
   },
   {
     id: "20-questions",
+    iconKey: "questions",
     title: "20 Questions",
     shortTitle: "20 Questions",
     category: "Ice Breaking",
@@ -54,6 +57,7 @@ export const activities: Activity[] = [
   },
   {
     id: "what-if-challenge",
+    iconKey: "imagination",
     title: "What If Challenge",
     shortTitle: "What If",
     category: "Ice Breaking",
@@ -69,6 +73,7 @@ export const activities: Activity[] = [
   },
   {
     id: "funny-questions",
+    iconKey: "funny",
     title: "Funny Questions",
     shortTitle: "Funny Questions",
     category: "Ice Breaking",
@@ -84,6 +89,7 @@ export const activities: Activity[] = [
   },
   {
     id: "ice-breaking-3",
+    iconKey: "icebreaker",
     title: "Ice Breaking 3",
     shortTitle: "Icebreakers",
     category: "Ice Breaking",
@@ -99,6 +105,7 @@ export const activities: Activity[] = [
   },
   {
     id: "fun-discuss",
+    iconKey: "discussion",
     title: "Fun Discuss",
     shortTitle: "Fun Discuss",
     category: "Games",
@@ -114,6 +121,7 @@ export const activities: Activity[] = [
   },
   {
     id: "guessing-words",
+    iconKey: "guessing",
     title: "Guessing Words",
     shortTitle: "Guess Word",
     category: "Games",
@@ -129,6 +137,7 @@ export const activities: Activity[] = [
   },
   {
     id: "word-battle",
+    iconKey: "battle",
     title: "Word Battle",
     shortTitle: "Word Battle",
     category: "Games",
@@ -144,6 +153,7 @@ export const activities: Activity[] = [
   },
   {
     id: "balance-game",
+    iconKey: "balance",
     title: "Balance Game",
     shortTitle: "Balance Game",
     category: "Games",
@@ -159,6 +169,7 @@ export const activities: Activity[] = [
   },
   {
     id: "balance-game-2",
+    iconKey: "balance-2",
     title: "Balance Game 2",
     shortTitle: "Balance 2",
     category: "Games",
@@ -174,6 +185,7 @@ export const activities: Activity[] = [
   },
   {
     id: "words-game",
+    iconKey: "alphabet",
     title: "Alphabet Challenge",
     shortTitle: "Alphabet Challenge",
     category: "Games",
@@ -219,7 +231,7 @@ export const activities: Activity[] = [
       },
       ja: {
         title: "5秒アルファベットチャレンジ",
-        shortTitle: "文字チャレンジ",
+        shortTitle: "アルファベットチャレンジ",
         description: "ランダムに表示された文字で始まる英単語を5秒以内に言いましょう。",
         instructions: ["難易度と最低文字数を選びます。", "AからZの文字を一つランダムに引きます。", "最初のプレイヤーは5秒以内にその文字で始まる単語を言います。", "正解後も同じ文字のまま次のプレイヤーが続けます。", "同じラウンドで使った単語は繰り返せません。", "5秒以内に答えられないとペナルティを受け、ラウンドが終了します。", "新しいラウンドで別の文字を引きます。", "ペナルティが最も少ないプレイヤーの勝ちです。"],
       },
@@ -227,6 +239,7 @@ export const activities: Activity[] = [
   },
   {
     id: "debate-pros-cons",
+    iconKey: "debate",
     title: "Debate: Pros & Cons",
     shortTitle: "Pros & Cons",
     category: "Discussion",
@@ -242,6 +255,7 @@ export const activities: Activity[] = [
   },
   {
     id: "choose-one-out-of-three",
+    iconKey: "choose-three",
     title: "Choose One Out of Three",
     shortTitle: "Choose One",
     category: "Discussion",
@@ -257,6 +271,7 @@ export const activities: Activity[] = [
   },
   {
     id: "useful-expressions",
+    iconKey: "useful-expressions",
     title: "Useful Expressions",
     shortTitle: "Expressions",
     category: "Expression Practice",
@@ -272,6 +287,7 @@ export const activities: Activity[] = [
   },
   {
     id: "practice-of-expressing",
+    iconKey: "expression-practice",
     title: "Practice of Expressing",
     shortTitle: "Expressing",
     category: "Expression Practice",
@@ -287,6 +303,7 @@ export const activities: Activity[] = [
   },
   {
     id: "describing-picture-game",
+    iconKey: "situation-story",
     slug: "describing-picture-game",
     title: "Situation Sentence Game",
     category: "Speaking",

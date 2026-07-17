@@ -9,6 +9,7 @@ import { activityFilterOptions,defaultFilters,filterActivities,type ActivityFilt
 import { FILTER_STORAGE_KEY,RANDOM_HISTORY_KEY,RECENT_RANDOM_KEY } from "@/lib/navigation";
 import { nextRandomHistory,pickRandomActivityIndex } from "@/lib/random-activity";
 import type { Activity } from "@/types/activity";
+import { ActivityIcon } from "@/components/activity/activity-icon";
 
 const readJson=<T,>(key:string,fallback:T):T=>{try{return JSON.parse(localStorage.getItem(key)||"") as T}catch{return fallback}};
 
@@ -34,7 +35,7 @@ export function ActivityWheel(){
   {showFilters&&<div className="wheel-filter-panel shuffle-filters"><header><b>{t("randomActivity.filters")}</b>{hasFilters&&<button disabled={isShuffling||Boolean(finalActivity)} onClick={resetFilters}><RotateCcw/>{t("randomActivity.reset")}</button>}</header><div>{(["level","duration","groupSize","category"] as const).map(key=><label key={key}>{filterLabels[key]}<select value={filters[key]} disabled={isShuffling||Boolean(finalActivity)} onChange={event=>update(key,event.target.value as never)}>{activityFilterOptions[key].map(value=><option key={value}>{value}</option>)}</select></label>)}</div></div>}
   {!eligibleActivities.length?<div className="wheel-empty"><h2>{t("randomActivity.noMatches")}</h2><button className="button button-primary" onClick={resetFilters}>{t("randomActivity.reset")}</button></div>:<>
    <div className={`activity-shuffle-card${isShuffling?" is-shuffling":""}${finalActivity?" is-selected":""}`} aria-live="polite">
-    <span className="shuffle-card-icon">{finalActivity?<CheckCircle2/>:isShuffling?<Shuffle/>:<Dices/>}</span>
+    <span className="shuffle-card-icon">{displayActivity?<ActivityIcon iconKey={displayActivity.iconKey} size="lg"/>:finalActivity?<CheckCircle2/>:isShuffling?<Shuffle/>:<Dices/>}</span>
     {!displayActivity?<><em>{t("randomActivity.ready")}</em><h2>{t("randomActivity.title")}</h2><p>{t("randomActivity.readyDesc")}</p></>:<><em>{displayActivity.category}</em><h2 key={displayActivity.id}>{finalActivity?localized?.title:localized?.shortTitle}</h2><p>{localized?.description}</p></>}
     {finalActivity&&<strong>{localized?.title} {t("randomActivity.selected")}<small>{t("randomActivity.opening")}</small></strong>}
    </div>

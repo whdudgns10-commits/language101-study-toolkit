@@ -1,4 +1,9 @@
 "use client";
-import Link from "next/link";import { ArrowRight,MessageCircle,MessagesSquare,Sparkles,Swords } from "lucide-react";import { activeActivities } from "@/data/activities";import { localizeActivity } from "@/lib/activity-localization";import { useLanguage } from "@/hooks/use-language";
-const iconFor=(category:string)=>category==="Games"?Swords:category==="Discussion"?MessagesSquare:category==="Expression Practice"?Sparkles:MessageCircle;
-export function ActivityBrowser(){const {language}=useLanguage();return <section className="activity-button-list section-shell" aria-label="Activities">{activeActivities.map(activity=>{const Icon=iconFor(activity.category);const localized=localizeActivity(activity,language);return <Link href={`/activities/${activity.slug||activity.id}`} className="activity-list-button" data-activity-id={activity.id} key={activity.id}><Icon/><span>{localized.title}</span><ArrowRight/></Link>})}</section>}
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
+import { ActivityIcon } from "@/components/activity/activity-icon";
+import { activeActivities } from "@/data/activities";
+import { useLanguage } from "@/hooks/use-language";
+import { localizeActivity } from "@/lib/activity-localization";
+
+export function ActivityBrowser(){const {language}=useLanguage();return <section className="activity-button-list section-shell" aria-label="Activities">{activeActivities.map(activity=>{const localized=localizeActivity(activity,language);return <Link href={`/activities/${activity.slug||activity.id}`} className="activity-list-button" data-activity-id={activity.id} key={activity.id}><ActivityIcon iconKey={activity.iconKey} size="lg"/><span>{localized.title}</span><ArrowRight aria-hidden="true"/></Link>})}</section>}

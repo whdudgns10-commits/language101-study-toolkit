@@ -4,12 +4,13 @@ import Link from "next/link";
 import { ArrowRight, Clock3, Users } from "lucide-react";
 import type { Activity } from "@/types/activity";
 import { FavoriteButton } from "./favorite-button";
+import { ActivityIcon } from "@/components/activity/activity-icon";
 
 export function ActivityCard({ activity }: { activity: Activity }) {
   return (
     <article className="activity-card">
       <div className="activity-card-top">
-        <span className="eyebrow">{activity.category}</span>
+        <div><ActivityIcon iconKey={activity.iconKey}/><span className="eyebrow">{activity.category}</span></div>
         <FavoriteButton id={activity.id} />
       </div>
       <div>

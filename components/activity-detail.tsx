@@ -5,6 +5,7 @@ import { ArrowLeft, Clock3, ExternalLink, HelpCircle, Maximize2, Play, Users } f
 import { useEffect, useState } from "react";
 import type { Activity } from "@/types/activity";
 import { ActivityAccordion } from "@/components/activity/activity-accordion";
+import { ActivityIcon } from "@/components/activity/activity-icon";
 import { AlphabetChallengeGame } from "@/components/alphabet-challenge-game";
 import { ConversationContentViewer } from "@/components/conversation-content-viewer";
 import { FavoriteButton } from "@/components/favorite-button";
@@ -38,7 +39,7 @@ export function ActivityDetail({ activity }: { activity:Activity }) {
     <main className="detail-page compact-activity-detail"><div className="detail-shell">
       <Link href="/activities" className="back-link"><ArrowLeft size={18}/>{t("activity.back")}</Link>
       <article className="detail-card">
-        <div className="detail-top"><div><span className="eyebrow">{activity.category}</span><h1>{localized.title}</h1><p className="activity-summary">{localized.description}</p></div><FavoriteButton id={activity.id} label/></div>
+        <div className="detail-top"><div><ActivityIcon iconKey={activity.iconKey} size="md" className="detail-activity-icon"/><span className="eyebrow">{activity.category}</span><h1>{localized.title}</h1><p className="activity-summary">{localized.description}</p></div><FavoriteButton id={activity.id} label/></div>
         <div className="compact-detail-meta"><span>{t("activity.level")} · <b>{levelLabel}</b></span><span><Clock3/>{activity.durationMinutes} min</span><span><Users/>{activity.groupSizes.join(", ")}</span></div>
         {activity.sourceType === "interactive" && <a className="button button-primary compact-start" href={activity.externalUrl} target="_blank" rel="noreferrer"><Play/>{t("activity.external")}<ExternalLink/></a>}
         <button className="compact-table-button" onClick={() => setTableMode(true)}><Maximize2/>{t("activity.tableMode")}</button>

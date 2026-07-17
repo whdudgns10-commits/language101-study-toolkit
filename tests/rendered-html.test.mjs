@@ -323,3 +323,25 @@ test("Alphabet Challenge includes timers, game controls, table mode, and persist
 });
 
 test("Random Activity and activity accordion translation keys exist in all interface languages",async()=>{const source=await readFile(new URL("../data/translations.ts",import.meta.url),"utf8");const keys=["randomActivity.selected","randomActivity.opening","randomActivity.shuffle","randomActivity.noMatches","activity.viewHowToPlay","activity.hideHowToPlay","activity.startPractice","activity.closePractice","activity.viewExpressions","activity.hideExpressions","activity.viewQuestions","activity.hideQuestions","activity.viewTips","activity.hideTips","activity.viewExamples","activity.hideExamples","activity.practiceSettings","activity.saveToMyStudy"];for(const language of ["en","ko","zh","ja"]){const block=source.split(`Object.assign(translations.${language},{\"randomActivity.title\"`)[1];assert.ok(block,`missing ${language} activity translations`);for(const key of keys)assert.match(block.split("});")[0],new RegExp(`\\"${key.replace(".","\\.")}\\"`))}});
+test("all 17 activities have intentional unique icon mappings",async()=>{
+  const registry=await import(new URL(`../data/activities.ts?icons=${Date.now()}`,import.meta.url));
+  const expected={"true-or-false":"true-false","30-second-speaking":"timed-speaking","20-questions":"questions","what-if-challenge":"imagination","funny-questions":"funny","ice-breaking-3":"icebreaker","fun-discuss":"discussion","guessing-words":"guessing","word-battle":"battle","balance-game":"balance","balance-game-2":"balance-2","words-game":"alphabet","debate-pros-cons":"debate","choose-one-out-of-three":"choose-three","useful-expressions":"useful-expressions","practice-of-expressing":"expression-practice","describing-picture-game":"situation-story"};
+  assert.equal(registry.activeActivities.length,17);
+  assert.deepEqual(Object.fromEntries(registry.activeActivities.map(item=>[item.id,item.iconKey])),expected);
+  assert.equal(new Set(registry.activeActivities.map(item=>item.iconKey)).size,17);
+});
+
+test("ActivityIcon is shared by browse, random, card, and detail views",async()=>{
+  const [icons,browser,wheel,card,detail,css]=await Promise.all([
+    readFile(new URL("../components/activity/activity-icon.tsx",import.meta.url),"utf8"),
+    readFile(new URL("../components/activity-browser.tsx",import.meta.url),"utf8"),
+    readFile(new URL("../components/activity-wheel.tsx",import.meta.url),"utf8"),
+    readFile(new URL("../components/activity-card.tsx",import.meta.url),"utf8"),
+    readFile(new URL("../components/activity-detail.tsx",import.meta.url),"utf8"),
+    readFile(new URL("../app/globals.css",import.meta.url),"utf8"),
+  ]);
+  assert.match(icons,/CircleHelp/);assert.match(icons,/Unknown activity icon key/);assert.match(icons,/aria-hidden/);
+  assert.doesNotMatch(browser,/iconFor|activity\.category===/);
+  assert.match(browser,/activity\.iconKey/);assert.match(wheel,/displayActivity\.iconKey/);assert.match(card,/activity\.iconKey/);assert.match(detail,/activity\.iconKey/);
+  assert.match(css,/\.activity-meaning-icon/);assert.match(css,/--activity-icon-size/);assert.match(css,/@media\(max-width:700px\).*\.activity-list-button\{min-height:132px/s);
+});
