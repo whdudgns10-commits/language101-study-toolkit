@@ -45,7 +45,7 @@ export function ActivityDetail({ activity }: { activity:Activity }) {
         <button className="compact-table-button" onClick={() => setTableMode(true)}><Maximize2/>{t("activity.tableMode")}</button>
       </article>
       <ActivityAccordion title={t("activity.viewHowToPlay")} openTitle={t("activity.hideHowToPlay")} icon={<HelpCircle/>}><ol className="compact-instructions">{localized.instructions.map((instruction, index) => <li key={instruction}><span>{index + 1}</span><p>{instruction}</p></li>)}</ol></ActivityAccordion>
-      {activity.sourceType === "internal" && <ActivityAccordion title={t("activity.startPractice")} openTitle={t("activity.closePractice")} icon={<Play/>}>{activity.id === "words-game" ? <AlphabetChallengeGame/> : <ConversationContentViewer activityId={activity.id}/>}</ActivityAccordion>}
+      {activity.id === "balance-game" ? <Link className="button button-primary compact-start" href="/activities/balance-game/practice"><Play/>{t("activity.startPractice")}</Link> : activity.sourceType === "internal" && <ActivityAccordion title={t("activity.startPractice")} openTitle={t("activity.closePractice")} icon={<Play/>}>{activity.id === "words-game" ? <AlphabetChallengeGame/> : <ConversationContentViewer activityId={activity.id}/>}</ActivityAccordion>}
       <ActivityAccordion title={t("activity.notes")} openTitle={t("common.close")}><LearningNoteEditor activityId={activity.id} activityTitle={localized.title}/></ActivityAccordion>
     </div></main>
     <MiniTimer/>

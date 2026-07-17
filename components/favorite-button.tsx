@@ -3,12 +3,13 @@
 import { Heart } from "lucide-react";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
+import { normalizeBalanceIds } from "@/lib/balance-game-storage";
 
 const KEY = "language101-favorites";
 
 export function readFavorites(): string[] {
   if (typeof window === "undefined") return [];
-  try { return JSON.parse(localStorage.getItem(KEY) || "[]"); } catch { return []; }
+  try { const stored=JSON.parse(localStorage.getItem(KEY) || "[]") as string[];const normalized=normalizeBalanceIds(stored);if(normalized.join("|")!==stored.join("|"))localStorage.setItem(KEY,JSON.stringify(normalized));return normalized; } catch { return []; }
 }
 
 export function FavoriteButton({ id, label = false, onChange }: { id: string; label?: boolean; onChange?: (value: boolean) => void }) {

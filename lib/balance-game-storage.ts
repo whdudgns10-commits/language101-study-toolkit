@@ -1,0 +1,14 @@
+import type { BalanceGameItem } from "@/data/balance-game";
+export const BALANCE_KEYS={state:"language101-balance-game-state",favorites:"language101-balance-game-favorites",sessions:"language101-balance-game-sessions"} as const;
+export type BalanceSession={id:string;date:string;viewed:number;choiceA:number;choiceB:number;skipped:number;favoriteIds:string[];memo:string;mode:"solo"|"group"};
+const read=<T,>(key:string,fallback:T):T=>{if(typeof window==="undefined")return fallback;try{return JSON.parse(localStorage.getItem(key)||"") as T}catch{return fallback}};
+const write=(key:string,value:unknown)=>{localStorage.setItem(key,JSON.stringify(value));window.dispatchEvent(new CustomEvent("language101-study-change"))};
+export const normalizeBalanceActivityId=(id:string)=>id==="balance-game-2"?"balance-game":id;
+export const normalizeBalanceIds=(ids:string[])=>[...new Set(ids.map(normalizeBalanceActivityId))];
+export const readBalanceFavorites=()=>read<string[]>(BALANCE_KEYS.favorites,[]);
+export const toggleBalanceFavorite=(id:string)=>{const values=new Set(readBalanceFavorites());if(values.has(id))values.delete(id);else values.add(id);write(BALANCE_KEYS.favorites,[...values]);return values.has(id)};
+export const readBalanceSessions=()=>read<BalanceSession[]>(BALANCE_KEYS.sessions,[]);
+export const saveBalanceSession=(session:BalanceSession)=>write(BALANCE_KEYS.sessions,[session,...readBalanceSessions().filter(item=>item.id!==session.id)]);
+export const saveBalanceState=(value:unknown)=>write(BALANCE_KEYS.state,value);
+export const readBalanceState=<T,>(fallback:T)=>read<T>(BALANCE_KEYS.state,fallback);
+export const balanceFavoriteItem=(items:BalanceGameItem[],id:string)=>items.find(item=>item.id===id);

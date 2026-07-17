@@ -1,6 +1,7 @@
 import { dailyStorageKey, getLocalDateKey } from "@/lib/daily-content";
 import type { DailyStudyProgress, ExpressionUsageLog, SavedExpression, StudyNote, StudyProgressEntry, StudyStatus } from "@/types/study";
 import { getStoredLanguage } from "@/lib/i18n";import type { SupportedLanguage } from "@/types/language";
+import { normalizeBalanceIds } from "@/lib/balance-game-storage";
 
 export const STUDY_EVENT = "language101-study-change";
 export const STUDY_KEYS = {
@@ -30,7 +31,7 @@ export const deleteSavedExpression = (id: string) => write(STUDY_KEYS.savedExpre
 const getAllUsageLogs=()=>read<ExpressionUsageLog[]>(STUDY_KEYS.usageLogs, []);
 export const getUsageLogs = () => getAllUsageLogs().filter(item=>{const itemLanguage=normalizeLanguage(item.language);return itemLanguage==="en"||itemLanguage===getStoredLanguage()});
 export const saveUsageLog = (log: ExpressionUsageLog) => write(STUDY_KEYS.usageLogs, [{...log,language:log.language||"en"}, ...getAllUsageLogs()]);
-export const getIdList = (key: string) => read<string[]>(key, []);
+export const getIdList = (key: string) => {const ids=read<string[]>(key,[]);if(key!==STUDY_KEYS.favoriteActivities)return ids;const normalized=normalizeBalanceIds(ids);if(typeof window!=="undefined"&&normalized.join("|")!==ids.join("|"))localStorage.setItem(key,JSON.stringify(normalized));return normalized;};
 export const setIdList = (key: string, ids: string[]) => write(key, ids);
 export const toggleId = (key: string, id: string) => { const next = new Set(getIdList(key)); if (next.has(id)) next.delete(id); else next.add(id); setIdList(key, [...next]); };
 
