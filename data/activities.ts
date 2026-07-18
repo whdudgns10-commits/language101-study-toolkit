@@ -170,6 +170,9 @@ export const activities: Activity[] = [
     featured: false,
   },
   {
+    id:"rank-it",slug:"rank-it",iconKey:"rank-it",title:"Rank It",shortTitle:"Rank It",category:"Conversation Game",level:"All Level",durationMinutes:30,groupSizes:["2 people","3–4 people","5–8 people"],description:"Rank five choices, explain your decisions, and defend your ranking.",instructions:["Look at the five choices.","Rank them from number one to number five.","Explain your first and last choices.","Compare rankings with the other players.","Ask follow-up questions and defend your choices.","Move to the next topic."],externalUrl:"",sourceType:"internal",tags:["Speaking","Discussion","Ranking","Group Activity","All Levels","Fun"],featured:false,randomEligible:true,translations:{ko:{title:"순위를 정해보세요",shortTitle:"순위 정하기",description:"다섯 가지 선택지의 순위를 정하고, 선택 이유를 설명하며 서로의 순위를 비교해 보세요.",instructions:["다섯 가지 선택지를 확인합니다.","1위부터 5위까지 순위를 정합니다.","1위와 5위로 정한 이유를 설명합니다.","다른 참가자들의 순위와 비교합니다.","후속 질문을 하고 자신의 선택을 설명합니다.","다음 주제로 이동합니다."]},zh:{title:"排出顺序",shortTitle:"排出顺序",description:"为五个选项排序，说明理由，并比较彼此的排名。",instructions:["查看五个选项。","从第一名排到第五名。","说明第一名和第五名的理由。","与其他玩家比较排名。","提出后续问题并为选择辩护。","进入下一个主题。"]},ja:{title:"ランキングを決めよう",shortTitle:"ランキング",description:"5つの選択肢を順位付けし、理由を説明して、お互いのランキングを比べましょう。",instructions:["5つの選択肢を確認します。","1位から5位まで順位を付けます。","1位と5位の理由を説明します。","他のプレイヤーとランキングを比較します。","追加質問をして選択を説明します。","次のトピックへ進みます。"]}}
+  },
+  {
     id:"conversation-starter",slug:"conversation-starter",iconKey:"conversation-starter",title:"Conversation Starter",shortTitle:"Conversation Starter",category:"Ice Breaking",level:"All Level",durationMinutes:10,groupSizes:["2 people","3–4 people","5–8 people"],description:"Pick a local conversation prompt and keep the discussion moving.",instructions:["Choose a topic that suits the group.","Answer the main question.","Use the follow-up questions to continue."],externalUrl:"",sourceType:"internal",tags:["conversation","questions","icebreaker"],featured:false,translations:{ko:{title:"대화 주제 뽑기",shortTitle:"대화 주제",description:"로컬 질문을 하나 골라 바로 대화를 이어가세요."},zh:{title:"对话话题",shortTitle:"对话话题",description:"选择一个本地话题并开始对话。"},ja:{title:"会話トピック",shortTitle:"会話トピック",description:"ローカルの質問を選んで会話を始めましょう。"}}
   },
   {
@@ -302,7 +305,7 @@ export const activities: Activity[] = [
 ];
 
 const uniqueById=(items:Activity[])=>[...new Map(items.map(item=>[item.id,item])).values()];
-export const FEATURED_ACTIVITY_IDS=["true-or-false","ice-breaking-3","30-second-speaking","20-questions","what-if-challenge","funny-questions","fun-discuss","guessing-words","word-battle","balance-game","conversation-starter","words-game","debate-pros-cons","choose-one-out-of-three","useful-expressions","describing-picture-game"] as const;
+export const FEATURED_ACTIVITY_IDS=["true-or-false","ice-breaking-3","30-second-speaking","20-questions","what-if-challenge","funny-questions","fun-discuss","guessing-words","word-battle","balance-game","rank-it","conversation-starter","words-game","debate-pros-cons","choose-one-out-of-three","useful-expressions","describing-picture-game"] as const;
 const enabledActivities=uniqueById(activities).filter(activity=>activity.enabled!==false&&activity.id.trim()&&activity.title.trim());
 export const activeActivities=FEATURED_ACTIVITY_IDS.map(id=>enabledActivities.find(activity=>activity.id===id)).filter((activity):activity is Activity=>Boolean(activity));
 export const randomEligibleActivities=activeActivities.filter(activity=>activity.randomEligible!==false);

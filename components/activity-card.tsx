@@ -21,7 +21,7 @@ export function ActivityCard({ activity }: { activity: Activity }) {
       </div>
       <div className="activity-meta">
         <span>{activity.level}</span>
-        <span><Clock3 size={15} /> {activity.durationMinutes} min</span>
+        <span><Clock3 size={15} /> {activity.id==="rank-it"?"15–30":activity.durationMinutes} min</span>
         <span><Users size={15} /> {activity.groupSizes[0]}</span>
       </div>
       <Link href={`/activities/${activity.id}`} className="card-link">{t("activity.startPractice")} <ArrowRight size={17} /></Link>

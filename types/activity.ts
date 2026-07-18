@@ -5,6 +5,7 @@ export const activityCategories = [
   "Discussion",
   "Expression Practice",
   "Picture Activities",
+  "Conversation Game",
 ] as const;
 
 export const activityLevels = [
@@ -21,7 +22,7 @@ export type ActivityIconKey =
   | "true-false" | "timed-speaking" | "questions" | "imagination" | "funny"
   | "icebreaker" | "discussion" | "guessing" | "battle" | "balance" | "conversation-starter"
   | "alphabet" | "debate" | "choose-three" | "useful-expressions"
-  | "expression-practice" | "situation-story";
+  | "expression-practice" | "situation-story" | "rank-it";
 
 export type Activity = {
   id: string;
