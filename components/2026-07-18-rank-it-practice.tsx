@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowDown,ArrowLeft,ArrowUp,Clock3,GripVertical,Heart,Maximize2,Save,Settings,Shuffle,Users,X } from "lucide-react";
+import { ArrowDown,ArrowLeft,ArrowRight,ArrowUp,Clock3,GripVertical,Heart,Maximize2,Save,Settings,Shuffle,Users,X } from "lucide-react";
 import { useCallback,useEffect,useMemo,useRef,useState } from "react";
 import { RANK_IT_CATEGORIES,rankItTopics,type RankItCategory,type RankItDifficulty,type RankItLanguage,type RankItTopic } from "@/data/rank-it-topics";
 import { calculateRankItStats,readRankItDraft,readRankItFavorites,saveRankItDraft,saveRankItPractice,toggleRankItFavorite,type RankItSavedRanking } from "@/lib/2026-07-18-rank-it-storage";
@@ -48,7 +48,7 @@ export function RankItPractice(){
   {(mode==="quick"||rankings.length>0)&&<section className="rank-it-conversation"><h2>{c.explain}</h2><div className="rank-it-speaking-prompts"><button>{c.defend}</button><p>Why did you rank {labels[order[0]]} higher than {labels[order[1]]}?</p><button>{c.challenge}</button><p>Convince another player to move one item into their top two.</p></div><button className="rank-it-disclosure" onClick={()=>setShowFollow(value=>!value)}>{showFollow?c.hideFollow:c.follow}</button>{showFollow&&<ol>{topic.followUps[lang].map(question=><li key={question}>{question}</li>)}</ol>}<button className="rank-it-disclosure" onClick={()=>setShowPhrases(value=>!value)}>{c.needHelp} · {c.phrases}</button>{showPhrases&&<ul className="rank-it-phrases">{phrases[lang].map(phrase=><li key={phrase}>{phrase}</li>)}</ul>}{funOn&&<aside className="rank-it-fun"><b>{c.fun}</b><p>{topic.funChallenge[lang]}</p></aside>}</section>}
   {revealed&&<section className="rank-it-results"><h2>{c.comparison}</h2><div className="rank-it-result-stats"><article><small>{c.popular}</small><b>{stats.mostPopular}</b></article><article><small>{c.divisive}</small><b>{stats.mostDivisive}</b></article><article><small>{c.similar}</small><b>{stats.mostSimilar}</b></article><article><small>{c.different}</small><b>{stats.mostDifferent}</b></article></div><h3>{c.average}</h3><ol>{stats.averageRanking.map(item=><li key={item.option}><b>{item.option}</b><span>{item.average.toFixed(1)}</span></li>)}</ol><h3>{c.rankings}</h3>{rankings.map(ranking=><article className="rank-it-player-result" key={ranking.player}><b>{ranking.player}</b><ol>{ranking.optionIds.map(id=><li key={id}>{labels[id]}</li>)}</ol></article>)}</section>}
   {!table&&<section className="rank-it-save"><textarea value={memo} onChange={event=>setMemo(event.target.value)} placeholder={c.memo}/><button onClick={save}><Save/>{c.save}</button>{message&&<p role="status">{message}</p>}</section>}
-  <nav className="rank-it-navigation"><button onClick={previous} disabled={historyIndex<=0}>{c.previous}</button><button onClick={chooseRandom}><Shuffle/>{c.random}</button><button className="button button-primary" onClick={nextTopic}>{c.next}</button></nav></>}
+  <nav className="rank-it-navigation"><button aria-label={c.previous} onClick={previous} disabled={historyIndex<=0}>{c.previous}</button><button aria-label={c.random} onClick={chooseRandom}><Shuffle/>{c.random}</button><button className="button button-primary rank-it-next" aria-label={c.next} onClick={nextTopic}><span>{c.next}</span><ArrowRight aria-hidden="true"/></button></nav></>}
   {table&&<button className="rank-it-exit-table" onClick={()=>setTable(false)}><X/>{c.exitTable}</button>}</section>
  </main>
 }
