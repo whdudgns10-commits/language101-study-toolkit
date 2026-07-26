@@ -155,7 +155,12 @@ echo "${INSPECT_OUTPUT}"
 
 if ! grep -Fq "${EXPECTED_ALIAS}" <<<"${INSPECT_OUTPUT}" &&
    ! grep -Fq "${EXPECTED_ALIAS}" "${DEPLOY_LOG}"; then
-  fail "Expected Aliased URL '${EXPECTED_ALIAS}' was not found."
+  echo "Expected alias was not assigned automatically. Assigning it now…"
+  run_vercel alias set "${DEPLOYMENT_URL}" "${EXPECTED_ALIAS#https://}"
+  INSPECT_OUTPUT="$(run_vercel inspect "${DEPLOYMENT_URL}" 2>&1)"
+  echo "${INSPECT_OUTPUT}"
+  grep -Fq "${EXPECTED_ALIAS}" <<<"${INSPECT_OUTPUT}" ||
+    fail "Expected Aliased URL '${EXPECTED_ALIAS}' was not found after alias assignment."
 fi
 
 echo
