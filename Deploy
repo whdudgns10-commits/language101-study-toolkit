@@ -4,7 +4,6 @@ set -Eeuo pipefail
 
 EXPECTED_PACKAGE_NAME="language101-study-toolkit"
 EXPECTED_PROJECT_NAME="language101-study-toolkit"
-EXPECTED_ALIAS="https://language101-study-toolkit.vercel.app"
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 CURRENT_STEP="initialization"
 CHECK_ONLY=false
@@ -149,22 +148,40 @@ DEPLOYMENT_URL="$(
 [[ -n "${DEPLOYMENT_URL}" ]] ||
   fail "Vercel completed without returning a deployment URL."
 
-step "7/7 Verify production alias"
+step "7/7 Verify production deployment"
 INSPECT_OUTPUT="$(run_vercel inspect "${DEPLOYMENT_URL}" 2>&1)"
 echo "${INSPECT_OUTPUT}"
 
-if ! grep -Fq "${EXPECTED_ALIAS}" <<<"${INSPECT_OUTPUT}" &&
-   ! grep -Fq "${EXPECTED_ALIAS}" "${DEPLOY_LOG}"; then
-  echo "Expected alias was not assigned automatically. Assigning it now…"
-  run_vercel alias set "${DEPLOYMENT_URL}" "${EXPECTED_ALIAS#https://}"
-  INSPECT_OUTPUT="$(run_vercel inspect "${DEPLOYMENT_URL}" 2>&1)"
-  echo "${INSPECT_OUTPUT}"
-  grep -Fq "${EXPECTED_ALIAS}" <<<"${INSPECT_OUTPUT}" ||
-    fail "Expected Aliased URL '${EXPECTED_ALIAS}' was not found after alias assignment."
-fi
+INSPECTED_PROJECT="$(awk '$1 == "name" { print $2; exit }' <<<"${INSPECT_OUTPUT}")"
+INSPECTED_TARGET="$(awk '$1 == "target" { print $2; exit }' <<<"${INSPECT_OUTPUT}")"
+INSPECTED_STATUS="$(awk '$1 == "status" { print $NF; exit }' <<<"${INSPECT_OUTPUT}")"
+
+[[ "${INSPECTED_PROJECT}" == "${EXPECTED_PROJECT_NAME}" ]] ||
+  fail "Deployment belongs to unexpected project '${INSPECTED_PROJECT:-unknown}'."
+[[ "${INSPECTED_TARGET}" == "production" ]] ||
+  fail "Deployment target is '${INSPECTED_TARGET:-unknown}', not production."
+[[ "${INSPECTED_STATUS}" == "Ready" ]] ||
+  fail "Deployment status is '${INSPECTED_STATUS:-unknown}', not Ready."
+
+PRODUCTION_ALIASES="$(
+  awk '/https:\/\/.*\.vercel\.app/ {
+    for (index = 1; index <= NF; index += 1) {
+      if ($index ~ /^https:\/\/.*\.vercel\.app$/) print $index
+    }
+  }' <<<"${INSPECT_OUTPUT}" | sort -u
+)"
 
 echo
 echo "DEPLOY SUCCEEDED"
 echo "Project: ${EXPECTED_PROJECT_NAME}"
+echo "Target: ${INSPECTED_TARGET}"
+echo "Status: ${INSPECTED_STATUS}"
 echo "Deployment: ${DEPLOYMENT_URL}"
-echo "Aliased URL: ${EXPECTED_ALIAS}"
+if [[ -n "${PRODUCTION_ALIASES}" ]]; then
+  echo "Production aliases:"
+  while IFS= read -r alias_url; do
+    echo "- ${alias_url}"
+  done <<<"${PRODUCTION_ALIASES}"
+else
+  echo "Production aliases: none returned by Vercel"
+fi
