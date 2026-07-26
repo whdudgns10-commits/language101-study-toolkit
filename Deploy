@@ -110,8 +110,8 @@ CURRENT_BRANCH="$(git branch --show-current)"
 [[ -n "${CURRENT_BRANCH}" ]] || fail "Detached HEAD is not supported."
 
 if git remote get-url origin >/dev/null 2>&1; then
-  if git push --dry-run origin "HEAD:${CURRENT_BRANCH}" >/dev/null 2>&1; then
-    git push origin "HEAD:${CURRENT_BRANCH}"
+  if GIT_TERMINAL_PROMPT=0 git push --dry-run origin "HEAD:${CURRENT_BRANCH}" >/dev/null 2>&1; then
+    GIT_TERMINAL_PROMPT=0 git push origin "HEAD:${CURRENT_BRANCH}"
     echo "GitHub push completed."
   else
     echo "GitHub push skipped: the current credentials do not have push access."
