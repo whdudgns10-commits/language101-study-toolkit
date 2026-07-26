@@ -164,12 +164,19 @@ INSPECTED_STATUS="$(awk '$1 == "status" { print $NF; exit }' <<<"${INSPECT_OUTPU
   fail "Deployment status is '${INSPECTED_STATUS:-unknown}', not Ready."
 
 PRODUCTION_ALIASES="$(
-  awk '/https:\/\/.*\.vercel\.app/ {
-    for (index = 1; index <= NF; index += 1) {
-      if ($index ~ /^https:\/\/.*\.vercel\.app$/) print $index
-    }
-  }' <<<"${INSPECT_OUTPUT}" | sort -u
+  printf '%s\n' "${INSPECT_OUTPUT}" |
+    sed -n '/^[[:space:]]*Aliases[[:space:]]*$/,/^[[:space:]]*Builds[[:space:]]*$/p' |
+    grep -Eo 'https://[^[:space:]]+\.vercel\.app' |
+    sort -u || true
 )"
+
+VERIFIED_PROJECT_ALIAS="$(
+  printf '%s\n' "${PRODUCTION_ALIASES}" |
+    grep -F "${EXPECTED_PROJECT_NAME}" |
+    head -n 1 || true
+)"
+[[ -n "${VERIFIED_PROJECT_ALIAS}" ]] ||
+  fail "No production alias contains '${EXPECTED_PROJECT_NAME}'."
 
 echo
 echo "DEPLOY SUCCEEDED"
