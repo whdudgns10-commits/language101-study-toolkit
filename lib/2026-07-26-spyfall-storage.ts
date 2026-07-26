@@ -5,6 +5,12 @@ import {
   type SpyfallLocation,
   type SpyfallQuestion,
 } from "@/data/2026-07-26-spyfall";
+import type {
+  SpyfallQuestionLog,
+  SpyfallRound,
+  SpyfallVoteStage,
+  SpyfallWinner,
+} from "@/types/2026-07-26-spyfall";
 
 export const SPYFALL_SETTINGS_KEY = "language101-spyfall-settings";
 export const SPYFALL_SESSION_KEY = "language101-spyfall-active-session";
@@ -18,12 +24,14 @@ export type SpyfallSettings = {
 };
 
 export type SpyfallSessionSnapshot = {
-  version: 1;
-  phase: "handoff" | "reveal" | "ready" | "playing" | "voting" | "vote-summary" | "identity" | "final";
+  version: 2;
+  phase: "handoff" | "reveal" | "ready" | "playing" | "voting" | "vote-summary" | "round-result" | "final";
   playerCount: number;
   spyCount: number;
   spyNumbers: number[];
-  location: SpyfallLocation;
+  categoryId: string;
+  answer: string;
+  candidates: string[];
   durationMinutes: 5 | 8 | 10;
   roleIndex: number;
   questioner: number;
@@ -31,7 +39,14 @@ export type SpyfallSessionSnapshot = {
   timerRunning: boolean;
   votes: number[];
   voterIndex: number;
-  spyGuessedLocation: boolean | null;
+  round: SpyfallRound;
+  voteStage: SpyfallVoteStage;
+  eliminatedPlayers: number[];
+  questionLogs: SpyfallQuestionLog[];
+  accusedPlayer: number | null;
+  revealedRole: "citizen" | "spy" | null;
+  winner: SpyfallWinner | null;
+  winnerReason: "vote" | "guess-correct" | "guess-wrong" | "final-miss" | null;
   savedAt: number;
 };
 
@@ -83,7 +98,7 @@ export function loadSpyfallSession(): SpyfallSessionSnapshot | null {
   if (!isBrowser()) return null;
   try {
     const parsed = JSON.parse(localStorage.getItem(SPYFALL_SESSION_KEY) ?? "null") as SpyfallSessionSnapshot | null;
-    return parsed?.version === 1 ? parsed : null;
+    return parsed?.version === 2 ? parsed : null;
   } catch {
     return null;
   }
@@ -106,4 +121,3 @@ export function loadLastSpyfallLocationId() {
 export function saveLastSpyfallLocationId(id: string) {
   if (isBrowser()) localStorage.setItem(SPYFALL_LAST_LOCATION_KEY, id);
 }
-

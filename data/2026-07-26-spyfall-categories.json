@@ -1,0 +1,151 @@
+[
+  {
+    "id": "places",
+    "title": "Places",
+    "titleKo": "장소",
+    "items": [
+      "Airport", "Cafe", "School", "Hospital", "Subway", "Gym", "Amusement Park", "Movie Theater", "Convenience Store", "Police Station",
+      "Beach", "Campsite", "Hotel", "Library", "Karaoke Room", "Hair Salon", "Department Store", "Wedding Hall", "Swimming Pool", "Restaurant",
+      "Zoo", "Market", "Office", "Soccer Stadium", "Concert Hall", "Art Gallery", "Museum", "Sauna", "Nightclub", "Casino",
+      "University", "Bus Terminal", "Train Station", "Pharmacy", "Bank", "Post Office", "Park", "Bowling Alley", "PC Cafe", "Theater",
+      "Rooftop Bar", "Fast Food Restaurant", "Ski Resort", "Water Park", "Aquarium", "Baseball Stadium", "Basketball Court", "Church", "Courthouse", "Bakery",
+      "Bookstore", "Fire Station", "Dentist", "Veterinary Clinic", "Shopping Mall", "Supermarket", "Gas Station", "Car Wash", "Parking Garage", "Harbor",
+      "Farm", "Factory", "Warehouse", "Construction Site", "Playground", "Theme Park", "Botanical Garden", "National Park", "Mountain Cabin", "Cruise Ship",
+      "Airplane", "Train", "Bus", "Taxi", "Ferry", "Space Station", "Laboratory", "Recording Studio", "Newsroom", "Radio Station",
+      "TV Studio", "Dance Studio", "Yoga Studio", "Spa", "Barbershop", "Tattoo Studio", "Flower Shop", "Toy Store", "Electronics Store", "Furniture Store",
+      "Laundromat", "Community Center", "City Hall", "Embassy", "Prison", "Military Base", "Lighthouse", "Castle", "Palace", "Observatory"
+    ]
+  },
+  {
+    "id": "countries",
+    "title": "Countries",
+    "titleKo": "국가",
+    "items": [
+      "South Korea", "Japan", "China", "United States", "Canada", "Mexico", "Brazil", "Argentina", "Chile", "Peru",
+      "United Kingdom", "Ireland", "France", "Germany", "Spain", "Portugal", "Italy", "Netherlands", "Belgium", "Switzerland",
+      "Austria", "Denmark", "Sweden", "Norway", "Finland", "Iceland", "Poland", "Czech Republic", "Greece", "Turkey",
+      "Egypt", "Morocco", "South Africa", "Kenya", "Nigeria", "Ghana", "Ethiopia", "Tanzania", "Australia", "New Zealand",
+      "India", "Pakistan", "Bangladesh", "Sri Lanka", "Nepal", "Thailand", "Vietnam", "Philippines", "Indonesia", "Malaysia"
+    ]
+  },
+  {
+    "id": "jobs",
+    "title": "Jobs",
+    "titleKo": "직업",
+    "items": [
+      "Teacher", "Doctor", "Nurse", "Police Officer", "Firefighter", "Chef", "Baker", "Pilot", "Flight Attendant", "Engineer",
+      "Software Developer", "Designer", "Architect", "Lawyer", "Judge", "Journalist", "Photographer", "Actor", "Singer", "Dancer",
+      "Musician", "Artist", "Writer", "Translator", "Tour Guide", "Hotel Manager", "Barista", "Waiter", "Farmer", "Veterinarian",
+      "Dentist", "Pharmacist", "Scientist", "Astronaut", "Mechanic", "Electrician", "Plumber", "Carpenter", "Hairdresser", "Fitness Trainer",
+      "Professional Athlete", "Coach", "Accountant", "Banker", "Marketing Manager", "Salesperson", "Entrepreneur", "Social Worker", "Librarian", "Delivery Driver"
+    ]
+  },
+  {
+    "id": "movies",
+    "title": "Movies",
+    "titleKo": "영화",
+    "items": [
+      "Titanic", "Avatar", "The Avengers", "Iron Man", "The Dark Knight", "Spider-Man", "Frozen", "Toy Story", "Finding Nemo", "The Lion King",
+      "Harry Potter", "The Lord of the Rings", "Star Wars", "Jurassic Park", "Back to the Future", "Home Alone", "The Matrix", "Inception", "Interstellar", "Gladiator",
+      "Forrest Gump", "The Shawshank Redemption", "La La Land", "Parasite", "Train to Busan", "Oldboy", "The Truman Show", "Jaws", "Rocky", "Top Gun",
+      "Mission: Impossible", "James Bond", "Indiana Jones", "Shrek", "Kung Fu Panda", "Moana", "Coco", "Up", "Inside Out", "Ratatouille",
+      "The Notebook", "Mean Girls", "The Devil Wears Prada", "Notting Hill", "Love Actually", "The Hangover", "Ghostbusters", "E.T.", "The Terminator", "Mad Max"
+    ]
+  },
+  {
+    "id": "animals",
+    "title": "Animals",
+    "titleKo": "동물",
+    "items": [
+      "Dog", "Cat", "Lion", "Tiger", "Elephant", "Giraffe", "Zebra", "Monkey", "Gorilla", "Panda",
+      "Koala", "Kangaroo", "Bear", "Wolf", "Fox", "Rabbit", "Deer", "Horse", "Cow", "Pig",
+      "Sheep", "Goat", "Chicken", "Duck", "Eagle", "Owl", "Penguin", "Flamingo", "Parrot", "Peacock",
+      "Dolphin", "Whale", "Shark", "Octopus", "Jellyfish", "Sea Turtle", "Crocodile", "Snake", "Lizard", "Frog",
+      "Butterfly", "Bee", "Ant", "Spider", "Scorpion", "Hamster", "Otter", "Raccoon", "Hedgehog", "Sloth"
+    ]
+  },
+  {
+    "id": "foods",
+    "title": "Foods",
+    "titleKo": "음식",
+    "items": [
+      "Pizza", "Hamburger", "Pasta", "Steak", "Fried Chicken", "Tacos", "Burrito", "Sushi", "Ramen", "Curry",
+      "Bibimbap", "Kimchi", "Tteokbokki", "Samgyeopsal", "Pho", "Pad Thai", "Fried Rice", "Dumplings", "Hot Pot", "Sandwich",
+      "Salad", "Soup", "Pancakes", "Waffles", "French Toast", "Omelet", "Croissant", "Bagel", "Donut", "Cheesecake",
+      "Ice Cream", "Chocolate", "Cookies", "Apple Pie", "Brownies", "Popcorn", "French Fries", "Nachos", "Fish and Chips", "Kebab",
+      "Paella", "Lasagna", "Risotto", "Chicken Wings", "Seafood Platter", "Grilled Salmon", "Fruit Salad", "Yogurt", "Cereal", "Avocado Toast"
+    ]
+  },
+  {
+    "id": "sports",
+    "title": "Sports",
+    "titleKo": "스포츠",
+    "items": [
+      "Soccer", "Basketball", "Baseball", "Volleyball", "Tennis", "Badminton", "Table Tennis", "Golf", "Swimming", "Running",
+      "Cycling", "Boxing", "Wrestling", "Judo", "Taekwondo", "Karate", "Fencing", "Archery", "Gymnastics", "Figure Skating",
+      "Speed Skating", "Ice Hockey", "Skiing", "Snowboarding", "Surfing", "Skateboarding", "Rock Climbing", "Hiking", "Rowing", "Sailing",
+      "Rugby", "American Football", "Cricket", "Field Hockey", "Handball", "Squash", "Bowling", "Billiards", "Darts", "Weightlifting",
+      "Triathlon", "Marathon", "Horse Racing", "Motor Racing", "Diving", "Water Polo", "Cheerleading", "Ultimate Frisbee", "Lacrosse", "Curling"
+    ]
+  },
+  {
+    "id": "celebrities",
+    "title": "Celebrities",
+    "titleKo": "유명인",
+    "items": [
+      "Beyonce", "Taylor Swift", "Adele", "Lady Gaga", "Rihanna", "Bruno Mars", "Ed Sheeran", "Justin Bieber", "Ariana Grande", "Billie Eilish",
+      "Tom Cruise", "Leonardo DiCaprio", "Brad Pitt", "Dwayne Johnson", "Robert Downey Jr.", "Chris Hemsworth", "Keanu Reeves", "Will Smith", "Ryan Reynolds", "Johnny Depp",
+      "Meryl Streep", "Jennifer Lawrence", "Emma Stone", "Scarlett Johansson", "Natalie Portman", "Anne Hathaway", "Zendaya", "Margot Robbie", "Sandra Bullock", "Julia Roberts",
+      "Lionel Messi", "Cristiano Ronaldo", "LeBron James", "Stephen Curry", "Serena Williams", "Roger Federer", "Usain Bolt", "Michael Jordan", "Tiger Woods", "Simone Biles",
+      "Bong Joon-ho", "Jackie Chan", "Gordon Ramsay", "Oprah Winfrey", "Elon Musk", "Bill Gates", "Steve Jobs", "MrBeast", "David Beckham", "Greta Thunberg"
+    ]
+  },
+  {
+    "id": "brands",
+    "title": "Brands",
+    "titleKo": "브랜드",
+    "items": [
+      "Apple", "Samsung", "Google", "Microsoft", "Amazon", "Netflix", "Disney", "Nike", "Adidas", "Puma",
+      "Coca-Cola", "Pepsi", "Starbucks", "McDonald's", "KFC", "Burger King", "Subway", "Domino's", "IKEA", "Lego",
+      "Toyota", "Honda", "Hyundai", "BMW", "Mercedes-Benz", "Tesla", "Ferrari", "Porsche", "Volkswagen", "Volvo",
+      "Louis Vuitton", "Gucci", "Chanel", "Prada", "Dior", "Rolex", "Cartier", "Zara", "Uniqlo", "H&M",
+      "YouTube", "Instagram", "TikTok", "Spotify", "Nintendo", "PlayStation", "Xbox", "Canon", "Sony", "Dyson"
+    ]
+  },
+  {
+    "id": "history",
+    "title": "History",
+    "titleKo": "역사",
+    "items": [
+      "Ancient Egypt", "Roman Empire", "Ancient Greece", "Viking Age", "Silk Road", "Mongol Empire", "Renaissance", "Industrial Revolution", "French Revolution", "American Revolution",
+      "World War I", "World War II", "Cold War", "Korean War", "Vietnam War", "Great Depression", "Space Race", "Moon Landing", "Fall of the Berlin Wall", "European Union",
+      "Printing Press", "Steam Engine", "Electricity", "Telephone", "Internet", "First Flight", "Titanic Disaster", "Black Death", "Spanish Flu", "COVID-19 Pandemic",
+      "Magna Carta", "Declaration of Independence", "Abolition of Slavery", "Women's Suffrage", "Civil Rights Movement", "Nelson Mandela", "Martin Luther King Jr.", "Mahatma Gandhi", "Napoleon", "Cleopatra",
+      "Julius Caesar", "Genghis Khan", "Queen Victoria", "Joseon Dynasty", "Three Kingdoms of Korea", "Meiji Restoration", "Great Wall of China", "Machu Picchu", "Pompeii", "Olympic Games"
+    ]
+  },
+  {
+    "id": "space",
+    "title": "Space",
+    "titleKo": "우주",
+    "items": [
+      "Sun", "Mercury", "Venus", "Earth", "Moon", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune",
+      "Pluto", "Milky Way", "Andromeda Galaxy", "Black Hole", "Supernova", "Nebula", "Comet", "Asteroid", "Meteor", "Solar Eclipse",
+      "Lunar Eclipse", "International Space Station", "Space Shuttle", "Rocket", "Satellite", "Space Telescope", "Mars Rover", "Astronaut", "Alien", "UFO",
+      "Constellation", "North Star", "Big Dipper", "Orion", "Gravity", "Light Year", "Orbit", "Atmosphere", "Solar System", "Universe",
+      "Big Bang", "Dark Matter", "Exoplanet", "Red Giant", "White Dwarf", "Galaxy Cluster", "Spacewalk", "Moon Base", "Mars Colony", "Wormhole"
+    ]
+  },
+  {
+    "id": "school-subjects",
+    "title": "School Subjects",
+    "titleKo": "학교 과목",
+    "items": [
+      "Mathematics", "English", "Korean", "Japanese", "Chinese", "Spanish", "French", "German", "History", "World History",
+      "Geography", "Economics", "Politics", "Law", "Ethics", "Philosophy", "Psychology", "Sociology", "Biology", "Chemistry",
+      "Physics", "Earth Science", "Astronomy", "Environmental Science", "Computer Science", "Coding", "Robotics", "Engineering", "Statistics", "Accounting",
+      "Business Studies", "Marketing", "Art", "Music", "Drama", "Dance", "Physical Education", "Health", "Home Economics", "Woodworking",
+      "Photography", "Media Studies", "Creative Writing", "Public Speaking", "Debate", "Literature", "Religious Studies", "Career Education", "Design", "Architecture"
+    ]
+  }
+]
