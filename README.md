@@ -1,6 +1,6 @@
 # Language101 Study Toolkit
 
-A production-ready, mobile-first activity hub for Language101 meetups. Participants can scan a QR code, search or filter 18 activities, save favorites on their device, and open the original material without creating an account.
+A production-ready, mobile-first activity hub for Language101 meetups. Participants can scan a QR code, search or filter 19 activities, save favorites on their device, and open the original material without creating an account.
 
 ## Features
 

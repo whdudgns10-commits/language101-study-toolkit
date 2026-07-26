@@ -22,7 +22,7 @@ export type ActivityIconKey =
   | "true-false" | "timed-speaking" | "questions" | "imagination" | "funny"
   | "icebreaker" | "discussion" | "guessing" | "battle" | "balance" | "conversation-starter"
   | "alphabet" | "debate" | "choose-three" | "useful-expressions"
-  | "expression-practice" | "situation-story" | "rank-it" | "time-challenge";
+  | "expression-practice" | "situation-story" | "rank-it" | "time-challenge" | "spyfall";
 
 export type Activity = {
   id: string;
