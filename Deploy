@@ -1,0 +1,165 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+EXPECTED_PACKAGE_NAME="language101-study-toolkit"
+EXPECTED_PROJECT_NAME="language101-study-toolkit"
+EXPECTED_ALIAS="https://language101-study-toolkit.vercel.app"
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+CURRENT_STEP="initialization"
+CHECK_ONLY=false
+
+if [[ "${1:-}" == "--check" ]]; then
+  CHECK_ONLY=true
+elif [[ $# -gt 0 ]]; then
+  echo "Usage: ./Deploy [--check]" >&2
+  exit 2
+fi
+
+fail() {
+  echo
+  echo "DEPLOY FAILED"
+  echo "Stage: ${CURRENT_STEP}"
+  echo "Reason: $1"
+  exit 1
+}
+
+on_error() {
+  local exit_code=$?
+  echo
+  echo "DEPLOY FAILED"
+  echo "Stage: ${CURRENT_STEP}"
+  echo "Exit code: ${exit_code}"
+  exit "${exit_code}"
+}
+
+trap on_error ERR
+
+step() {
+  CURRENT_STEP="$1"
+  echo
+  echo "==> ${CURRENT_STEP}"
+}
+
+if command -v vercel >/dev/null 2>&1; then
+  VERCEL_COMMAND=(vercel)
+elif command -v pnpm >/dev/null 2>&1; then
+  VERCEL_COMMAND=(pnpm dlx vercel@latest)
+else
+  VERCEL_COMMAND=()
+fi
+
+run_vercel() {
+  "${VERCEL_COMMAND[@]}" "$@"
+}
+
+step "1/7 Verify Study Toolkit project"
+cd "${SCRIPT_DIR}"
+
+[[ -f package.json ]] || fail "package.json was not found."
+[[ -d .git ]] || fail "This directory is not a Git repository."
+
+PACKAGE_NAME="$(
+  node -e 'const p=require("./package.json"); process.stdout.write(p.name || "")'
+)"
+[[ "${PACKAGE_NAME}" == "${EXPECTED_PACKAGE_NAME}" ]] ||
+  fail "Expected package '${EXPECTED_PACKAGE_NAME}', found '${PACKAGE_NAME}'."
+
+GIT_ROOT="$(git rev-parse --show-toplevel)"
+[[ "${GIT_ROOT}" == "${SCRIPT_DIR}" ]] ||
+  fail "Run this command from the Study Toolkit repository root: ${SCRIPT_DIR}"
+
+if [[ -f .vercel/project.json ]]; then
+  LINKED_PROJECT="$(
+    node -e 'const p=require("./.vercel/project.json"); process.stdout.write(p.projectName || "")'
+  )"
+  [[ "${LINKED_PROJECT}" != "language101-site" ]] ||
+    fail "Blocked: this repository is linked to the forbidden project 'language101-site'."
+fi
+
+echo "Project verified: ${EXPECTED_PACKAGE_NAME}"
+echo "Path: ${SCRIPT_DIR}"
+
+step "2/7 Git status"
+git status
+
+if "${CHECK_ONLY}"; then
+  step "Check deployment tools"
+  command -v git >/dev/null || fail "git is not installed."
+  command -v node >/dev/null || fail "node is not installed."
+  [[ ${#VERCEL_COMMAND[@]} -gt 0 ]] ||
+    fail "Neither Vercel CLI nor pnpm is installed."
+  echo "Vercel command: ${VERCEL_COMMAND[*]}"
+  echo
+  echo "CHECK PASSED"
+  echo "No files were committed, pushed, or deployed."
+  exit 0
+fi
+
+step "3/7 Commit current changes"
+if [[ -n "$(git status --porcelain)" ]]; then
+  git add --all
+  COMMIT_MESSAGE="${DEPLOY_COMMIT_MESSAGE:-Deploy Study Toolkit $(date '+%Y-%m-%d %H:%M:%S')}"
+  git commit -m "${COMMIT_MESSAGE}"
+else
+  echo "No changes to commit."
+fi
+
+step "4/7 Push to GitHub when authorized"
+CURRENT_BRANCH="$(git branch --show-current)"
+[[ -n "${CURRENT_BRANCH}" ]] || fail "Detached HEAD is not supported."
+
+if git remote get-url origin >/dev/null 2>&1; then
+  if git push --dry-run origin "HEAD:${CURRENT_BRANCH}" >/dev/null 2>&1; then
+    git push origin "HEAD:${CURRENT_BRANCH}"
+    echo "GitHub push completed."
+  else
+    echo "GitHub push skipped: the current credentials do not have push access."
+  fi
+else
+  echo "GitHub push skipped: no 'origin' remote is configured."
+fi
+
+step "5/7 Link only the approved Vercel project"
+[[ ${#VERCEL_COMMAND[@]} -gt 0 ]] ||
+  fail "Neither Vercel CLI nor pnpm is installed."
+
+run_vercel link --yes --project "${EXPECTED_PROJECT_NAME}"
+
+[[ -f .vercel/project.json ]] ||
+  fail "Vercel did not create .vercel/project.json."
+
+LINKED_PROJECT="$(
+  node -e 'const p=require("./.vercel/project.json"); process.stdout.write(p.projectName || "")'
+)"
+[[ "${LINKED_PROJECT}" == "${EXPECTED_PROJECT_NAME}" ]] ||
+  fail "Blocked deployment to unexpected Vercel project '${LINKED_PROJECT}'."
+
+step "6/7 Deploy production"
+DEPLOY_LOG="$(mktemp "${TMPDIR:-/tmp}/language101-study-toolkit-deploy.XXXXXX")"
+trap 'rm -f "${DEPLOY_LOG:-}"' EXIT
+
+run_vercel deploy --prod --yes 2>&1 | tee "${DEPLOY_LOG}"
+
+DEPLOYMENT_URL="$(
+  grep -Eo 'https://[^[:space:]]+\.vercel\.app' "${DEPLOY_LOG}" |
+    grep -v '^https://language101-site\.vercel\.app$' |
+    tail -n 1 || true
+)"
+[[ -n "${DEPLOYMENT_URL}" ]] ||
+  fail "Vercel completed without returning a deployment URL."
+
+step "7/7 Verify production alias"
+INSPECT_OUTPUT="$(run_vercel inspect "${DEPLOYMENT_URL}" 2>&1)"
+echo "${INSPECT_OUTPUT}"
+
+if ! grep -Fq "${EXPECTED_ALIAS}" <<<"${INSPECT_OUTPUT}" &&
+   ! grep -Fq "${EXPECTED_ALIAS}" "${DEPLOY_LOG}"; then
+  fail "Expected Aliased URL '${EXPECTED_ALIAS}' was not found."
+fi
+
+echo
+echo "DEPLOY SUCCEEDED"
+echo "Project: ${EXPECTED_PROJECT_NAME}"
+echo "Deployment: ${DEPLOYMENT_URL}"
+echo "Aliased URL: ${EXPECTED_ALIAS}"
