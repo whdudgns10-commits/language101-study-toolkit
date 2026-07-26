@@ -77,7 +77,7 @@ export function SpyfallGame() {
   const [selectedCategoryId, setSelectedCategoryId] = useState("places");
   const [answer, setAnswer] = useState("");
   const [candidates, setCandidates] = useState<string[]>([]);
-  const [playerCount, setPlayerCount] = useState(5);
+  const [playerCount, setPlayerCount] = useState(4);
   const [durationMinutes, setDurationMinutes] = useState<5 | 8 | 10>(8);
   const [spyNumbers, setSpyNumbers] = useState<number[]>([]);
   const [roleIndex, setRoleIndex] = useState(0);
@@ -347,7 +347,7 @@ export function SpyfallGame() {
     if (keepPlayers) window.setTimeout(createGame, 0);
   }
 
-  if (!settings) return <main className="spyfall-page"><p>Loading Spyfall…</p></main>;
+  if (!settings) return <main className="spyfall-page"><p>Loading Find the Spy…</p></main>;
 
   if (resumeSnapshot) return <main className="spyfall-page"><section className="spyfall-resume-card spyfall-card">
     <ShieldQuestion/><h1>진행 중인 게임이 있습니다.</h1><p>Continue the saved game?</p>
@@ -360,7 +360,7 @@ export function SpyfallGame() {
   return <main className={`spyfall-page spyfall-v2 phase-${phase} ${secondsLeft <= 10 && phase === "playing" ? "is-warning" : ""}`}>
     <header className="spyfall-header">
       <Link href="/activities/spyfall"><ArrowLeft/>Activities</Link>
-      <span><ShieldQuestion/> Spyfall</span>
+      <span><ShieldQuestion/> 스파이 찾기 · Find the Spy</span>
     </header>
 
     {phase !== "setup" && <nav className="spyfall-stage-bar" aria-label="Game progress">
@@ -375,7 +375,7 @@ export function SpyfallGame() {
 
     {phase === "setup" && <section className="spyfall-card spyfall-setup">
       <div className="spyfall-hero-icon"><ShieldQuestion/></div>
-      <h1>Spyfall</h1><p>카테고리를 고르고 질문으로 스파이를 찾아보세요.</p>
+      <h1>스파이 찾기</h1><p>Find the Spy · 카테고리를 고르고 질문으로 스파이를 찾아보세요.</p>
       <fieldset className="spyfall-category-picker"><legend>게임 모드 · Game Mode</legend><div>
         {categories.map((item) => <button
           aria-pressed={selectedCategoryId === item.id}
@@ -385,12 +385,13 @@ export function SpyfallGame() {
         ><b>{isKorean ? item.titleKo : item.title}</b><small>{isKorean ? item.title : item.titleKo}</small></button>)}
       </div></fieldset>
       <label>참가 인원 · Players
-        <div className="spyfall-stepper"><button onClick={() => setPlayerCount((count) => Math.max(5, count - 1))} disabled={playerCount === 5}>−</button><strong>{playerCount}</strong><button onClick={() => setPlayerCount((count) => Math.min(12, count + 1))} disabled={playerCount === 12}>+</button></div>
+        <div className="spyfall-stepper"><button onClick={() => setPlayerCount((count) => Math.max(4, count - 1))} disabled={playerCount === 4}>−</button><strong>{playerCount}</strong><button onClick={() => setPlayerCount((count) => Math.min(12, count + 1))} disabled={playerCount === 12}>+</button></div>
       </label>
+      {playerCount < 4 && <p role="alert">최소 4명 이상이어야 게임을 시작할 수 있습니다.</p>}
       <div className="spyfall-spy-count"><EyeOff/><span>Spies</span><strong>{spyCount}</strong></div>
       <fieldset><legend>게임 시간 · Timer</legend><div className="spyfall-time-options">{([5, 8, 10] as const).map((minutes) => <button className={durationMinutes === minutes ? "is-active" : ""} key={minutes} onClick={() => setDurationMinutes(minutes)}>{minutes} min</button>)}</div></fieldset>
-      <button className="button button-primary spyfall-main-button" onClick={createGame}>게임 만들기 · Create Game</button>
-      <Link href="/admin/activities/spyfall" className="spyfall-admin-link">Admin · Spyfall</Link>
+      <button className="button button-primary spyfall-main-button" disabled={playerCount < 4} onClick={createGame}>게임 만들기 · Create Game</button>
+      <Link href="/admin/activities/spyfall" className="spyfall-admin-link">Admin · Find the Spy</Link>
     </section>}
 
     {phase === "handoff" && <section className="spyfall-card spyfall-private">

@@ -51,8 +51,8 @@ export type SpyfallSessionSnapshot = {
 };
 
 const defaultSpyCounts = Object.fromEntries(
-  Array.from({ length: 8 }, (_, index) => {
-    const players = index + 5;
+  Array.from({ length: 9 }, (_, index) => {
+    const players = index + 4;
     return [players, getDefaultSpyCount(players)];
   }),
 ) as Record<number, number>;

@@ -108,8 +108,8 @@ export function SpyfallAdmin() {
 
   return <main className="spyfall-admin">
     <header>
-      <Link href="/activities/spyfall/practice"><ArrowLeft/> Spyfall</Link>
-      <div><h1>Spyfall Admin</h1><p>장소, 질문, 타이머와 스파이 수를 관리합니다.</p></div>
+      <Link href="/activities/spyfall/practice"><ArrowLeft/> Find the Spy</Link>
+      <div><h1>Find the Spy Admin</h1><p>장소, 질문, 타이머와 스파이 수를 관리합니다.</p></div>
       {saved && <span>저장됨</span>}
     </header>
 
@@ -121,7 +121,7 @@ export function SpyfallAdmin() {
         </select>
       </label>
       <div className="spyfall-spy-settings">
-        {Array.from({ length: 8 }, (_, index) => index + 5).map((players) => <label key={players}>{players}명
+        {Array.from({ length: 9 }, (_, index) => index + 4).map((players) => <label key={players}>{players}명
           <select value={settings.spyCounts[players]} onChange={(event) => persist({ ...settings, spyCounts: { ...settings.spyCounts, [players]: Number(event.target.value) } })}>
             {Array.from({ length: Math.min(3, players - 1) }, (_, index) => index + 1).map((count) => <option key={count} value={count}>{count}명</option>)}
           </select>
