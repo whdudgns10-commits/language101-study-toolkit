@@ -20,6 +20,28 @@ test("Secret Mission has at least one hundred complete unique bilingual missions
   for(const difficulty of ["easy","medium","hard"])assert.ok(data.defaultSecretMissions.some(item=>item.difficulty===difficulty));
 });
 
+test("Secret Mission expansion adds exactly one hundred balanced missions without duplicates",async()=>{
+  const [data,expansion,engine]=await Promise.all([
+    import(new URL(`../data/2026-07-27-secret-missions.ts?expanded=${Date.now()}`,import.meta.url)),
+    import(new URL(`../data/2026-07-27-secret-missions-expansion.ts?expanded=${Date.now()}`,import.meta.url)),
+    import(new URL(`../lib/2026-07-27-secret-mission-engine.ts?expanded=${Date.now()}`,import.meta.url)),
+  ]);
+  const added=expansion.expandedSecretMissions;
+  assert.equal(added.length,100);
+  assert.equal(data.defaultSecretMissions.length,208);
+  assert.equal(added[0].id,"mission-109");
+  assert.equal(added.at(-1).id,"mission-208");
+  assert.deepEqual(engine.getSecretMissionStats(added),{total:100,easy:35,medium:40,hard:25});
+  assert.deepEqual(engine.getSecretMissionStats(data.defaultSecretMissions),{total:208,easy:71,medium:76,hard:61});
+  assert.deepEqual(engine.validateSecretMissions(data.defaultSecretMissions),[]);
+  assert.equal(new Set(data.defaultSecretMissions.map(item=>item.ko.trim().toLowerCase())).size,208);
+  assert.equal(new Set(data.defaultSecretMissions.map(item=>item.en.trim().toLowerCase())).size,208);
+  for(const category of ["conversation","action","english-expression","getting-to-know","culture","humor","teamwork","observation","memory","networking","storytelling","language-exchange"]){
+    const count=added.filter(item=>item.category===category).length;
+    assert.ok(count>=8&&count<=10,`${category}: ${count}`);
+  }
+});
+
 test("Secret Mission assignment is unique for four to twenty players and fills blank names",async()=>{
   const data=await import(new URL(`../data/2026-07-27-secret-missions.ts?assign=${Date.now()}`,import.meta.url));
   const engine=await import(new URL(`../lib/2026-07-27-secret-mission-engine.ts?assign=${Date.now()}`,import.meta.url));
@@ -50,7 +72,7 @@ test("Secret Mission is registered, renders, persists custom data, and protects 
     readFile(new URL("../lib/2026-07-27-secret-mission-storage.ts",import.meta.url),"utf8"),
     readFile(new URL("../app/globals.css",import.meta.url),"utf8"),
   ]);
-  for(const contract of ["playerCount < 4","Math.min(20","assignSecretMissions","phase === \"handoff\"","phase === \"private\"","완료 취소","모두 공개","customKo","selectedIds","setInterval"])assert.match(game,new RegExp(contract.replace(/[()+?.*]/g,"\\$&")));
+  for(const contract of ["playerCount < 4","Math.min(20","assignSecretMissions","phase === \"handoff\"","phase === \"private\"","완료 취소","모두 공개","customKo","selectedIds","setInterval","missionStats.total","missionStats.easy","missionStats.medium","missionStats.hard"])assert.match(game,new RegExp(contract.replace(/[()+?.*]/g,"\\$&")));
   for(const key of ["language101-secret-mission-custom","language101-secret-mission-session","localStorage"])assert.match(storage,new RegExp(key));
   assert.match(css,/\.secret-mission-private/);
   assert.match(css,/prefers-color-scheme:dark/);

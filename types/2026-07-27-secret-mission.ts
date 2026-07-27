@@ -1,7 +1,9 @@
 export const secretMissionDifficulties = ["easy", "medium", "hard"] as const;
 export const secretMissionCategories = [
   "conversation", "action", "expression", "get-to-know", "culture",
-  "photo", "humor", "mystery", "teamwork",
+  "photo", "humor", "mystery", "teamwork", "english-expression",
+  "getting-to-know", "observation", "memory", "networking",
+  "storytelling", "language-exchange",
 ] as const;
 
 export type SecretMissionDifficulty = (typeof secretMissionDifficulties)[number];

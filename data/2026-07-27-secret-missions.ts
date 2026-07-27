@@ -3,10 +3,11 @@ import type {
   SecretMissionCategory,
   SecretMissionDifficulty,
 } from "@/types/2026-07-27-secret-mission";
+import { expandedSecretMissions } from "./2026-07-27-secret-missions-expansion";
 
 type MissionRow = [SecretMissionDifficulty, string, string];
 
-const rows: Record<SecretMissionCategory, MissionRow[]> = {
+const rows: Partial<Record<SecretMissionCategory, MissionRow[]>> = {
   conversation: [
     ["easy","누군가에게 오늘 기분을 물어보세요.","Ask someone how they feel today."],
     ["easy","대화 중 열린 질문을 한 번 하세요.","Ask one open-ended question during the conversation."],
@@ -135,8 +136,8 @@ const rows: Record<SecretMissionCategory, MissionRow[]> = {
   ],
 };
 
-export const defaultSecretMissions: SecretMission[] = Object.entries(rows).flatMap(
-  ([category, missions]) => missions.map(([difficulty, ko, en], index) => ({
+const originalSecretMissions: SecretMission[] = Object.entries(rows).flatMap(
+  ([category, missions]) => (missions ?? []).map(([difficulty, ko, en], index) => ({
     id: `secret-${category}-${String(index + 1).padStart(2, "0")}`,
     category: category as SecretMissionCategory,
     difficulty,
@@ -145,3 +146,7 @@ export const defaultSecretMissions: SecretMission[] = Object.entries(rows).flatM
   })),
 );
 
+export const defaultSecretMissions: SecretMission[] = [
+  ...originalSecretMissions,
+  ...expandedSecretMissions,
+];

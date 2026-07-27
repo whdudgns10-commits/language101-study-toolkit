@@ -37,10 +37,33 @@ export function assignSecretMissions(
 export function validateSecretMissions(missions: readonly SecretMission[]) {
   const errors: string[] = [];
   const ids = new Set<string>();
+  const koreanTexts = new Set<string>();
+  const englishTexts = new Set<string>();
+  const normalize = (value: string) => value
+    .normalize("NFKC")
+    .toLocaleLowerCase()
+    .replace(/[“”‘’"'.,!?…:;()[\]{}]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
   missions.forEach((mission) => {
     if (!mission.id || !mission.ko.trim() || !mission.en.trim()) errors.push(`Incomplete mission: ${mission.id || "unknown"}`);
     if (ids.has(mission.id)) errors.push(`Duplicate mission id: ${mission.id}`);
+    const normalizedKo = normalize(mission.ko);
+    const normalizedEn = normalize(mission.en);
+    if (koreanTexts.has(normalizedKo)) errors.push(`Duplicate Korean mission: ${mission.id}`);
+    if (englishTexts.has(normalizedEn)) errors.push(`Duplicate English mission: ${mission.id}`);
     ids.add(mission.id);
+    koreanTexts.add(normalizedKo);
+    englishTexts.add(normalizedEn);
   });
   return errors;
+}
+
+export function getSecretMissionStats(missions: readonly SecretMission[]) {
+  return {
+    total: missions.length,
+    easy: missions.filter((mission) => mission.difficulty === "easy").length,
+    medium: missions.filter((mission) => mission.difficulty === "medium").length,
+    hard: missions.filter((mission) => mission.difficulty === "hard").length,
+  };
 }

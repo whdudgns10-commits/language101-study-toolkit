@@ -9,6 +9,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { defaultSecretMissions } from "@/data/2026-07-27-secret-missions";
 import {
   assignSecretMissions,
+  getSecretMissionStats,
   normalizeSecretMissionPlayers,
 } from "@/lib/2026-07-27-secret-mission-engine";
 import {
@@ -35,6 +36,9 @@ type DifficultyFilter = SecretMissionDifficulty | "random";
 const categoryLabels: Record<SecretMissionCategory, string> = {
   conversation: "대화", action: "행동", expression: "표현", "get-to-know": "서로 알기",
   culture: "문화", photo: "사진", humor: "유머", mystery: "미스터리", teamwork: "팀워크",
+  "english-expression": "영어 표현", "getting-to-know": "서로 알아가기",
+  observation: "관찰", memory: "기억", networking: "교류",
+  storytelling: "스토리텔링", "language-exchange": "언어 교환",
 };
 const difficultyLabels = { easy: "쉬움", medium: "보통", hard: "어려움", random: "랜덤" } as const;
 
@@ -82,6 +86,7 @@ export function SecretMissionGame() {
       && (categoryFilter === "all" || mission.category === categoryFilter)
       && (selectionDifficulty === "all" || mission.difficulty === selectionDifficulty);
   }), [allMissions, categoryFilter, search, selectionDifficulty]);
+  const missionStats = useMemo(() => getSecretMissionStats(allMissions), [allMissions]);
   const completedCount = assignments.filter((item) => item.completed).length;
 
   useEffect(() => {
@@ -187,6 +192,12 @@ export function SecretMissionGame() {
     <section className="secret-mission-card secret-mission-setup">
       <div className="secret-mission-hero"><Drama/></div>
       <h1>비밀 미션</h1><p>각자 비밀 미션을 받고, 대화 속에서 들키지 않게 미션을 완료해보세요.</p>
+      <dl className="secret-mission-stats" aria-label="사용 가능한 미션 통계">
+        <div><dt>전체 미션</dt><dd>{missionStats.total}개</dd></div>
+        <div><dt>쉬움</dt><dd>{missionStats.easy}개</dd></div>
+        <div><dt>보통</dt><dd>{missionStats.medium}개</dd></div>
+        <div><dt>어려움</dt><dd>{missionStats.hard}개</dd></div>
+      </dl>
       <div className="secret-mission-steps"><b>1 설정</b><span>2 비공개 확인</span><span>3 게임</span><span>4 결과</span></div>
       <label className="secret-mission-count">참가 인원 · Players
         <div><button disabled={playerCount === 4} onClick={() => setPlayerCount((count) => Math.max(4, count - 1))}>−</button><strong>{playerCount}</strong><button disabled={playerCount === 20} onClick={() => setPlayerCount((count) => Math.min(20, count + 1))}>+</button></div>
