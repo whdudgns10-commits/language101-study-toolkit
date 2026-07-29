@@ -67,12 +67,15 @@ test("Secret Mission is registered, renders, persists custom data, and protects 
   assert.match(await detail.text(),/Secret Mission/);
   const practice=await render("/activities/secret-mission/practice");
   assert.equal(practice.status,200);
-  const [game,storage,css]=await Promise.all([
+  const [game,storage,timerHook,css]=await Promise.all([
     readFile(new URL("../components/secret-mission/2026-07-27-secret-mission-game.tsx",import.meta.url),"utf8"),
     readFile(new URL("../lib/2026-07-27-secret-mission-storage.ts",import.meta.url),"utf8"),
+    readFile(new URL("../hooks/2026-07-29-use-secret-mission-timer.ts",import.meta.url),"utf8"),
     readFile(new URL("../app/globals.css",import.meta.url),"utf8"),
   ]);
-  for(const contract of ["playerCount < 4","Math.min(20","assignSecretMissions","phase === \"handoff\"","phase === \"private\"","완료 취소","모두 공개","customKo","selectedIds","setInterval","missionStats.total","missionStats.easy","missionStats.medium","missionStats.hard"])assert.match(game,new RegExp(contract.replace(/[()+?.*]/g,"\\$&")));
+  for(const contract of ["playerCount < 4","Math.min(20","assignSecretMissions","phase === \"handoff\"","phase === \"private\"","완료 취소","모두 공개","customKo","selectedIds","missionStats.total","missionStats.easy","missionStats.medium","missionStats.hard","alertdialog","router.back","진행자로 종료"])assert.match(game,new RegExp(contract.replace(/[()+?.*]/g,"\\$&")));
+  for(const contract of ["setInterval","clearInterval","initialRef","current - 1"])assert.match(timerHook,new RegExp(contract.replace(/[()+?.*]/g,"\\$&")));
+  for(const contract of ["version: 2","initialSeconds","status: \"playing\"","return false"])assert.match(`${game}\n${storage}`,new RegExp(contract.replace(/[()+?.*]/g,"\\$&")));
   for(const key of ["language101-secret-mission-custom","language101-secret-mission-session","localStorage"])assert.match(storage,new RegExp(key));
   assert.match(css,/\.secret-mission-private/);
   assert.match(css,/prefers-color-scheme:dark/);

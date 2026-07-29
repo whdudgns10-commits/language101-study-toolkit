@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ArrowLeft, Check, ChevronRight, Clock3, Drama, Eye, EyeOff, Plus,
   RotateCcw, Search, Sparkles, Trash2, Trophy, Users, X,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useSecretMissionTimer } from "@/hooks/2026-07-29-use-secret-mission-timer";
 import { defaultSecretMissions } from "@/data/2026-07-27-secret-missions";
 import {
   assignSecretMissions,
@@ -28,9 +30,11 @@ import {
   type SecretMissionDifficulty,
   type SecretMissionLanguage,
   type SecretMissionTimer,
+  type SecretMissionPhase,
+  type SecretMissionStatus,
 } from "@/types/2026-07-27-secret-mission";
 
-type Phase = "setup" | "handoff" | "reveal" | "ready" | "playing" | "private" | "private-reveal" | "results";
+type Phase = SecretMissionPhase | "private" | "private-reveal";
 type DifficultyFilter = SecretMissionDifficulty | "random";
 
 const categoryLabels: Record<SecretMissionCategory, string> = {
@@ -55,6 +59,7 @@ function MissionText({ mission, language }: { mission: SecretMission; language: 
 }
 
 export function SecretMissionGame() {
+  const router = useRouter();
   const [phase, setPhase] = useState<Phase>("setup");
   const [playerCount, setPlayerCount] = useState(4);
   const [names, setNames] = useState<string[]>(Array(20).fill(""));
@@ -66,8 +71,10 @@ export function SecretMissionGame() {
   const [revealIndex, setRevealIndex] = useState(0);
   const [privateIndex, setPrivateIndex] = useState<number | null>(null);
   const [revealedResults, setRevealedResults] = useState<Set<number>>(new Set());
-  const [secondsLeft, setSecondsLeft] = useState<number | null>(15 * 60);
-  const [timerRunning, setTimerRunning] = useState(false);
+  const timer = useSecretMissionTimer(15 * 60);
+  const [dialog, setDialog] = useState<"reset" | "end" | null>(null);
+  const [toast, setToast] = useState("");
+  const [savingCompletion, setSavingCompletion] = useState(false);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<SecretMissionCategory | "all">("all");
   const [selectionDifficulty, setSelectionDifficulty] = useState<SecretMissionDifficulty | "all">("all");
@@ -99,32 +106,28 @@ export function SecretMissionGame() {
         setAssignments(session.assignments);
         setLanguage(session.language);
         setTimerMinutes(session.timerMinutes);
-        setSecondsLeft(session.secondsLeft);
+        timer.restore(session.secondsLeft, session.initialSeconds);
         setPlayerCount(session.assignments.length);
-        setPhase("playing");
+        setRevealIndex(session.revealIndex);
+        setPhase(session.phase === "results" ? "results" : session.status === "playing" ? "playing" : session.phase);
       }
     });
+  // The timer hook is stable and intentionally restored only once.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    if (!timerRunning || secondsLeft === null || secondsLeft <= 0) return;
-    const timer = window.setInterval(() => {
-      if (secondsLeft <= 1) {
-        setSecondsLeft(0);
-        setTimerRunning(false);
-      } else {
-        setSecondsLeft(secondsLeft - 1);
-      }
-    }, 1000);
-    return () => window.clearInterval(timer);
-  }, [secondsLeft, timerRunning]);
-
-  const persistSession = useCallback((nextAssignments: SecretMissionAssignment[], nextSeconds = secondsLeft) => {
-    saveSecretMissionSession({
-      version: 1, assignments: nextAssignments, language, timerMinutes,
-      secondsLeft: nextSeconds, startedAt: Date.now(),
+  const persistSession = useCallback((nextAssignments: SecretMissionAssignment[], options?: {
+    seconds?: number | null; phase?: SecretMissionPhase; status?: SecretMissionStatus; revealIndex?: number;
+  }) => {
+    const seconds = options && "seconds" in options ? options.seconds! : timer.remainingSeconds;
+    return saveSecretMissionSession({
+      version: 2, assignments: nextAssignments, language, timerMinutes,
+      secondsLeft: seconds, initialSeconds: timerMinutes === 0 ? null : timerMinutes * 60,
+      startedAt: Date.now(), phase: options?.phase ?? (phase === "private" || phase === "private-reveal" ? "playing" : phase),
+      status: options?.status ?? (phase === "results" ? "completed" : phase === "playing" ? "playing" : phase === "ready" ? "ready" : "assigning"),
+      revealIndex: options?.revealIndex ?? revealIndex,
     });
-  }, [language, secondsLeft, timerMinutes]);
+  }, [language, phase, revealIndex, timer.remainingSeconds, timerMinutes]);
 
   function createGame() {
     if (playerCount < 4 || playerCount > 20) return;
@@ -134,24 +137,44 @@ export function SecretMissionGame() {
     const next = assignSecretMissions(normalizeSecretMissionPlayers(names, playerCount), eligible);
     setAssignments(next);
     setRevealIndex(0);
-    setSecondsLeft(timerMinutes === 0 ? null : timerMinutes * 60);
+    timer.restore(timerMinutes === 0 ? null : timerMinutes * 60);
     setRevealedResults(new Set());
     setPhase("handoff");
-    persistSession(next, timerMinutes === 0 ? null : timerMinutes * 60);
+    persistSession(next, { seconds: timerMinutes === 0 ? null : timerMinutes * 60, phase: "handoff", status: "assigning", revealIndex: 0 });
   }
 
   function hideMission() {
-    if (revealIndex + 1 >= assignments.length) setPhase("ready");
+    if (revealIndex + 1 >= assignments.length) {
+      setPhase("ready");
+      persistSession(assignments, { phase: "ready", status: "ready" });
+    }
     else {
-      setRevealIndex((index) => index + 1);
+      const nextIndex = revealIndex + 1;
+      setRevealIndex(nextIndex);
       setPhase("handoff");
+      persistSession(assignments, { phase: "handoff", status: "assigning", revealIndex: nextIndex });
     }
   }
 
   function setCompleted(index: number, completed: boolean) {
-    const next = assignments.map((item, itemIndex) => itemIndex === index ? { ...item, completed } : item);
+    if (savingCompletion) return;
+    setSavingCompletion(true);
+    const previous = assignments;
+    const nextOrder = assignments.filter((item) => item.completed).length + 1;
+    const next = assignments.map((item, itemIndex) => itemIndex === index ? {
+      ...item, completed, completedAt: completed ? Date.now() : undefined,
+      completionOrder: completed ? nextOrder : undefined,
+    } : item);
     setAssignments(next);
-    persistSession(next);
+    if (!persistSession(next, { phase: "playing", status: "playing" })) {
+      setAssignments(previous);
+      setToast("저장하지 못했습니다. 다시 시도해주세요.");
+    } else {
+      setToast(completed ? "미션을 완료로 저장했습니다." : "완료 상태를 취소했습니다.");
+      setPrivateIndex(null);
+      setPhase("playing");
+    }
+    window.setTimeout(() => setSavingCompletion(false), 350);
   }
 
   function addCustomMission() {
@@ -183,8 +206,30 @@ export function SecretMissionGame() {
     clearSecretMissionSession();
     setAssignments([]);
     setPhase("setup");
-    setTimerRunning(false);
-    setSecondsLeft(timerMinutes === 0 ? null : timerMinutes * 60);
+    timer.stop();
+    timer.restore(timerMinutes === 0 ? null : timerMinutes * 60);
+  }
+
+  function goBack() {
+    timer.pause();
+    persistSession(assignments);
+    if (window.history.length > 1) router.back();
+    else router.push("/activities");
+  }
+
+  function confirmTimerReset() {
+    const value = timer.reset();
+    persistSession(assignments, { seconds: value, phase: "playing", status: "playing" });
+    setDialog(null);
+    setToast("타이머를 처음 시간으로 초기화했습니다.");
+  }
+
+  function confirmEndGame() {
+    timer.stop();
+    setRevealedResults(new Set());
+    setPhase("results");
+    persistSession(assignments, { phase: "results", status: "completed" });
+    setDialog(null);
   }
 
   if (phase === "setup") return <main className="secret-mission-page">
@@ -229,12 +274,12 @@ export function SecretMissionGame() {
     </section></main>;
   }
 
-  if (phase === "ready") return <main className="secret-mission-page secret-mission-private"><section className="secret-mission-card"><div className="secret-mission-hero"><Check/></div><h1>모든 미션이 준비됐어요!</h1><p>{assignments.length}명 · {timerMinutes ? `${timerMinutes}분` : "무제한"} · 서로의 미션을 모르게 대화를 시작하세요.</p><button className="secret-mission-primary" onClick={() => { setPhase("playing"); setTimerRunning(true); }}><Sparkles/>게임 시작</button></section></main>;
+  if (phase === "ready") return <main className="secret-mission-page secret-mission-private"><section className="secret-mission-card"><div className="secret-mission-hero"><Check/></div><h1>모든 미션이 준비됐어요!</h1><p>{assignments.length}명 · {timerMinutes ? `${timerMinutes}분` : "무제한"} · 서로의 미션을 모르게 대화를 시작하세요.</p><button className="secret-mission-primary" onClick={() => { setPhase("playing"); timer.start(); persistSession(assignments, { phase: "playing", status: "playing" }); }}><Sparkles/>게임 시작</button></section></main>;
 
   if (phase === "private" || phase === "private-reveal") {
     const current = privateIndex === null ? null : assignments[privateIndex];
     return <main className="secret-mission-page secret-mission-private"><section className="secret-mission-card">
-      {phase === "private" ? <><EyeOff/><h1>본인의 이름을 선택하세요.</h1><p>다른 참가자가 화면을 보지 않도록 가려주세요.</p><div className="secret-mission-player-grid">{assignments.map((item, index) => <button key={item.player.id} onClick={() => { setPrivateIndex(index); setPhase("private-reveal"); }}>{item.completed && <Check/>}{item.player.name}</button>)}</div><button className="secret-mission-secondary" onClick={() => setPhase("playing")}><X/>취소</button></> : current && <><span className="secret-mission-label">{current.player.name}</span><h1>내 비밀 미션</h1><MissionText mission={current.mission} language={language}/><button className={`secret-mission-primary ${current.completed ? "is-complete" : ""}`} onClick={() => setCompleted(privateIndex!, !current.completed)}>{current.completed ? <RotateCcw/> : <Check/>}{current.completed ? "완료 취소" : "미션 완료"}</button><button className="secret-mission-secondary" onClick={() => { setPrivateIndex(null); setPhase("playing"); }}><EyeOff/>화면 숨기기</button></>}
+      {phase === "private" ? <><EyeOff/><h1>본인의 이름을 선택하세요.</h1><p>다른 참가자가 화면을 보지 않도록 가려주세요.</p><div className="secret-mission-player-grid">{assignments.map((item, index) => <button key={item.player.id} onClick={() => { setPrivateIndex(index); setPhase("private-reveal"); }}>{item.completed && <Check/>}{item.player.name}</button>)}</div><button className="secret-mission-secondary" onClick={() => setPhase("playing")}><X/>취소</button></> : current && <><span className="secret-mission-label">{current.player.name}</span><h1>내 비밀 미션</h1><MissionText mission={current.mission} language={language}/><button disabled={savingCompletion} className={`secret-mission-primary ${current.completed ? "is-complete" : ""}`} onClick={() => setCompleted(privateIndex!, !current.completed)}>{current.completed ? <RotateCcw/> : <Check/>}{savingCompletion ? "저장 중…" : current.completed ? "완료 취소" : "미션 완료"}</button><button className="secret-mission-secondary" onClick={() => { setPrivateIndex(null); setPhase("playing"); }}><EyeOff/>화면 숨기기</button></>}
     </section></main>;
   }
 
@@ -253,17 +298,23 @@ export function SecretMissionGame() {
   }
 
   return <main className="secret-mission-page">
-    <header className="secret-mission-header"><Link href="/activities/secret-mission"><ArrowLeft/>Activities</Link><span><Drama/>비밀 미션 · Secret Mission</span></header>
-    <nav className="secret-mission-game-status"><span><Clock3/>{formatTime(secondsLeft)}</span><span><Users/>{assignments.length}명</span><span><Check/>{completedCount}/{assignments.length}</span></nav>
+    <header className="secret-mission-header"><button aria-label="이전 화면으로 돌아가기" onClick={goBack}><ArrowLeft/>Activities</button><h1><Drama/>비밀 미션 · Secret Mission</h1></header>
+    <nav className="secret-mission-game-status"><span><Clock3/>{formatTime(timer.remainingSeconds)}</span><span><Users/>{assignments.length}명</span><span><Check/>{completedCount}/{assignments.length}</span></nav>
     <section className="secret-mission-card secret-mission-playing">
       <div className="secret-mission-steps"><span>1 설정</span><span>2 비공개 확인</span><b>3 게임</b><span>4 결과</span></div>
       <span className="secret-mission-label">SECRET MISSION IN PROGRESS</span>
-      <h1>{formatTime(secondsLeft)}</h1>
+      <h1>{formatTime(timer.remainingSeconds)}</h1>
       <p>서로의 미션을 추리하면서 자연스럽게 대화하세요.</p>
-      <div className="secret-mission-timer-actions">{secondsLeft !== null && <button onClick={() => setTimerRunning((running) => !running)}>{timerRunning ? "일시정지" : "계속하기"}</button>}<button onClick={() => { const value = timerMinutes === 0 ? null : timerMinutes * 60; setSecondsLeft(value); setTimerRunning(false); persistSession(assignments, value); }}><RotateCcw/>시간 초기화</button></div>
+      <div className="secret-mission-timer-actions">{timer.remainingSeconds !== null && <button onClick={timer.toggle}>{timer.running ? "일시정지" : "계속하기"}</button>}<button onClick={() => { timer.pause(); setDialog("reset"); }}><RotateCcw/>시간 초기화</button></div>
       <button className="secret-mission-primary" onClick={() => setPhase("private")}><EyeOff/>내 미션 확인 · 완료 체크</button>
       <aside><b>완료 현황</b><strong>{completedCount} / {assignments.length}</strong><small>누가 완료했는지는 비공개입니다.</small></aside>
-      <button className="secret-mission-end" onClick={() => { setTimerRunning(false); setRevealedResults(new Set()); setPhase("results"); }}><Trophy/>게임 종료 및 결과 보기</button>
+      <button className="secret-mission-end" onClick={() => { timer.pause(); setDialog("end"); }}><Trophy/>게임 종료 및 결과 보기</button>
     </section>
+    {dialog && <div className="secret-mission-dialog-backdrop" role="presentation"><section className="secret-mission-dialog" role="alertdialog" aria-modal="true" aria-labelledby="secret-dialog-title">
+      <h2 id="secret-dialog-title">{dialog === "reset" ? "타이머를 초기화할까요?" : "게임을 종료할까요?"}</h2>
+      <p>{dialog === "reset" ? "남은 시간이 처음 설정한 시간으로 돌아갑니다." : `${assignments[0]?.player.name ?? "Player 1"} 진행자만 게임을 종료해주세요. 완료 상태는 저장됩니다.`}</p>
+      <div><button className="secret-mission-secondary" onClick={() => setDialog(null)}>취소</button><button className={dialog === "reset" ? "secret-mission-primary" : "secret-mission-end"} onClick={dialog === "reset" ? confirmTimerReset : confirmEndGame}>{dialog === "reset" ? "초기화" : "진행자로 종료"}</button></div>
+    </section></div>}
+    {toast && <div className="secret-mission-toast" role="status" aria-live="polite">{toast}<button aria-label="알림 닫기" onClick={() => setToast("")}><X/></button></div>}
   </main>;
 }

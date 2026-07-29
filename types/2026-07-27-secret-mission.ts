@@ -10,6 +10,8 @@ export type SecretMissionDifficulty = (typeof secretMissionDifficulties)[number]
 export type SecretMissionCategory = (typeof secretMissionCategories)[number];
 export type SecretMissionLanguage = "ko" | "en" | "both";
 export type SecretMissionTimer = 0 | 10 | 15 | 20 | 30;
+export type SecretMissionPhase = "setup" | "handoff" | "reveal" | "ready" | "playing" | "results";
+export type SecretMissionStatus = "assigning" | "ready" | "playing" | "completed";
 
 export type SecretMission = {
   id: string;
@@ -29,13 +31,19 @@ export type SecretMissionAssignment = {
   player: SecretMissionPlayer;
   mission: SecretMission;
   completed: boolean;
+  completedAt?: number;
+  completionOrder?: number;
 };
 
 export type SecretMissionSession = {
-  version: 1;
+  version: 2;
   assignments: SecretMissionAssignment[];
   language: SecretMissionLanguage;
   timerMinutes: SecretMissionTimer;
   secondsLeft: number | null;
+  initialSeconds: number | null;
   startedAt: number;
+  phase: SecretMissionPhase;
+  status: SecretMissionStatus;
+  revealIndex: number;
 };
