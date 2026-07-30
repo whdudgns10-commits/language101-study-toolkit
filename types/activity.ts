@@ -23,7 +23,7 @@ export type ActivityIconKey =
   | "icebreaker" | "discussion" | "guessing" | "battle" | "balance" | "conversation-starter"
   | "alphabet" | "debate" | "choose-three" | "useful-expressions"
   | "expression-practice" | "situation-story" | "rank-it" | "time-challenge" | "spyfall"
-  | "secret-mission";
+  | "secret-mission" | "experience-survival";
 
 export type Activity = {
   id: string;

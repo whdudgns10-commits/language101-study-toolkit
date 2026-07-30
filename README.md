@@ -12,7 +12,6 @@ A production-ready, mobile-first activity hub for Language101 meetups. Participa
 - 80 local conversation questions across eight categories
 - 60 missions across six categories, with three distinct categories selected daily
 - Five quick-start modes with three tailored activity recommendations
-- Table mode with Wake Lock support where available
 - Date-organized learning notes and an end-of-session summary
 - Dynamic `/qr` page using the current site URL
 - SEO metadata, Open Graph fields, sitemap, robots.txt, and favicon

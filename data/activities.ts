@@ -24,6 +24,48 @@ export const activities: Activity[] = [
     featured: false,
   },
   {
+    id: "never-have-i-ever",
+    slug: "never-have-i-ever",
+    iconKey: "experience-survival",
+    title: "Never Have I Ever",
+    shortTitle: "Never Have I Ever",
+    category: "Games",
+    level: "All Level",
+    durationMinutes: 20,
+    groupSizes: ["4–20 people"],
+    description: "Share real experiences in the classic game or compete to become the last survivor.",
+    instructions: [
+      "Choose Classic Never Have I Ever or Experience Survival.",
+      "For Survival, enter 4–20 player names and choose the starting lives.",
+      "On your turn, share one real experience that others may not have had.",
+      "Other active players privately choose whether they have done it too.",
+      "Players who have never done it lose one life; the speaker is always safe.",
+      "The last player with lives remaining wins.",
+    ],
+    externalUrl: "",
+    sourceType: "internal",
+    tags: ["Experience", "Conversation", "Survival", "Group Game"],
+    featured: false,
+    randomEligible: true,
+    translations: {
+      ko: {
+        title: "Never Have I Ever",
+        shortTitle: "경험 생존전",
+        description: "기존 게임을 즐기거나 나만의 실제 경험으로 최후의 생존자에 도전해보세요.",
+        instructions: [
+          "기존 Never Have I Ever 또는 경험 생존전을 선택합니다.",
+          "생존전에서는 4~20명의 이름과 시작 목숨을 설정합니다.",
+          "자기 차례에 다른 사람들은 해보지 않았을 실제 경험을 말합니다.",
+          "생존 참가자는 같은 경험이 있는지 비공개로 선택합니다.",
+          "해본 적 없는 사람만 목숨을 잃고 발언자는 항상 안전합니다.",
+          "마지막까지 목숨이 남은 참가자가 승리합니다.",
+        ],
+      },
+      ja: { title: "Never Have I Ever", shortTitle: "経験サバイバル", description: "実際の経験を共有し、最後の生存者を目指しましょう。" },
+      zh: { title: "Never Have I Ever", shortTitle: "经历生存战", description: "分享真实经历，成为最后的幸存者。" },
+    },
+  },
+  {
     id: "30-second-speaking",
     iconKey: "timed-speaking",
     title: "30 Second Speaking",
@@ -314,7 +356,7 @@ export const activities: Activity[] = [
 ];
 
 const uniqueById=(items:Activity[])=>[...new Map(items.map(item=>[item.id,item])).values()];
-export const FEATURED_ACTIVITY_IDS=["true-or-false","ice-breaking-3","30-second-speaking","time-challenge","spyfall","secret-mission","20-questions","what-if-challenge","funny-questions","fun-discuss","guessing-words","word-battle","balance-game","rank-it","conversation-starter","words-game","debate-pros-cons","choose-one-out-of-three","useful-expressions","describing-picture-game"] as const;
+export const FEATURED_ACTIVITY_IDS=["true-or-false","ice-breaking-3","never-have-i-ever","30-second-speaking","time-challenge","spyfall","secret-mission","20-questions","what-if-challenge","funny-questions","fun-discuss","guessing-words","word-battle","balance-game","rank-it","conversation-starter","words-game","debate-pros-cons","choose-one-out-of-three","useful-expressions","describing-picture-game"] as const;
 const enabledActivities=uniqueById(activities).filter(activity=>activity.enabled!==false&&activity.id.trim()&&activity.title.trim());
 export const activeActivities=FEATURED_ACTIVITY_IDS.map(id=>enabledActivities.find(activity=>activity.id===id)).filter((activity):activity is Activity=>Boolean(activity));
 export const randomEligibleActivities=activeActivities.filter(activity=>activity.randomEligible!==false);
