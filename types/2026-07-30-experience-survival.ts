@@ -60,6 +60,7 @@ export type ExperienceSurvivalState = {
   judgeIds: string[];
   judgeIndex: number;
   pendingJudgements: ExperienceJudgement[];
+  verifiedPlayerIds: string[];
   history: ExperienceTurn[];
   secondsLeft: number | null;
   interrupted: boolean;

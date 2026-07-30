@@ -45,6 +45,7 @@ export function createSurvivalGame(
     judgeIds: [],
     judgeIndex: 0,
     pendingJudgements: [],
+    verifiedPlayerIds: [],
     history: [],
     secondsLeft: settings.turnSeconds || null,
     interrupted: false,
@@ -67,12 +68,13 @@ export function beginJudging(state: ExperienceSurvivalState, experience: string,
     .map((player) => player.id);
   return {
     ...state,
-    phase: "handoff" as const,
+    phase: "judging" as const,
     currentExperience: spokenOnly ? "" : experience.trim(),
     spokenOnly,
     judgeIds,
     judgeIndex: 0,
     pendingJudgements: [],
+    verifiedPlayerIds: [],
     secondsLeft: null,
     updatedAt: Date.now(),
   };
@@ -80,17 +82,49 @@ export function beginJudging(state: ExperienceSurvivalState, experience: string,
 
 export function recordJudgement(state: ExperienceSurvivalState, judgement: ExperienceJudgement) {
   const pendingJudgements = [...state.pendingJudgements.filter((item) => item.playerId !== judgement.playerId), judgement];
-  const isLast = state.judgeIndex >= state.judgeIds.length - 1;
   return {
     ...state,
     pendingJudgements,
-    phase: isLast ? "result" as const : "handoff" as const,
-    judgeIndex: isLast ? state.judgeIndex : state.judgeIndex + 1,
+    phase: "judging" as const,
     updatedAt: Date.now(),
   };
 }
 
+export function allJudgementsComplete(state: ExperienceSurvivalState) {
+  return state.judgeIds.every((id) => state.pendingJudgements.some((item) => item.playerId === id));
+}
+
+export function nextAlivePlayer(state: ExperienceSurvivalState) {
+  const survivors = alivePlayers(state);
+  if (survivors.length <= 1) return null;
+  let nextIndex = state.currentPlayerIndex;
+  do nextIndex = (nextIndex + 1) % state.players.length;
+  while (state.players[nextIndex].eliminated);
+  return state.players[nextIndex];
+}
+
+export function verificationPlayerIds(state: ExperienceSurvivalState) {
+  const speakerId = currentSpeaker(state).id;
+  return state.pendingJudgements
+    .filter((item) => item.hasDoneIt && item.playerId !== speakerId)
+    .map((item) => item.playerId);
+}
+
+export function toggleExperienceVerified(state: ExperienceSurvivalState, playerId: string) {
+  const allowed = verificationPlayerIds(state);
+  if (!allowed.includes(playerId)) return state;
+  const verifiedPlayerIds = state.verifiedPlayerIds.includes(playerId)
+    ? state.verifiedPlayerIds.filter((id) => id !== playerId)
+    : [...state.verifiedPlayerIds, playerId];
+  return { ...state, verifiedPlayerIds, updatedAt: Date.now() };
+}
+
+export function allVerificationsComplete(state: ExperienceSurvivalState) {
+  return verificationPlayerIds(state).every((id) => state.verifiedPlayerIds.includes(id));
+}
+
 export function resolveTurn(state: ExperienceSurvivalState) {
+  if (!allJudgementsComplete(state)) return state;
   const speaker = currentSpeaker(state);
   const activeJudgements = state.pendingJudgements.filter((item) =>
     state.players.some((player) => player.id === item.playerId && !player.eliminated),
@@ -128,7 +162,7 @@ export function resolveTurn(state: ExperienceSurvivalState) {
     common: everyoneHasDoneIt,
     bonusApplied,
   };
-  return { ...state, players, history: [...state.history, turn], updatedAt: Date.now() };
+  return { ...state, phase: "result" as const, players, history: [...state.history, turn], updatedAt: Date.now() };
 }
 
 export function advanceTurn(state: ExperienceSurvivalState) {
@@ -147,6 +181,7 @@ export function advanceTurn(state: ExperienceSurvivalState) {
     judgeIds: [],
     judgeIndex: 0,
     pendingJudgements: [],
+    verifiedPlayerIds: [],
     secondsLeft: state.settings.turnSeconds || null,
     updatedAt: Date.now(),
   };

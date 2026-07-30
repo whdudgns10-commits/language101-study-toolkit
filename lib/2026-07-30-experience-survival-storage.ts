@@ -6,7 +6,12 @@ export function loadExperienceSurvival(): ExperienceSurvivalState | null {
   if (typeof window === "undefined") return null;
   try {
     const value = JSON.parse(localStorage.getItem(EXPERIENCE_SURVIVAL_KEY) ?? "null") as ExperienceSurvivalState | null;
-    return value?.version === 1 && Array.isArray(value.players) ? value : null;
+    if (value?.version !== 1 || !Array.isArray(value.players)) return null;
+    return {
+      ...value,
+      verifiedPlayerIds: Array.isArray(value.verifiedPlayerIds) ? value.verifiedPlayerIds : [],
+      phase: value.phase === "handoff" ? "judging" : value.phase,
+    };
   } catch {
     return null;
   }

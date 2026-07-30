@@ -1,337 +1,371 @@
 "use client";
 
+import "./2026-07-30-never-have-i-ever-game.css";
 import Link from "next/link";
-import { ArrowLeft, Check, Clock3, Lightbulb, RotateCcw, ShieldCheck, Sparkles, Trophy, Users, X } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { experienceHintCategories, experienceHints } from "@/data/2026-07-30-experience-hints";
 import {
-  advanceTurn,
-  alivePlayers,
-  beginJudging,
-  createSurvivalGame,
-  currentLeaders,
-  currentSpeaker,
-  recordJudgement,
-  resolveTurn,
+  ArrowLeft, Check, ChevronLeft, ChevronRight, Clock3, Dices, Heart, RotateCcw,
+  ShieldCheck, Sparkles, Trophy, Users, X,
+} from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { neverHaveIEverQuestions } from "@/data/2026-07-30-never-have-i-ever-questions";
+import {
+  advanceTurn, alivePlayers, allJudgementsComplete, allVerificationsComplete,
+  beginJudging, createSurvivalGame, currentLeaders, currentSpeaker, nextAlivePlayer,
+  recordJudgement, resolveTurn, toggleExperienceVerified, verificationPlayerIds,
 } from "@/lib/2026-07-30-experience-survival-engine";
 import {
-  clearExperienceSurvival,
-  loadExperienceSurvival,
-  saveExperienceSurvival,
+  clearExperienceSurvival, loadExperienceSurvival, saveExperienceSurvival,
 } from "@/lib/2026-07-30-experience-survival-storage";
 import type {
-  ExperienceLanguage,
-  ExperienceMode,
-  ExperienceSurvivalState,
+  ExperienceJudgement, ExperienceMode, ExperienceSurvivalState, SurvivalPlayer,
   SurvivalSettings,
 } from "@/types/2026-07-30-experience-survival";
 import { useLanguage } from "@/hooks/use-language";
 
+const QUESTION_HISTORY_KEY = "language101-never-question-history";
+const QUESTION_FAVORITES_KEY = "language101-never-question-favorites";
+const RECENT_LIMIT = 30;
+
 const copy = {
   en: {
     title: "Never Have I Ever",
-    classic: "Classic Never Have I Ever",
+    randomMode: "Random Question Mode",
+    randomDescription: "The system picks a random question and everyone shares their answer.",
+    startPractice: "Start Practice",
     survival: "Experience Survival",
-    survivalTitle: "Only I Have: Survival Game",
-    survivalDescription: "Share an experience that you think only you have had. Players who have never had that experience lose one life.",
-    start: "Start Game",
+    survivalDescription: "Players share unusual real experiences in an offline survival game.",
+    startExperience: "Start Experience Game",
     players: "Players",
     lives: "Starting lives",
-    bonus: "Unique experience bonus",
-    randomStart: "Random starting player",
-    language: "Mission language",
-    timer: "Turn timer",
-    noLimit: "No limit",
-    howTo: "How to Play",
-    currentTurn: "Current turn",
-    prompt: "Share a real experience that you think others may not have had.",
-    reveal: "Reveal Experience",
-    spoken: "Continue without typing",
-    ideas: "View Ideas",
-    ideaNotice: "Only share experiences you have actually had. Hints are for inspiration.",
-    passTo: "Pass the phone to",
-    privateAnswer: "Make sure no one else can see the answer.",
-    ready: "I'm ready",
-    sameQuestion: "Have you had the same experience as",
-    done: "I’ve done it too",
+    start: "Start Game",
+    round: "Round",
+    survivors: "Survivors",
+    currentTurn: "Current Turn",
+    speakerBadge: "Speaker",
+    prompt: "Share a special experience that you think other players may not have had.",
+    upNext: "Up Next",
+    checkExperience: "Check Who Has Done It",
+    done: "I’ve done it",
     never: "I’ve never done it",
-    nextJudge: "Pass to the next player",
-    result: "Turn Result",
-    unique: "Unique experience! No one else has done it.",
-    common: "Everyone has done it! No one loses a life this turn.",
-    bonusApplied: "One life was restored as a bonus.",
+    chooseAll: "Please select every player’s experience status.",
+    revealResult: "Reveal Result",
+    verification: "Players who selected ‘I’ve done it’ must briefly share and verify their experience.",
+    verified: "Experience shared",
+    markVerified: "Mark experience shared",
     nextTurn: "Next Turn",
     end: "End Game",
     endConfirm: "Are you sure you want to end the game?",
     cancel: "Cancel",
     finish: "End Now",
-    eliminated: "Out",
-    outMessage: "You’re out of lives!",
-    survivor: "Last Survivor",
-    joint: "Current Joint Leaders",
-    again: "Play Again",
+    out: "OUT",
+    winner: "Winner",
     samePlayers: "Play Again with Same Players",
-    setupAgain: "Back to Setup",
-    restore: "A saved game was restored.",
-    discard: "Discard Saved Game",
+    setupAgain: "Back to Mode Selection",
+    question: "Question",
+    roll: "Random Draw",
+    next: "Next Question",
+    previous: "Previous Question",
+    favorite: "Favorite question",
+    followUp: "Keep the conversation going",
+    restored: "Your saved Experience Survival game was restored.",
   },
   ko: {
     title: "Never Have I Ever",
-    classic: "기존 Never Have I Ever",
-    survival: "경험 생존전",
-    survivalTitle: "나만 해봤어: 생존 게임",
-    survivalDescription: "다른 사람들은 해보지 않았을 것 같은 나만의 경험을 말해보세요. 같은 경험이 없는 참가자는 목숨을 잃습니다.",
-    start: "게임 시작",
+    randomMode: "자동 질문으로 플레이",
+    randomDescription: "시스템이 랜덤 질문을 뽑아 모두가 대답하는 방식",
+    startPractice: "Start Practice",
+    survival: "실제 경험으로 플레이",
+    survivalDescription: "참가자가 직접 특별한 경험을 말하는 생존 게임",
+    startExperience: "Start Experience Game",
     players: "참가 인원",
     lives: "시작 목숨",
-    bonus: "단독 경험 보너스",
-    randomStart: "랜덤 시작 참가자",
-    language: "표시 언어",
-    timer: "턴 제한시간",
-    noLimit: "제한 없음",
-    howTo: "게임 방법",
-    currentTurn: "이번 차례",
-    prompt: "다른 사람들이 해보지 않았을 것 같은 실제 경험을 말해주세요.",
-    reveal: "경험 공개하기",
-    spoken: "입력하지 않고 말로 진행",
-    ideas: "아이디어 보기",
-    ideaNotice: "실제로 해본 경험만 말해주세요. 힌트는 아이디어를 떠올리는 용도입니다.",
-    passTo: "휴대폰을 전달해주세요",
-    privateAnswer: "다른 참가자가 선택을 보지 않도록 화면을 가려주세요.",
-    ready: "준비됐어요",
-    sameQuestion: "같은 경험이 있나요? 발언자:",
-    done: "나도 해봤어요",
-    never: "해본 적 없어요",
-    nextJudge: "다음 참가자에게 넘기기",
-    result: "이번 턴 결과",
-    unique: "단독 경험 성공! 아무도 같은 경험이 없습니다.",
-    common: "모두 해본 경험입니다! 이번 턴에는 아무도 목숨을 잃지 않습니다.",
-    bonusApplied: "보너스로 목숨 1개를 회복했습니다.",
-    nextTurn: "다음 사람 차례",
+    start: "게임 시작",
+    round: "라운드",
+    survivors: "생존자",
+    currentTurn: "현재 차례",
+    speakerBadge: "발언자",
+    prompt: "다른 사람들이 해보지 않았을 것 같은 특별한 경험을 말해주세요.",
+    upNext: "다음 차례",
+    checkExperience: "경험 확인하기",
+    done: "경험 있음",
+    never: "경험 없음",
+    chooseAll: "모든 참가자의 경험 여부를 선택해주세요.",
+    revealResult: "결과 확인",
+    verification: "경험이 있다고 체크한 참가자는 어떤 경험을 했는지 차례대로 이야기해주세요.",
+    verified: "경험 이야기 완료",
+    markVerified: "경험 이야기하기",
+    nextTurn: "다음 차례",
     end: "게임 종료",
     endConfirm: "정말 게임을 종료하시겠습니까?",
     cancel: "취소",
     finish: "종료하기",
-    eliminated: "탈락",
-    outMessage: "목숨을 모두 잃었습니다!",
-    survivor: "최후의 생존자",
-    joint: "현재 공동 1위",
-    again: "다시 하기",
+    out: "OUT",
+    winner: "최후의 생존자",
     samePlayers: "같은 참가자로 다시 하기",
-    setupAgain: "처음부터 설정하기",
-    restore: "저장된 게임을 복구했습니다.",
-    discard: "저장 게임 삭제",
+    setupAgain: "모드 선택으로 돌아가기",
+    question: "질문",
+    roll: "랜덤 뽑기",
+    next: "다음 질문",
+    previous: "이전 질문 보기",
+    favorite: "질문 즐겨찾기",
+    followUp: "이어서 이야기해보세요",
+    restored: "저장된 Experience Survival 게임을 복구했습니다.",
   },
 } as const;
 
-function Lives({ current, maximum, label }: { current: number; maximum: number; label: string }) {
-  return <span className="experience-lives" aria-label={`${label} ${current}/${maximum}`}>
-    <span aria-hidden="true">{Array.from({ length: maximum }, (_, index) => index < current ? "❤️" : "🖤").join(" ")}</span>
-    <b>{label} {current}/{maximum}</b>
+function readArray(key: string) {
+  if (typeof window === "undefined") return [] as string[];
+  try {
+    const value = JSON.parse(localStorage.getItem(key) ?? "[]");
+    return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
+function Lives({ player, maximum, label }: { player: SurvivalPlayer; maximum: number; label: string }) {
+  return <span className="experience-lives" aria-label={`${label} ${player.lives}/${maximum}`}>
+    <span aria-hidden="true">{player.lives > 0 ? "❤️".repeat(player.lives) : "🖤"}</span>
+    <b>{player.lives}/{maximum}</b>
   </span>;
 }
 
+function ProgressSteps({ phase, ko }: { phase: ExperienceSurvivalState["phase"]; ko: boolean }) {
+  const steps = ko
+    ? ["경험 말하기", "경험 선택", "결과", "인증", "다음 차례"]
+    : ["Share", "Select", "Result", "Verify", "Next"];
+  const active = phase === "speaker" ? 0 : phase === "judging" ? 1 : 3;
+  return <ol className="experience-turn-steps" aria-label={ko ? "현재 진행 단계" : "Turn progress"}>
+    {steps.map((step, index) => <li className={index === active ? "is-current" : index < active ? "is-done" : ""} key={step}>
+      {index < active && <Check aria-hidden="true"/>}<span>{step}</span>
+    </li>)}
+  </ol>;
+}
+
 export function NeverHaveIEverGame() {
-  const { language: interfaceLanguage } = useLanguage();
-  const text = interfaceLanguage === "ko" ? copy.ko : copy.en;
-  const [mode, setMode] = useState<ExperienceMode>("classic");
+  const { language } = useLanguage();
+  const ko = language === "ko";
+  const text = ko ? copy.ko : copy.en;
+  const [mode, setMode] = useState<ExperienceMode | null>(null);
   const [playerCount, setPlayerCount] = useState(4);
   const [names, setNames] = useState<string[]>(Array(20).fill(""));
   const [settings, setSettings] = useState<SurvivalSettings>({
-    startingLives: 5,
-    uniqueBonus: true,
-    language: "both",
-    turnSeconds: 60,
-    randomStart: false,
+    startingLives: 5, uniqueBonus: false, language: "both", turnSeconds: 0, randomStart: false,
   });
   const [game, setGame] = useState<ExperienceSurvivalState | null>(null);
-  const [experience, setExperience] = useState("");
-  const [showIdeas, setShowIdeas] = useState(false);
-  const [ideaCategory, setIdeaCategory] = useState("all");
-  const [ideaIndex, setIdeaIndex] = useState(0);
-  const [classicIndex, setClassicIndex] = useState(0);
-  const [confirmEnd, setConfirmEnd] = useState(false);
+  const [questionIndex, setQuestionIndex] = useState(0);
+  const [questionTrail, setQuestionTrail] = useState<number[]>([0]);
+  const [trailIndex, setTrailIndex] = useState(0);
+  const [rolling, setRolling] = useState(false);
+  const [favorites, setFavorites] = useState<string[]>([]);
   const [message, setMessage] = useState("");
-  const [judgeVisible, setJudgeVisible] = useState(false);
-  const timerRef = useRef<number | null>(null);
-  const timerActive = game?.phase === "speaker" && game.secondsLeft !== null && game.secondsLeft > 0;
+  const [confirmEnd, setConfirmEnd] = useState(false);
+  const [transitioning, setTransitioning] = useState(false);
+  const rollTimer = useRef<number | null>(null);
 
   useEffect(() => {
     const restored = loadExperienceSurvival();
-    if (restored) queueMicrotask(() => {
-      setMode(restored.mode);
+    queueMicrotask(() => {
+      setFavorites(readArray(QUESTION_FAVORITES_KEY));
+      if (!restored) return;
+      setMode("survival");
       setGame(restored);
       setSettings(restored.settings);
       setPlayerCount(restored.players.length);
       setNames([...restored.players.map((player) => player.name), ...Array(20 - restored.players.length).fill("")]);
-      setMessage(text.restore);
+      setMessage(text.restored);
     });
-  }, [text.restore]);
+  }, [text.restored]);
 
   useEffect(() => {
-    if (!game) return;
-    saveExperienceSurvival(game);
+    if (game) saveExperienceSurvival(game);
   }, [game]);
 
-  useEffect(() => {
-    if (timerRef.current !== null) window.clearInterval(timerRef.current);
-    if (!timerActive) return;
-    timerRef.current = window.setInterval(() => setGame((current) => {
-      if (!current || current.phase !== "speaker" || current.secondsLeft === null) return current;
-      return { ...current, secondsLeft: Math.max(0, current.secondsLeft - 1), updatedAt: Date.now() };
-    }), 1000);
-    return () => {
-      if (timerRef.current !== null) window.clearInterval(timerRef.current);
-      timerRef.current = null;
-    };
-  }, [timerActive, game?.currentPlayerIndex]);
+  const pickRandomQuestion = useCallback(() => {
+    if (rolling) return;
+    setRolling(true);
+    const recent = readArray(QUESTION_HISTORY_KEY).slice(-RECENT_LIMIT);
+    const pool = neverHaveIEverQuestions.map((_, index) => index)
+      .filter((index) => !recent.includes(neverHaveIEverQuestions[index].id) && index !== questionIndex);
+    const finalIndex = pool[Math.floor(Math.random() * pool.length)] ?? ((questionIndex + 1) % neverHaveIEverQuestions.length);
+    const started = performance.now();
+    const duration = 650 + Math.random() * 750;
+    rollTimer.current = window.setInterval(() => {
+      setQuestionIndex(Math.floor(Math.random() * neverHaveIEverQuestions.length));
+      if (performance.now() - started < duration) return;
+      if (rollTimer.current !== null) window.clearInterval(rollTimer.current);
+      setQuestionIndex(finalIndex);
+      setQuestionTrail((trail) => [...trail.slice(0, trailIndex + 1), finalIndex]);
+      setTrailIndex((value) => value + 1);
+      const nextHistory = [...recent, neverHaveIEverQuestions[finalIndex].id].slice(-RECENT_LIMIT);
+      localStorage.setItem(QUESTION_HISTORY_KEY, JSON.stringify(nextHistory));
+      setRolling(false);
+    }, 75);
+  }, [questionIndex, rolling, trailIndex]);
 
-  const filteredIdeas = useMemo(() => experienceHints.filter((hint) => ideaCategory === "all" || hint.category === ideaCategory), [ideaCategory]);
-  const activeHint = filteredIdeas[ideaIndex % Math.max(1, filteredIdeas.length)] ?? experienceHints[0];
+  useEffect(() => () => {
+    if (rollTimer.current !== null) window.clearInterval(rollTimer.current);
+  }, []);
+
+  const question = neverHaveIEverQuestions[questionIndex];
+  const speaker = game ? currentSpeaker(game) : null;
+  const survivors = game ? alivePlayers(game) : [];
+  const nextPlayer = game ? nextAlivePlayer(game) : null;
+  const latest = game?.history.at(-1);
+  const verificationIds = game ? verificationPlayerIds(game) : [];
+  const canReveal = game ? allJudgementsComplete(game) : false;
+  const canAdvance = game ? allVerificationsComplete(game) : false;
+  const leaders = game ? currentLeaders(game) : [];
 
   function startSurvival() {
-    if (playerCount < 4 || playerCount > 20) return;
     clearExperienceSurvival();
     setGame(createSurvivalGame(names, playerCount, settings));
-    setExperience("");
     setMessage("");
   }
 
-  function revealExperience(spokenOnly = false) {
-    if (!game || (!spokenOnly && !experience.trim())) return;
-    setGame(beginJudging(game, experience, spokenOnly));
-    setJudgeVisible(false);
+  function selectJudgement(playerId: string, hasDoneIt: boolean) {
+    setGame((state) => state ? recordJudgement(state, { playerId, hasDoneIt }) : state);
   }
 
-  function judge(hasDoneIt: boolean) {
-    if (!game) return;
-    const playerId = game.judgeIds[game.judgeIndex];
-    const next = recordJudgement(game, { playerId, hasDoneIt });
-    if (next.phase === "result") setGame(resolveTurn(next));
-    else setGame(next);
-    setJudgeVisible(false);
+  function revealResult() {
+    setGame((state) => state && allJudgementsComplete(state) ? resolveTurn(state) : state);
   }
 
   function nextTurn() {
-    if (!game) return;
-    const next = advanceTurn(game);
-    setGame(next);
-    setExperience("");
-    setJudgeVisible(false);
+    if (!game || !allVerificationsComplete(game) || transitioning) return;
+    setTransitioning(true);
+    window.setTimeout(() => {
+      setGame((state) => state ? advanceTurn(state) : state);
+      setTransitioning(false);
+    }, 300);
   }
 
-  function endGame() {
-    if (!game) return;
-    setGame({ ...game, phase: "finished", interrupted: true, secondsLeft: null, updatedAt: Date.now() });
-    setConfirmEnd(false);
-  }
-
-  function samePlayersAgain() {
-    if (!game) return;
-    setGame(createSurvivalGame(game.players.map((player) => player.name), game.players.length, game.settings));
-    setExperience("");
-  }
-
-  function resetSetup() {
-    clearExperienceSurvival();
-    setGame(null);
-    setConfirmEnd(false);
-    setExperience("");
+  function chooseMode(next: ExperienceMode) {
+    setMode(next);
     setMessage("");
   }
 
-  if (mode === "classic" && !game) {
-    const hint = experienceHints[classicIndex % experienceHints.length];
-    return <main className="experience-page">
-      <header className="experience-header"><Link href="/activities/never-have-i-ever"><ArrowLeft/>{text.title}</Link></header>
-      <section className="experience-card experience-mode-select">
-        <h1>{text.title}</h1>
-        <div><button className="is-active" onClick={() => setMode("classic")}>{text.classic}</button><button onClick={() => setMode("survival")}>{text.survival}</button></div>
-        <article><small>NEVER HAVE I EVER</small><h2>Never have I ever…</h2><p>{hint.en}</p>{interfaceLanguage === "ko" && <p>{hint.ko}</p>}</article>
-        <div className="experience-classic-actions"><button onClick={() => setClassicIndex((value) => (value - 1 + experienceHints.length) % experienceHints.length)}>Previous</button><button className="is-primary" onClick={() => setClassicIndex((value) => (value + 1) % experienceHints.length)}>Next</button><button onClick={() => setClassicIndex(Math.floor(Math.random() * experienceHints.length))}>Random</button></div>
-      </section>
-    </main>;
+  function backToModes() {
+    if (game && game.phase !== "finished") {
+      setConfirmEnd(true);
+      return;
+    }
+    clearExperienceSurvival();
+    setGame(null);
+    setMode(null);
   }
 
-  if (!game) return <main className="experience-page">
+  function endGame() {
+    setGame((state) => state ? { ...state, phase: "finished", interrupted: true, updatedAt: Date.now() } : state);
+    setConfirmEnd(false);
+  }
+
+  function toggleFavorite() {
+    const next = favorites.includes(question.id) ? favorites.filter((id) => id !== question.id) : [...favorites, question.id];
+    setFavorites(next);
+    localStorage.setItem(QUESTION_FAVORITES_KEY, JSON.stringify(next));
+  }
+
+  if (!mode) return <main className="experience-page">
     <header className="experience-header"><Link href="/activities/never-have-i-ever"><ArrowLeft/>{text.title}</Link></header>
-    <section className="experience-card experience-setup">
-      <div className="experience-hero"><ShieldCheck/></div>
-      <h1>{text.survivalTitle}</h1><p>{text.survivalDescription}</p>
-      <div className="experience-mode-tabs"><button onClick={() => setMode("classic")}>{text.classic}</button><button className="is-active" onClick={() => setMode("survival")}>{text.survival}</button></div>
-      <details><summary>{text.howTo}</summary><ol><li>모든 참가자는 설정한 목숨으로 시작합니다.</li><li>자기 차례에 다른 사람들은 해보지 않았을 실제 경험을 말합니다.</li><li>같은 경험이 없는 참가자만 목숨 1개를 잃습니다.</li><li>발언자는 자신의 턴에 목숨을 잃지 않습니다.</li><li>목숨이 0이 되면 탈락하고 마지막 생존자가 승리합니다.</li></ol><p>실제 경험만 말하고, 외모·민감한 사생활·불편한 내용은 피해주세요.</p></details>
-      <label className="experience-count">{text.players}<span><button disabled={playerCount <= 4} onClick={() => setPlayerCount((value) => Math.max(4, value - 1))}>−</button><b>{playerCount}</b><button disabled={playerCount >= 20} onClick={() => setPlayerCount((value) => Math.min(20, value + 1))}>+</button></span></label>
-      <div className="experience-names">{Array.from({ length: playerCount }, (_, index) => <label key={index}>P{index + 1}<input value={names[index]} placeholder={`Player ${index + 1}`} onChange={(event) => setNames((values) => values.map((value, itemIndex) => itemIndex === index ? event.target.value : value))}/></label>)}</div>
-      <div className="experience-settings">
-        <label>{text.lives}<select value={settings.startingLives} onChange={(event) => setSettings((value) => ({ ...value, startingLives: Number(event.target.value) }))}>{Array.from({ length: 8 }, (_, index) => index + 3).map((value) => <option key={value}>{value}</option>)}</select></label>
-        <label>{text.timer}<select value={settings.turnSeconds} onChange={(event) => setSettings((value) => ({ ...value, turnSeconds: Number(event.target.value) as SurvivalSettings["turnSeconds"] }))}>{[30,45,60,90,0].map((value) => <option value={value} key={value}>{value ? `${value}s` : text.noLimit}</option>)}</select></label>
-        <label>{text.language}<select value={settings.language} onChange={(event) => setSettings((value) => ({ ...value, language: event.target.value as ExperienceLanguage }))}><option value="ko">한국어</option><option value="en">English</option><option value="both">한국어 + English</option></select></label>
-        <label className="experience-switch"><input type="checkbox" checked={settings.uniqueBonus} onChange={(event) => setSettings((value) => ({ ...value, uniqueBonus: event.target.checked }))}/>{text.bonus}</label>
-        <label className="experience-switch"><input type="checkbox" checked={settings.randomStart} onChange={(event) => setSettings((value) => ({ ...value, randomStart: event.target.checked }))}/>{text.randomStart}</label>
+    <section className="experience-mode-gateway" aria-labelledby="experience-mode-title">
+      <h1 id="experience-mode-title">{text.title}</h1>
+      <div>
+        <article><Dices/><small>01</small><h2>{text.randomMode}</h2><p>{text.randomDescription}</p><button className="experience-primary" onClick={() => chooseMode("classic")}>{text.startPractice}</button></article>
+        <article><ShieldCheck/><small>02</small><h2>{text.survival}</h2><p>{text.survivalDescription}</p><button className="experience-primary" onClick={() => chooseMode("survival")}>{text.startExperience}</button></article>
       </div>
+    </section>
+  </main>;
+
+  if (mode === "classic") return <main className="experience-page">
+    <header className="experience-header"><button onClick={() => setMode(null)}><ArrowLeft/>{text.title}</button><h1>{text.randomMode}</h1></header>
+    <section className={`experience-card experience-random-question ${rolling ? "is-rolling" : ""}`}>
+      <small>{text.question} {questionIndex + 1} / {neverHaveIEverQuestions.length}</small>
+      <article aria-live="polite"><span>{question.category}</span><h1>{question.en}</h1>{ko && <p>{question.ko}</p>}</article>
+      <aside><b>{text.followUp}</b><p>{ko ? question.followUpKo : question.followUpEn}</p></aside>
+      <button className={`experience-favorite ${favorites.includes(question.id) ? "is-active" : ""}`} aria-pressed={favorites.includes(question.id)} aria-label={text.favorite} onClick={toggleFavorite}><Heart/></button>
+      <button className="experience-primary experience-roll" disabled={rolling} onClick={pickRandomQuestion}><Dices/>{text.roll}</button>
+      <div className="experience-question-nav">
+        <button disabled={trailIndex === 0 || rolling} onClick={() => { const next = trailIndex - 1; setTrailIndex(next); setQuestionIndex(questionTrail[next]); }}><ChevronLeft/>{text.previous}</button>
+        <button disabled={rolling} onClick={pickRandomQuestion}>{text.next}<ChevronRight/></button>
+      </div>
+    </section>
+  </main>;
+
+  if (!game) return <main className="experience-page">
+    <header className="experience-header"><button onClick={() => setMode(null)}><ArrowLeft/>{text.title}</button><h1>Experience Survival</h1></header>
+    <section className="experience-card experience-setup">
+      <div className="experience-hero"><ShieldCheck/></div><h1>Experience Survival</h1><p>{text.survivalDescription}</p>
+      <label className="experience-count">{text.players}<span><button disabled={playerCount <= 4} onClick={() => setPlayerCount((value) => value - 1)}>−</button><b>{playerCount}</b><button disabled={playerCount >= 20} onClick={() => setPlayerCount((value) => value + 1)}>+</button></span></label>
+      <div className="experience-names">{Array.from({ length: playerCount }, (_, index) => <label key={index}>P{index + 1}<input value={names[index]} placeholder={`Player ${index + 1}`} onChange={(event) => setNames((values) => values.map((value, itemIndex) => itemIndex === index ? event.target.value : value))}/></label>)}</div>
+      <label className="experience-lives-setting">{text.lives}<select value={settings.startingLives} onChange={(event) => setSettings((value) => ({ ...value, startingLives: Number(event.target.value) }))}>{Array.from({ length: 8 }, (_, index) => index + 3).map((value) => <option key={value}>{value}</option>)}</select></label>
       <button className="experience-primary" onClick={startSurvival}><Sparkles/>{text.start}</button>
     </section>
   </main>;
 
-  const speaker = currentSpeaker(game);
-  const survivors = alivePlayers(game);
-  const currentJudgeId = game.judgeIds[game.judgeIndex];
-  const currentJudge = game.players.find((player) => player.id === currentJudgeId);
-  const latest = game.history.at(-1);
-  const namesFor = (ids: string[]) => ids.map((id) => game.players.find((player) => player.id === id)?.name).filter(Boolean).join(", ") || "—";
-  const leaders = currentLeaders(game);
-  const mostLivesLostTurn = game.history.reduce((best, turn) => turn.lostLifeIds.length > (best?.lostLifeIds.length ?? -1) ? turn : best, game.history[0]);
-  const mostSharedTurn = game.history.reduce((best, turn) => turn.judgements.filter((item) => item.hasDoneIt).length > (best?.judgements.filter((item) => item.hasDoneIt).length ?? -1) ? turn : best, game.history[0]);
-  const uniquePlayers = game.players.filter((player) => player.uniqueWins > 0);
+  if (game.phase === "finished") return <main className="experience-page">
+    <header className="experience-header"><button onClick={backToModes}><ArrowLeft/>{text.title}</button></header>
+    <section className="experience-card experience-finished"><Trophy/><small>{text.winner}</small><h1>{leaders.map((player) => player.name).join(" · ")}</h1>
+      <div className="experience-summary"><span>{text.round}<b>{game.round}</b></span><span>{text.survivors}<b>{survivors.length}</b></span><span>{text.question}<b>{game.history.length}</b></span></div>
+      <div className="experience-scoreboard">{[...game.players].sort((a, b) => b.lives - a.lives).map((player) => <article className={player.eliminated ? "is-out" : ""} key={player.id}><b>{player.name}</b><Lives player={player} maximum={game.settings.startingLives} label={text.lives}/>{player.eliminated && <em>{text.out}</em>}</article>)}</div>
+      <button className="experience-primary" onClick={() => setGame(createSurvivalGame(game.players.map((player) => player.name), game.players.length, game.settings))}><RotateCcw/>{text.samePlayers}</button>
+      <button className="experience-secondary" onClick={() => { clearExperienceSurvival(); setGame(null); setMode(null); }}>{text.setupAgain}</button>
+    </section>
+  </main>;
 
-  return <main className="experience-page">
-    <header className="experience-header"><button onClick={() => setConfirmEnd(true)}><ArrowLeft/>{text.end}</button><h1>{text.survival}</h1></header>
-    <nav className="experience-status"><span>Round <b>{game.round}</b></span><span><Users/> {survivors.length} / {game.players.length}</span><span><Clock3/> {game.secondsLeft === null ? "∞" : `${game.secondsLeft}s`}</span></nav>
+  const otherPlayers = game.players
+    .filter((player) => player.id !== speaker?.id)
+    .sort((a, b) => Number(a.eliminated) - Number(b.eliminated));
+  const judgementFor = (id: string): ExperienceJudgement | undefined => game.pendingJudgements.find((item) => item.playerId === id);
+
+  return <main className={`experience-page experience-game ${transitioning ? "is-transitioning" : ""}`}>
+    <header className="experience-header"><button onClick={() => setConfirmEnd(true)}><ArrowLeft/>{text.end}</button><h1>Experience Survival</h1></header>
+    <nav className="experience-status"><span>{text.round} <b>{game.round}</b></span><span><Users/> {text.survivors} <b>{survivors.length}/{game.players.length}</b></span><span><Clock3/> OFFLINE</span></nav>
+    <ProgressSteps phase={game.phase} ko={ko}/>
+
+    {speaker && <section className="experience-current-player" key={`${speaker.id}-${game.round}`}>
+      <span>{text.currentTurn}</span><h1>{speaker.name}</h1><Lives player={speaker} maximum={game.settings.startingLives} label={text.lives}/><b>{text.speakerBadge}</b>
+      <p>{text.prompt}</p>
+    </section>}
+    {nextPlayer && <div className="experience-up-next"><span>{text.upNext}</span><b>{nextPlayer.name}</b></div>}
+
+    {game.phase === "speaker" && <section className="experience-action-card">
+      <p>{ko ? "앱에 입력하지 말고 직접 말해주세요." : "Say it aloud. No typing is needed."}</p>
+      <button className="experience-primary" onClick={() => setGame(beginJudging(game, "", true))}><Check/>{text.checkExperience}</button>
+    </section>}
+
+    {game.phase === "judging" && <section className="experience-action-card">
+      <h2>{text.checkExperience}</h2><p>{ko ? "발언자를 제외한 모든 생존 참가자를 선택해주세요." : "Choose an answer for every living player except the speaker."}</p>
+      {!canReveal && <div className="experience-inline-alert" role="status">{text.chooseAll}</div>}
+      <div className="experience-judgement-grid">{otherPlayers.filter((player) => !player.eliminated).map((player) => {
+        const selected = judgementFor(player.id);
+        return <article key={player.id}><b>{player.name}</b><Lives player={player} maximum={game.settings.startingLives} label={text.lives}/>
+          <div><button className={selected?.hasDoneIt === true ? "is-selected" : ""} aria-pressed={selected?.hasDoneIt === true} onClick={() => selectJudgement(player.id, true)}>{text.done}</button><button className={selected?.hasDoneIt === false ? "is-selected is-never" : ""} aria-pressed={selected?.hasDoneIt === false} onClick={() => selectJudgement(player.id, false)}>{text.never}</button></div>
+        </article>;
+      })}</div>
+      <button className="experience-primary" disabled={!canReveal} onClick={revealResult}>{text.revealResult}</button>
+    </section>}
+
+    {game.phase === "result" && latest && <section className="experience-action-card experience-verification">
+      <h2>{text.revealResult}</h2>
+      <div className="experience-result-groups"><article><b>{text.done}</b>{latest.judgements.filter((item) => item.hasDoneIt).map((item) => <span key={item.playerId}>{game.players.find((player) => player.id === item.playerId)?.name} · ❤️ 유지</span>)}</article><article><b>{text.never}</b>{latest.judgements.filter((item) => !item.hasDoneIt).map((item) => <span key={item.playerId}>{game.players.find((player) => player.id === item.playerId)?.name} · −1 ❤️</span>)}</article></div>
+      <p className="experience-verify-notice">{text.verification}</p>
+      {verificationIds.length > 0 && <div className="experience-verify-list">{verificationIds.map((id) => {
+        const player = game.players.find((item) => item.id === id);
+        const checked = game.verifiedPlayerIds.includes(id);
+        return <button className={checked ? "is-verified" : ""} aria-pressed={checked} onClick={() => setGame(toggleExperienceVerified(game, id))} key={id}><span>{player?.name}</span><b>{checked ? text.verified : text.markVerified}</b>{checked && <Check/>}</button>;
+      })}</div>}
+      <button className="experience-primary" disabled={!canAdvance || transitioning} onClick={nextTurn}>{text.nextTurn}<ChevronRight/></button>
+    </section>}
+
+    <section className="experience-other-players" aria-label={ko ? "나머지 참가자" : "Other players"}>
+      {otherPlayers.map((player) => <article className={`${player.eliminated ? "is-out" : ""} ${judgementFor(player.id)?.hasDoneIt === true ? "has-done" : ""}`} key={player.id}>
+        <header><b>{player.name}</b>{player.eliminated ? <em>{text.out}</em> : judgementFor(player.id) && <span>{judgementFor(player.id)?.hasDoneIt ? text.done : text.never}</span>}</header>
+        <Lives player={player} maximum={game.settings.startingLives} label={text.lives}/>
+      </article>)}
+    </section>
+    <button className="experience-end-button" onClick={() => setConfirmEnd(true)}>{text.end}</button>
     {message && <div className="experience-toast" role="status">{message}<button onClick={() => setMessage("")}><X/></button></div>}
-
-    {game.phase === "speaker" && <section className="experience-card experience-speaker">
-      <small>{text.currentTurn}</small><h1>{speaker.name}</h1><p>{text.prompt}</p>
-      <Lives current={speaker.lives} maximum={game.settings.startingLives} label={interfaceLanguage === "ko" ? "목숨" : "Lives"}/>
-      <textarea value={experience} disabled={game.secondsLeft === 0} onChange={(event) => setExperience(event.target.value)} placeholder="I have… / 나는… 해봤다."/>
-      <button className="experience-idea-button" onClick={() => setShowIdeas((value) => !value)}><Lightbulb/>{text.ideas}</button>
-      {showIdeas && <aside className="experience-ideas"><p>{text.ideaNotice}</p><select value={ideaCategory} onChange={(event) => { setIdeaCategory(event.target.value); setIdeaIndex(0); }}><option value="all">All</option>{experienceHintCategories.map((category) => <option key={category}>{category}</option>)}</select><article><b>{activeHint.en}</b>{settings.language !== "en" && <span>{activeHint.ko}</span>}</article><button onClick={() => setIdeaIndex((value) => value + 1)}>다른 아이디어</button></aside>}
-      <button className="experience-primary" disabled={!experience.trim()} onClick={() => revealExperience(false)}>{text.reveal}</button>
-      <button className="experience-secondary" onClick={() => revealExperience(true)}>{text.spoken}</button>
-    </section>}
-
-    {game.phase === "handoff" && currentJudge && <section className="experience-card experience-private">
-      <Users/><small>{text.passTo}</small><h1>{currentJudge.name}</h1><p>{text.privateAnswer}</p>
-      <button className="experience-primary" onClick={() => { setJudgeVisible(true); setGame((value) => value ? { ...value, phase: "judging" } : value); }}>{text.ready}</button>
-    </section>}
-
-    {game.phase === "judging" && currentJudge && judgeVisible && <section className="experience-card experience-private">
-      <small>{currentJudge.name}</small><h1>{text.sameQuestion}<br/>{speaker.name}</h1>
-      <p className="experience-statement">{game.spokenOnly ? (interfaceLanguage === "ko" ? "현재 참가자가 자신의 경험을 말했습니다." : "The current player shared an experience aloud.") : game.currentExperience}</p>
-      <button className="experience-primary" onClick={() => judge(true)}><Check/>{text.done}</button>
-      <button className="experience-secondary" onClick={() => judge(false)}><X/>{text.never}</button>
-    </section>}
-
-    {game.phase === "result" && latest && <section className="experience-card experience-result">
-      <Trophy/><small>{text.result}</small>
-      <h1>{latest.spokenOnly ? (interfaceLanguage === "ko" ? "말로 공유한 경험" : "Spoken experience") : latest.experience}</h1>
-      {latest.unique && <p className="is-unique">{text.unique}</p>}
-      {latest.common && <p className="is-common">{text.common}</p>}
-      {latest.bonusApplied && <p>{text.bonusApplied}</p>}
-      <dl><div><dt>{text.done}</dt><dd>{namesFor(latest.judgements.filter((item) => item.hasDoneIt).map((item) => item.playerId))}</dd></div><div><dt>{text.never}</dt><dd>{namesFor(latest.judgements.filter((item) => !item.hasDoneIt).map((item) => item.playerId))}</dd></div><div><dt>−1 ❤️</dt><dd>{namesFor(latest.lostLifeIds)}</dd></div>{latest.eliminatedIds.length > 0 && <div><dt>{text.eliminated}</dt><dd>{namesFor(latest.eliminatedIds)} · {text.outMessage}</dd></div>}</dl>
-      <div className="experience-scoreboard">{game.players.map((player) => <article className={player.eliminated ? "is-out" : ""} key={player.id}><b>{player.name}</b>{player.eliminated ? <span>{text.eliminated}</span> : <Lives current={player.lives} maximum={game.settings.startingLives} label={interfaceLanguage === "ko" ? "목숨" : "Lives"}/>}</article>)}</div>
-      <button className="experience-primary" onClick={nextTurn}>{survivors.length <= 1 ? text.result : text.nextTurn}</button>
-    </section>}
-
-    {game.phase === "finished" && <section className="experience-card experience-finished">
-      <Trophy/><small>{game.interrupted || leaders.length > 1 ? text.joint : text.survivor}</small><h1>{leaders.map((player) => player.name).join(" · ")}</h1>
-      <div className="experience-summary"><span>Rounds <b>{game.round}</b></span><span>Experiences <b>{game.history.length}</b></span><span>Unique <b>{game.history.filter((turn) => turn.unique).length}</b></span></div>
-      {game.history.length > 0 && <dl className="experience-final-stats"><div><dt>가장 많은 목숨을 잃게 한 경험</dt><dd>{mostLivesLostTurn?.spokenOnly ? "말로 공유한 경험" : mostLivesLostTurn?.experience || "—"} · {mostLivesLostTurn?.lostLifeIds.length ?? 0}명</dd></div><div><dt>가장 많은 사람이 함께 해본 경험</dt><dd>{mostSharedTurn?.spokenOnly ? "말로 공유한 경험" : mostSharedTurn?.experience || "—"} · {mostSharedTurn?.judgements.filter((item) => item.hasDoneIt).length ?? 0}명</dd></div><div><dt>단독 경험 성공 참가자</dt><dd>{uniquePlayers.map((player) => `${player.name} (${player.uniqueWins})`).join(", ") || "—"}</dd></div></dl>}
-      <div className="experience-scoreboard">{[...game.players].sort((a, b) => b.lives - a.lives).map((player) => <article className={player.eliminated ? "is-out" : ""} key={player.id}><b>{player.name}</b><Lives current={player.lives} maximum={game.settings.startingLives} label={interfaceLanguage === "ko" ? "목숨" : "Lives"}/><small>단독 경험 {player.uniqueWins} · 발언 {player.turns}</small></article>)}</div>
-      <button className="experience-primary" onClick={samePlayersAgain}><RotateCcw/>{text.samePlayers}</button>
-      <button className="experience-secondary" onClick={resetSetup}>{text.setupAgain}</button>
-    </section>}
-
-    {!["finished"].includes(game.phase) && <button className="experience-end-button" onClick={() => setConfirmEnd(true)}>{text.end}</button>}
     {confirmEnd && <div className="experience-dialog-backdrop"><section role="alertdialog" aria-modal="true" className="experience-dialog"><h2>{text.endConfirm}</h2><div><button onClick={() => setConfirmEnd(false)}>{text.cancel}</button><button className="is-danger" onClick={endGame}>{text.finish}</button></div></section></div>}
   </main>;
 }
