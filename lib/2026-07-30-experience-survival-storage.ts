@@ -10,6 +10,7 @@ export function loadExperienceSurvival(): ExperienceSurvivalState | null {
     return {
       ...value,
       verifiedPlayerIds: Array.isArray(value.verifiedPlayerIds) ? value.verifiedPlayerIds : [],
+      verificationResults: Array.isArray(value.verificationResults) ? value.verificationResults : [],
       phase: value.phase === "handoff" ? "judging" : value.phase,
     };
   } catch {

@@ -46,6 +46,7 @@ export function createSurvivalGame(
     judgeIndex: 0,
     pendingJudgements: [],
     verifiedPlayerIds: [],
+    verificationResults: [],
     history: [],
     secondsLeft: settings.turnSeconds || null,
     interrupted: false,
@@ -75,6 +76,7 @@ export function beginJudging(state: ExperienceSurvivalState, experience: string,
     judgeIndex: 0,
     pendingJudgements: [],
     verifiedPlayerIds: [],
+    verificationResults: [],
     secondsLeft: null,
     updatedAt: Date.now(),
   };
@@ -117,6 +119,35 @@ export function toggleExperienceVerified(state: ExperienceSurvivalState, playerI
     ? state.verifiedPlayerIds.filter((id) => id !== playerId)
     : [...state.verifiedPlayerIds, playerId];
   return { ...state, verifiedPlayerIds, updatedAt: Date.now() };
+}
+
+export function recordExperienceVerification(
+  state: ExperienceSurvivalState,
+  playerId: string,
+  status: "verified" | "failed",
+) {
+  if (!verificationPlayerIds(state).includes(playerId)) return state;
+  const previous = state.verificationResults.find((item) => item.playerId === playerId)?.status;
+  if (previous === status) return state;
+  const verificationResults = [
+    ...state.verificationResults.filter((item) => item.playerId !== playerId),
+    { playerId, status },
+  ];
+  const players = state.players.map((player) => {
+    if (player.id !== playerId) return player;
+    const delta = previous === "failed" && status === "verified" ? 1
+      : status === "failed" ? -1
+      : 0;
+    const lives = Math.max(0, Math.min(state.settings.startingLives, player.lives + delta));
+    return { ...player, lives, eliminated: lives === 0 };
+  });
+  return {
+    ...state,
+    players,
+    verificationResults,
+    verifiedPlayerIds: verificationResults.filter((item) => item.status === "verified").map((item) => item.playerId),
+    updatedAt: Date.now(),
+  };
 }
 
 export function allVerificationsComplete(state: ExperienceSurvivalState) {
@@ -182,6 +213,7 @@ export function advanceTurn(state: ExperienceSurvivalState) {
     judgeIndex: 0,
     pendingJudgements: [],
     verifiedPlayerIds: [],
+    verificationResults: [],
     secondsLeft: state.settings.turnSeconds || null,
     updatedAt: Date.now(),
   };

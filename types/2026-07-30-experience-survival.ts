@@ -25,6 +25,11 @@ export type ExperienceJudgement = {
   hasDoneIt: boolean;
 };
 
+export type ExperienceVerification = {
+  playerId: string;
+  status: "verified" | "failed";
+};
+
 export type ExperienceTurn = {
   id: string;
   round: number;
@@ -61,6 +66,7 @@ export type ExperienceSurvivalState = {
   judgeIndex: number;
   pendingJudgements: ExperienceJudgement[];
   verifiedPlayerIds: string[];
+  verificationResults: ExperienceVerification[];
   history: ExperienceTurn[];
   secondsLeft: number | null;
   interrupted: boolean;

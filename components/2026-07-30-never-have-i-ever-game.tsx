@@ -9,9 +9,9 @@ import {
 import { useCallback, useEffect, useRef, useState } from "react";
 import { neverHaveIEverQuestions } from "@/data/2026-07-30-never-have-i-ever-questions";
 import {
-  advanceTurn, alivePlayers, allJudgementsComplete, allVerificationsComplete,
+  advanceTurn, alivePlayers, allJudgementsComplete,
   beginJudging, createSurvivalGame, currentLeaders, currentSpeaker, nextAlivePlayer,
-  recordJudgement, resolveTurn, toggleExperienceVerified, verificationPlayerIds,
+  recordExperienceVerification, recordJudgement, resolveTurn, verificationPlayerIds,
 } from "@/lib/2026-07-30-experience-survival-engine";
 import {
   clearExperienceSurvival, loadExperienceSurvival, saveExperienceSurvival,
@@ -50,8 +50,13 @@ const copy = {
     chooseAll: "Please select every player’s experience status.",
     revealResult: "Reveal Result",
     verification: "Players who selected ‘I’ve done it’ must briefly share and verify their experience.",
-    verified: "Experience shared",
-    markVerified: "Mark experience shared",
+    verified: "Verified",
+    failed: "Failed",
+    verifySuccess: "Verify",
+    verifyFail: "Fail",
+    lifeLost: "Life −1",
+    translate: "Translate",
+    hideTranslation: "Hide Korean",
     nextTurn: "Next Turn",
     end: "End Game",
     endConfirm: "Are you sure you want to end the game?",
@@ -92,8 +97,13 @@ const copy = {
     chooseAll: "모든 참가자의 경험 여부를 선택해주세요.",
     revealResult: "결과 확인",
     verification: "경험이 있다고 체크한 참가자는 어떤 경험을 했는지 차례대로 이야기해주세요.",
-    verified: "경험 이야기 완료",
-    markVerified: "경험 이야기하기",
+    verified: "인증 성공",
+    failed: "인증 실패",
+    verifySuccess: "인증 성공",
+    verifyFail: "인증 실패",
+    lifeLost: "목숨 −1",
+    translate: "한국어로 번역",
+    hideTranslation: "한국어 숨기기",
     nextTurn: "다음 차례",
     end: "게임 종료",
     endConfirm: "정말 게임을 종료하시겠습니까?",
@@ -157,10 +167,12 @@ export function NeverHaveIEverGame() {
   const [questionTrail, setQuestionTrail] = useState<number[]>([0]);
   const [trailIndex, setTrailIndex] = useState(0);
   const [rolling, setRolling] = useState(false);
+  const [showTranslation, setShowTranslation] = useState(false);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [message, setMessage] = useState("");
   const [confirmEnd, setConfirmEnd] = useState(false);
   const [transitioning, setTransitioning] = useState(false);
+  const [failedPlayerId, setFailedPlayerId] = useState<string | null>(null);
   const rollTimer = useRef<number | null>(null);
 
   useEffect(() => {
@@ -195,6 +207,7 @@ export function NeverHaveIEverGame() {
       if (performance.now() - started < duration) return;
       if (rollTimer.current !== null) window.clearInterval(rollTimer.current);
       setQuestionIndex(finalIndex);
+      setShowTranslation(false);
       setQuestionTrail((trail) => [...trail.slice(0, trailIndex + 1), finalIndex]);
       setTrailIndex((value) => value + 1);
       const nextHistory = [...recent, neverHaveIEverQuestions[finalIndex].id].slice(-RECENT_LIMIT);
@@ -214,7 +227,6 @@ export function NeverHaveIEverGame() {
   const latest = game?.history.at(-1);
   const verificationIds = game ? verificationPlayerIds(game) : [];
   const canReveal = game ? allJudgementsComplete(game) : false;
-  const canAdvance = game ? allVerificationsComplete(game) : false;
   const leaders = game ? currentLeaders(game) : [];
 
   function startSurvival() {
@@ -232,7 +244,7 @@ export function NeverHaveIEverGame() {
   }
 
   function nextTurn() {
-    if (!game || !allVerificationsComplete(game) || transitioning) return;
+    if (!game || transitioning) return;
     setTransitioning(true);
     window.setTimeout(() => {
       setGame((state) => state ? advanceTurn(state) : state);
@@ -266,6 +278,14 @@ export function NeverHaveIEverGame() {
     localStorage.setItem(QUESTION_FAVORITES_KEY, JSON.stringify(next));
   }
 
+  function verifyExperience(playerId: string, status: "verified" | "failed") {
+    setGame((state) => state ? recordExperienceVerification(state, playerId, status) : state);
+    if (status === "failed") {
+      setFailedPlayerId(playerId);
+      window.setTimeout(() => setFailedPlayerId((current) => current === playerId ? null : current), 900);
+    }
+  }
+
   if (!mode) return <main className="experience-page">
     <header className="experience-header"><Link href="/activities/never-have-i-ever"><ArrowLeft/>{text.title}</Link></header>
     <section className="experience-mode-gateway" aria-labelledby="experience-mode-title">
@@ -281,12 +301,13 @@ export function NeverHaveIEverGame() {
     <header className="experience-header"><button onClick={() => setMode(null)}><ArrowLeft/>{text.title}</button><h1>{text.randomMode}</h1></header>
     <section className={`experience-card experience-random-question ${rolling ? "is-rolling" : ""}`}>
       <small>{text.question} {questionIndex + 1} / {neverHaveIEverQuestions.length}</small>
-      <article aria-live="polite"><span>{question.category}</span><h1>{question.en}</h1>{ko && <p>{question.ko}</p>}</article>
+      <button className="experience-translate" aria-pressed={showTranslation} onClick={() => setShowTranslation((value) => !value)}>{showTranslation ? text.hideTranslation : text.translate}</button>
+      <article aria-live="polite"><span>NEVER HAVE I EVER</span><h2>Never Have I Ever</h2><h1>{question.english}</h1>{showTranslation && <p>{question.korean}</p>}</article>
       <aside><b>{text.followUp}</b><p>{ko ? question.followUpKo : question.followUpEn}</p></aside>
       <button className={`experience-favorite ${favorites.includes(question.id) ? "is-active" : ""}`} aria-pressed={favorites.includes(question.id)} aria-label={text.favorite} onClick={toggleFavorite}><Heart/></button>
       <button className="experience-primary experience-roll" disabled={rolling} onClick={pickRandomQuestion}><Dices/>{text.roll}</button>
       <div className="experience-question-nav">
-        <button disabled={trailIndex === 0 || rolling} onClick={() => { const next = trailIndex - 1; setTrailIndex(next); setQuestionIndex(questionTrail[next]); }}><ChevronLeft/>{text.previous}</button>
+        <button disabled={trailIndex === 0 || rolling} onClick={() => { const next = trailIndex - 1; setTrailIndex(next); setQuestionIndex(questionTrail[next]); setShowTranslation(false); }}><ChevronLeft/>{text.previous}</button>
         <button disabled={rolling} onClick={pickRandomQuestion}>{text.next}<ChevronRight/></button>
       </div>
     </section>
@@ -352,10 +373,10 @@ export function NeverHaveIEverGame() {
       <p className="experience-verify-notice">{text.verification}</p>
       {verificationIds.length > 0 && <div className="experience-verify-list">{verificationIds.map((id) => {
         const player = game.players.find((item) => item.id === id);
-        const checked = game.verifiedPlayerIds.includes(id);
-        return <button className={checked ? "is-verified" : ""} aria-pressed={checked} onClick={() => setGame(toggleExperienceVerified(game, id))} key={id}><span>{player?.name}</span><b>{checked ? text.verified : text.markVerified}</b>{checked && <Check/>}</button>;
+        const result = game.verificationResults.find((item) => item.playerId === id)?.status;
+        return <article className={`${result ? `is-${result}` : ""} ${failedPlayerId === id ? "is-life-lost" : ""}`} key={id}><strong>{player?.name}</strong><div><button className="verify-success" aria-pressed={result === "verified"} onClick={() => verifyExperience(id, "verified")}><Check/>{result === "verified" ? text.verified : text.verifySuccess}</button><button className="verify-fail" aria-pressed={result === "failed"} onClick={() => verifyExperience(id, "failed")}><X/>{result === "failed" ? text.failed : text.verifyFail}</button></div>{failedPlayerId === id && <em role="status">{text.failed} · {text.lifeLost}</em>}</article>;
       })}</div>}
-      <button className="experience-primary" disabled={!canAdvance || transitioning} onClick={nextTurn}>{text.nextTurn}<ChevronRight/></button>
+      <button className="experience-primary" disabled={transitioning} onClick={nextTurn}>{text.nextTurn}<ChevronRight/></button>
     </section>}
 
     <section className="experience-other-players" aria-label={ko ? "나머지 참가자" : "Other players"}>

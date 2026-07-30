@@ -510,7 +510,7 @@ test("Never Have I Ever registers two clear entry modes and at least five hundre
   const [registry,data,questions,page,component]=await Promise.all([import(new URL(`../data/activities.ts?never=${Date.now()}`,import.meta.url)),import(new URL(`../data/2026-07-30-experience-hints.ts?hints=${Date.now()}`,import.meta.url)),import(new URL(`../data/2026-07-30-never-have-i-ever-questions.ts?questions=${Date.now()}`,import.meta.url)),readFile(new URL("../app/activities/never-have-i-ever/practice/page.tsx",import.meta.url),"utf8"),readFile(new URL("../components/2026-07-30-never-have-i-ever-game.tsx",import.meta.url),"utf8")]);
   const activity=registry.getActivity("never-have-i-ever");assert.ok(activity);assert.equal(activity.groupSizes[0],"4–20 people");assert.equal(activity.iconKey,"experience-survival");
   assert.ok(data.experienceHints.length>=100);assert.equal(new Set(data.experienceHints.map(item=>item.id)).size,data.experienceHints.length);assert.ok(data.experienceHints.every(item=>item.ko.trim()&&item.en.trim()&&["beginner","intermediate","advanced"].includes(item.difficulty)));
-  assert.equal(questions.neverHaveIEverQuestions.length,525);assert.deepEqual(questions.validateNeverHaveIEverQuestions(),[]);assert.equal(new Set(questions.neverHaveIEverQuestions.map(item=>item.en)).size,525);assert.equal(questions.neverHaveIEverCategories.length,30);
+  assert.equal(questions.neverHaveIEverQuestions.length,525);assert.deepEqual(questions.validateNeverHaveIEverQuestions(),[]);assert.equal(new Set(questions.neverHaveIEverQuestions.map(item=>item.english)).size,525);assert.equal(questions.neverHaveIEverCategories.length,30);assert.ok(questions.neverHaveIEverQuestions.every(item=>item.english&&item.korean&&item.difficulty&&item.tags.length>=2));
   assert.match(page,/NeverHaveIEverGame/);for(const contract of ["Random Question Mode","Experience Survival","Start Practice","Start Experience Game","startingLives","alertdialog","RECENT_LIMIT = 30","QUESTION_FAVORITES_KEY","performance.now()"])assert.match(component,new RegExp(contract.replace(/[().]/g,"\\$&")));
 });
 
@@ -532,13 +532,27 @@ test("Experience Survival uses simultaneous selection, verification locks, and c
   state={...state,currentPlayerIndex:3,players:state.players.map((player,index)=>index===0?{...player,eliminated:true,lives:0}:player)};assert.equal(engine.nextAlivePlayer(state).name,"B");
 });
 
+test("Experience verification failure costs one life but never blocks Next Turn",async()=>{
+  const engine=await import(new URL(`../lib/2026-07-30-experience-survival-engine.ts?verification=${Date.now()}`,import.meta.url));const settings={startingLives:3,uniqueBonus:false,language:"both",turnSeconds:0,randomStart:false};
+  let state=engine.createSurvivalGame(["A","B","C","D"],4,settings,()=>0);state=engine.beginJudging(state,"",true);for(const playerId of state.judgeIds)state=engine.recordJudgement(state,{playerId,hasDoneIt:true});state=engine.resolveTurn(state);
+  const target=state.players[1].id;state=engine.recordExperienceVerification(state,target,"failed");assert.equal(state.players[1].lives,2);assert.equal(state.verificationResults.find(item=>item.playerId===target).status,"failed");
+  const unchanged=engine.recordExperienceVerification(state,target,"failed");assert.equal(unchanged.players[1].lives,2);state=engine.recordExperienceVerification(state,target,"verified");assert.equal(state.players[1].lives,3);
+  const component=await readFile(new URL("../components/2026-07-30-never-have-i-ever-game.tsx",import.meta.url),"utf8");assert.doesNotMatch(component,/disabled=\{!canAdvance/);assert.match(component,/disabled=\{transitioning\}/);assert.match(component,/recordExperienceVerification/);
+});
+
 test("Never Have I Ever mobile hierarchy highlights the speaker and keeps large player grids readable",async()=>{
   const [component,css]=await Promise.all([readFile(new URL("../components/2026-07-30-never-have-i-ever-game.tsx",import.meta.url),"utf8"),readFile(new URL("../components/2026-07-30-never-have-i-ever-game.css",import.meta.url),"utf8")]);
-  for(const contract of ["experience-current-player","experience-up-next","experience-turn-steps","experience-judgement-grid","experience-verify-list","experience-other-players","is-transitioning","allVerificationsComplete"])assert.match(component,new RegExp(contract));
+  for(const contract of ["experience-current-player","experience-up-next","experience-turn-steps","experience-judgement-grid","experience-verify-list","experience-other-players","is-transitioning","recordExperienceVerification"])assert.match(component,new RegExp(contract));
   for(const contract of [".experience-current-player",".experience-up-next",".experience-other-players","grid-template-columns:1fr 1fr","safe-area","prefers-reduced-motion","@media(max-width:360px)"])assert.match(css,new RegExp(contract.replace(/[().]/g,"\\$&")));
 });
 
 test("Experience Survival persists complete recoverable state and keeps Deploy unchanged",async()=>{
   const [storage,component,deploy]=await Promise.all([readFile(new URL("../lib/2026-07-30-experience-survival-storage.ts",import.meta.url),"utf8"),readFile(new URL("../components/2026-07-30-never-have-i-ever-game.tsx",import.meta.url),"utf8"),readFile(new URL("../Deploy",import.meta.url),"utf8")]);
-  for(const contract of ["language101-experience-survival-v1","localStorage","loadExperienceSurvival","saveExperienceSurvival","clearExperienceSurvival","verifiedPlayerIds"])assert.match(storage,new RegExp(contract));for(const contract of ["phase","players","round","history","saveExperienceSurvival","QUESTION_HISTORY_KEY"])assert.match(component,new RegExp(contract));assert.match(deploy,/language101-study-toolkit/);
+  for(const contract of ["language101-experience-survival-v1","localStorage","loadExperienceSurvival","saveExperienceSurvival","clearExperienceSurvival","verifiedPlayerIds","verificationResults"])assert.match(storage,new RegExp(contract));for(const contract of ["phase","players","round","history","saveExperienceSurvival","QUESTION_HISTORY_KEY"])assert.match(component,new RegExp(contract));assert.match(deploy,/language101-study-toolkit/);
+});
+
+test("Random Question keeps Never Have I Ever fixed and toggles natural Korean separately",async()=>{
+  const [component,questions,css]=await Promise.all([readFile(new URL("../components/2026-07-30-never-have-i-ever-game.tsx",import.meta.url),"utf8"),import(new URL(`../data/2026-07-30-never-have-i-ever-questions.ts?shape=${Date.now()}`,import.meta.url)),readFile(new URL("../components/2026-07-30-never-have-i-ever-game.css",import.meta.url),"utf8")]);
+  assert.match(component,/<h2>Never Have I Ever<\/h2>/);assert.match(component,/showTranslation/);assert.match(component,/question\.english/);assert.match(component,/question\.korean/);assert.match(component,/RECENT_LIMIT = 30/);assert.match(component,/650 \+ Math\.random\(\) \* 750/);
+  assert.ok(questions.neverHaveIEverQuestions.every(item=>!item.english.startsWith("Never Have I Ever")));assert.match(css,/experience-translate/);assert.match(css,/max-height:850px/);assert.match(css,/safe-area-inset-top/);
 });
