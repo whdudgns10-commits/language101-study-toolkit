@@ -6,10 +6,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Heart,
-  History,
-  MessageCircleMore,
   Shuffle,
-  UsersRound,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -24,7 +21,6 @@ const STATE_KEY = "language101-conversation-starters-state-v2";
 const FAVORITES_KEY = "language101-conversation-starters-favorites-v2";
 const RECENT_LIMIT = 30;
 
-type AnswerStyle = "everyone" | "one" | "pair";
 type SavedState = {
   currentId: string;
   history: string[];
@@ -32,7 +28,6 @@ type SavedState = {
   recentIds: string[];
   category: string;
   difficulty: "" | ConversationStarterDifficulty;
-  answerStyle: AnswerStyle;
   favoritesOnly: boolean;
 };
 
@@ -43,7 +38,6 @@ const initialState: SavedState = {
   recentIds: [conversationStarters[0].id],
   category: "",
   difficulty: "",
-  answerStyle: "everyone",
   favoritesOnly: false,
 };
 
@@ -64,14 +58,12 @@ function validIds(ids: unknown): string[] {
 export function IceBreakingPractice() {
   const [state, setState] = useState<SavedState>(initialState);
   const [favorites, setFavorites] = useState<string[]>([]);
-  const [showFollowUps, setShowFollowUps] = useState(false);
-  const [showHistory, setShowHistory] = useState(false);
   const [isShuffling, setIsShuffling] = useState(false);
   const shuffleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      localStorage.setItem(DATA_VERSION_KEY, "2");
+      localStorage.setItem(DATA_VERSION_KEY, "3");
       const saved = readJson<Partial<SavedState>>(STATE_KEY, {});
       const history = validIds(saved.history);
       const recentIds = validIds(saved.recentIds).slice(-RECENT_LIMIT);
@@ -80,12 +72,13 @@ export function IceBreakingPractice() {
         ? saved.currentId
         : conversationStarters[0].id;
       setState({
-        ...initialState,
-        ...saved,
         currentId,
         history: history.length ? history : [currentId],
         historyIndex: Math.min(Math.max(saved.historyIndex ?? 0, 0), Math.max(history.length - 1, 0)),
         recentIds: recentIds.length ? recentIds : [currentId],
+        category: conversationStarterCategories.includes(saved.category as never) ? saved.category ?? "" : "",
+        difficulty: ["easy", "medium", "deep"].includes(saved.difficulty ?? "") ? saved.difficulty ?? "" : "",
+        favoritesOnly: Boolean(saved.favoritesOnly),
       });
       setFavorites(validIds(readJson<unknown>(FAVORITES_KEY, [])));
     }, 0);
@@ -110,7 +103,6 @@ export function IceBreakingPractice() {
 
   const showQuestion = useCallback((id: string, addToHistory = true) => {
     if (!conversationStarters.some(item => item.id === id)) return;
-    setShowFollowUps(false);
     setState(previous => {
       const history = addToHistory
         ? [...previous.history.slice(0, previous.historyIndex + 1), id]
@@ -129,7 +121,6 @@ export function IceBreakingPractice() {
     if (state.historyIndex <= 0) return;
     const nextIndex = state.historyIndex - 1;
     const id = state.history[nextIndex];
-    setShowFollowUps(false);
     setState(previousState => ({ ...previousState, currentId: id, historyIndex: nextIndex }));
   }, [state.history, state.historyIndex]);
 
@@ -154,7 +145,6 @@ export function IceBreakingPractice() {
   }, [current?.id, filtered, isShuffling, showQuestion, state.recentIds]);
 
   function updateFilter(patch: Partial<SavedState>) {
-    setShowFollowUps(false);
     setState(previous => ({ ...previous, ...patch }));
   }
 
@@ -169,12 +159,6 @@ export function IceBreakingPractice() {
   }
 
   const position = current ? filtered.findIndex(item => item.id === current.id) + 1 : 0;
-  const answerStyleLabels: Record<AnswerStyle, string> = {
-    everyone: "Everyone Answers",
-    one: "One Person Answers",
-    pair: "Pair Discussion",
-  };
-
   return (
     <main className="conversation-starters-page">
       <header className="conversation-starters-header">
@@ -182,7 +166,6 @@ export function IceBreakingPractice() {
           <ArrowLeft />
         </Link>
         <div>
-          <p>Questions That Get People Talking</p>
           <h1>Conversation Starters</h1>
         </div>
         <span>{conversationStarters.length}</span>
@@ -224,19 +207,6 @@ export function IceBreakingPractice() {
           </button>
         </div>
 
-        <div className="conversation-answer-style" aria-label="Answer style">
-          {(Object.keys(answerStyleLabels) as AnswerStyle[]).map(style => (
-            <button
-              key={style}
-              className={state.answerStyle === style ? "is-active" : ""}
-              onClick={() => updateFilter({ answerStyle: style })}
-            >
-              {style === "everyone" ? <UsersRound /> : <MessageCircleMore />}
-              {answerStyleLabels[style]}
-            </button>
-          ))}
-        </div>
-
         {state.difficulty === "deep" && (
           <p className="conversation-deep-note">
             Deep questions can feel personal. Anyone may skip a question without explaining why.
@@ -251,7 +221,6 @@ export function IceBreakingPractice() {
                 <span>{current.category}</span>
                 <span>{current.difficulty}</span>
               </div>
-              <p>{answerStyleLabels[state.answerStyle]}</p>
               <h2>{isShuffling ? "Finding a great question..." : current.question}</h2>
               <button
                 className={favorites.includes(current.id) ? "is-active" : ""}
@@ -261,18 +230,13 @@ export function IceBreakingPractice() {
               >
                 <Heart />
               </button>
-            </article>
-
-            <button className="conversation-follow-toggle" onClick={() => setShowFollowUps(value => !value)}>
-              {showFollowUps ? "Hide Follow-up Questions" : "Show Follow-up Questions"}
-            </button>
-            {showFollowUps && (
-              <div className="conversation-followups">
+              <div className="conversation-card-followups">
+                <small>Follow-up questions</small>
                 {current.followUps.map((question, index) => (
                   <p key={question}><span>{index + 1}</span>{question}</p>
                 ))}
               </div>
-            )}
+            </article>
 
             <div className="conversation-primary-actions">
               <button onClick={previous} disabled={state.historyIndex <= 0}>
@@ -297,21 +261,6 @@ export function IceBreakingPractice() {
           </div>
         )}
 
-        <button className="conversation-history-toggle" onClick={() => setShowHistory(value => !value)}>
-          <History /> Recent History ({state.recentIds.length})
-        </button>
-        {showHistory && (
-          <div className="conversation-history">
-            {[...state.recentIds].reverse().map(id => {
-              const item = conversationStarters.find(question => question.id === id);
-              return item ? (
-                <button key={id} onClick={() => showQuestion(id)}>
-                  <span>{item.category}</span>{item.question}
-                </button>
-              ) : null;
-            })}
-          </div>
-        )}
       </section>
     </main>
   );

@@ -1,5 +1,5 @@
 import type { ComponentType, CSSProperties } from "react";
-import { AlarmClock, Brain, CircleHelp, Drama, HandMetal, HeartHandshake, Lightbulb, ListChecks, Medal, MessageCircleQuestion, MessagesSquare, NotebookPen, Scale, ShieldQuestion, Smile, Sparkles, Swords, Users } from "lucide-react";
+import { AlarmClock, Brain, CircleHelp, Drama, HandMetal, HeartHandshake, Lightbulb, ListChecks, Medal, MessagesSquare, NotebookPen, Scale, ShieldQuestion, Smile, Sparkles, Swords, Users } from "lucide-react";
 import type { ActivityIconKey } from "@/types/activity";
 
 type ActivityIconProps = { iconKey:ActivityIconKey; size?:"sm"|"md"|"lg"; className?:string };
@@ -18,7 +18,7 @@ type DecorativeIcon = ComponentType<{ "aria-hidden"?: boolean | "true" }>;
 const activityIcons:Record<ActivityIconKey,DecorativeIcon> = {
   "true-false":TrueFalseIcon, "timed-speaking":TimedSpeakingIcon, questions:ListChecks,
   imagination:Lightbulb, funny:Smile, icebreaker:Users, discussion:MessagesSquare,
-  guessing:Brain, battle:Swords, balance:Scale, "conversation-starter":MessageCircleQuestion,
+  guessing:Brain, battle:Swords, balance:Scale,
   alphabet:AlphabetTilesIcon, debate:DebateIcon, "choose-three":ChooseThreeIcon,
   "useful-expressions":Sparkles, "expression-practice":NotebookPen, "situation-story":SituationStoryIcon,
   "rank-it":Medal,

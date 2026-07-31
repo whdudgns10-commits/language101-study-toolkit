@@ -9,6 +9,11 @@ export const conversationStarterCategories = [
   "Culture & Traditions",
   "Travel & Life Abroad",
   "Personality & Everyday Life",
+  "Dreams & Future",
+  "Money & Lifestyle",
+  "Technology & Social Media",
+  "Entertainment & Pop Culture",
+  "Challenges & Life Lessons",
 ] as const;
 
 export type ConversationStarterCategory = (typeof conversationStarterCategories)[number];
@@ -51,6 +56,7 @@ const topicGroups: TopicGroup[] = [
       ["a career you would try for one year", "the value of teamwork", "a useful way to give feedback", "when it is right to change careers", "a productive morning routine"],
       ["a surprising lesson from a job", "a strength you bring to a team", "how technology may change your work", "the meaning of career success", "a workplace culture you would enjoy"],
       ["a task you are proud of completing", "a skill schools should teach for work", "how to set boundaries at work", "the trade-off between money and meaning", "a person whose career inspires you"],
+      ["a workplace that feels enjoyable", "a great teammate", "career advice that has helped you", "a meaningful professional risk", "the future of flexible work"],
     ],
   },
   {
@@ -62,6 +68,7 @@ const topicGroups: TopicGroup[] = [
       ["a project you enjoyed", "a subject you wish you had studied", "a moment you felt proud at school", "what makes a great teacher", "a place at school you liked"],
       ["a mistake that taught you something", "the value of group projects", "how school prepared you for adulthood", "what students need besides academics", "a school tradition you remember"],
       ["a book that influenced you at school", "a talent you discovered as a student", "the pressure students face today", "how learning styles differ", "advice for your younger student self"],
+      ["a school day you would relive", "a lesson that still affects your choices", "a class that encouraged curiosity", "the best way to motivate students", "a school experience everyone should have"],
     ],
   },
   {
@@ -73,6 +80,7 @@ const topicGroups: TopicGroup[] = [
       ["a movie or show useful for learners", "a grammar point you finally understood", "the role of correction", "how culture changes word meaning", "a study tool you recommend"],
       ["a conversation that made you improve", "a way to practice without studying", "the fear of making mistakes", "what fluency means to you", "a useful expression you learned recently"],
       ["a language-learning goal", "the value of speaking with strangers", "how accents shape identity", "why people stop learning languages", "advice for a complete beginner"],
+      ["a phrase that changed a conversation", "a mistake that improved your language skills", "the most useful kind of practice", "a sign that someone is becoming fluent", "a language-learning milestone worth celebrating"],
     ],
   },
   {
@@ -96,6 +104,7 @@ const topicGroups: TopicGroup[] = [
       ["a dish you can cook well", "a flavor combination that surprised you", "a food tradition in your family", "how travel changes your taste", "an ideal dinner party menu"],
       ["a popular food you do not understand", "the best comfort food", "a meal connected to a celebration", "whether presentation changes taste", "a local food visitors should try"],
       ["a food you would eat every week", "a cooking mistake that became a story", "the value of eating together", "how diet choices reflect values", "a cuisine you want to explore"],
+      ["a dish that represents your hometown", "a drink connected to a good memory", "a food recommendation for a visitor", "how meals shape community", "a recipe you want to pass on"],
     ],
   },
   {
@@ -107,6 +116,7 @@ const topicGroups: TopicGroup[] = [
       ["a hobby you could teach", "a challenge you enjoy", "the value of doing nothing", "how technology changed leisure", "a hobby suited to your personality"],
       ["an outdoor activity you recommend", "a collection you would enjoy", "a hobby you gave up", "why adults need play", "a perfect rainy-day activity"],
       ["a recent way you spent free time", "a skill that requires patience", "a social hobby versus a solo hobby", "how to make time for interests", "a hobby worth trying while traveling"],
+      ["an activity that makes you lose track of time", "a skill you taught yourself", "a hobby that could become a career", "the best way to discover a new interest", "a free-time habit you want to protect"],
     ],
   },
   {
@@ -118,6 +128,7 @@ const topicGroups: TopicGroup[] = [
       ["a traditional art or craft", "a rule of politeness in your culture", "a holiday memory", "how food expresses culture", "a custom you would share abroad"],
       ["a tradition younger people are changing", "a symbol with cultural meaning", "a story passed through generations", "how globalization affects identity", "a culture you want to understand better"],
       ["a cultural misunderstanding", "a tradition you created yourself", "the role of language in culture", "how to appreciate culture respectfully", "a local event that represents your community"],
+      ["a tradition from your culture you value most", "a social rule visitors should know", "a cultural practice worth preserving", "how migration shapes traditions", "a custom you learned from another culture"],
     ],
   },
   {
@@ -128,6 +139,8 @@ const topicGroups: TopicGroup[] = [
       ["a travel mistake you can laugh about", "a city you would revisit", "the best way to meet locals", "the hardest part of moving abroad", "an essential item in your bag"],
       ["a memorable journey", "a place tourists often miss", "a cultural adjustment abroad", "whether travel makes people open-minded", "a dream route or road trip"],
       ["a time you felt lost while traveling", "a home comfort you miss abroad", "a responsible way to travel", "what makes somewhere feel like home", "advice for a first solo trip"],
+      ["a local experience you look for while traveling", "a conversation with someone abroad", "a place that challenged your assumptions", "how to build a life in a new country", "a travel plan you would change next time"],
+      ["a country you could live in for a year", "a moment you felt at home abroad", "the value of traveling slowly", "how language affects life overseas", "a destination that taught you something"],
     ],
   },
   {
@@ -138,6 +151,68 @@ const topicGroups: TopicGroup[] = [
       ["a decision you make quickly", "a daily task you secretly enjoy", "a compliment that stayed with you", "what helps people become resilient", "a simple pleasure you recommend"],
       ["a routine you want to improve", "a trait people misunderstand about you", "a moment you felt brave", "how you handle uncertainty", "a personal rule you live by"],
       ["a recent reason you smiled", "a habit you admire in others", "a choice that taught you something", "what makes a life feel balanced", "a question that reveals personality"],
+      ["the best part of your day", "a small habit that makes life better", "what would make tomorrow a great day", "a routine that reflects your personality", "a simple change with a big effect"],
+      ["a way you recharge after a long day", "a trait you are learning to accept", "a personal value that guides you", "how your environment affects your mood", "an everyday moment you appreciate more now"],
+    ],
+  },
+  {
+    category: "Dreams & Future",
+    tags: ["dreams", "future"],
+    topics: [
+      ["a dream you have not shared often", "a place you hope to live someday", "a skill your future self will need", "how you imagine life in ten years", "a future achievement worth celebrating"],
+      ["a childhood dream that still matters", "a goal that feels exciting", "someone who inspires your future plans", "how uncertainty affects ambition", "a change you hope to see in the world"],
+      ["a project you would start with unlimited time", "a future trip you are planning", "a habit that supports a long-term goal", "what success may mean later in life", "a dream that has changed over time"],
+      ["an invention you hope exists soon", "a community you want to build", "a risk your future self may thank you for", "how people can prepare for change", "a letter you would write to your future self"],
+      ["a goal that requires patience", "a future career possibility", "something you hope never changes", "how technology may shape everyday life", "a promise you want to keep to yourself"],
+      ["a bucket-list experience", "a future family tradition", "a cause you want to support", "how you decide which dream to pursue", "the kind of person you hope to become"],
+    ],
+  },
+  {
+    category: "Money & Lifestyle",
+    tags: ["money", "lifestyle"],
+    topics: [
+      ["the best thing money can buy", "a purchase you never regretted", "a simple lifestyle you admire", "how money affects freedom", "an experience worth saving for"],
+      ["a money lesson learned early", "a luxury that feels worthwhile", "the difference between wants and needs", "how lifestyle choices reflect priorities", "a budget habit that helps"],
+      ["a purchase that taught you something", "the value of sharing resources", "a financial goal that feels meaningful", "how advertising changes spending", "a free activity that feels special"],
+      ["a possession you could live without", "a service worth paying more for", "how people define a comfortable life", "whether experiences matter more than things", "a lifestyle trend you question"],
+      ["a gift that mattered more than its price", "a time saving mattered", "the role of money in relationships", "how social media shapes lifestyle expectations", "a practical money skill schools should teach"],
+      ["a small expense that improves daily life", "a financial risk people should understand", "what enough means to you", "how location changes living costs", "a lifestyle choice you want to make intentionally"],
+    ],
+  },
+  {
+    category: "Technology & Social Media",
+    tags: ["technology", "social-media"],
+    topics: [
+      ["an app you use every day", "a technology that improved your life", "the best use of social media", "how online habits affect attention", "a digital tool you recommend"],
+      ["a feature you wish phones had", "an online community that helps people", "a time technology caused confusion", "how privacy should work online", "a device you could stop using"],
+      ["a social media trend you enjoyed", "a technology skill everyone needs", "the value of taking digital breaks", "how algorithms shape opinions", "an invention that feels ordinary now"],
+      ["a memorable online friendship", "a task artificial intelligence could help with", "a rule for healthy phone use", "how technology changes communication", "a platform you would redesign"],
+      ["a piece of old technology you miss", "a useful online learning resource", "the problem with constant notifications", "how virtual spaces affect identity", "a future technology you are curious about"],
+      ["a time the internet solved a problem", "a digital habit you want to change", "the difference between online and offline connection", "how creators influence culture", "a technology choice people may regret"],
+    ],
+  },
+  {
+    category: "Entertainment & Pop Culture",
+    tags: ["entertainment", "pop-culture"],
+    topics: [
+      ["a movie you can watch repeatedly", "a song connected to a memory", "a celebrity who uses influence well", "how entertainment shapes conversation", "a show everyone should try"],
+      ["a character you understand deeply", "a live performance you remember", "a trend that became unexpectedly popular", "why people enjoy celebrity news", "a book that deserves an adaptation"],
+      ["a film that changed your opinion", "a song that improves your mood", "a fandom that creates community", "how streaming changed entertainment", "an artist you recently discovered"],
+      ["a popular show you could not enjoy", "a fictional world you would visit", "a cultural moment people still discuss", "what makes entertainment timeless", "a performance you wish you had seen"],
+      ["a character you would invite to dinner", "a genre you grew to appreciate", "a piece of entertainment from another culture", "how subtitles affect viewing", "a story that deserves a sequel"],
+      ["a guilty pleasure you happily admit", "a soundtrack that tells a story", "a pop-culture debate you find interesting", "how memes create shared language", "an entertainer whose career surprised you"],
+    ],
+  },
+  {
+    category: "Challenges & Life Lessons",
+    tags: ["challenges", "life-lessons"],
+    topics: [
+      ["a challenge that made you stronger", "a mistake you are grateful for", "advice you learned through experience", "how people recover from setbacks", "a difficult choice that clarified your values"],
+      ["a fear you have faced", "a lesson that took time to understand", "someone who helped during a hard period", "how failure can change direction", "a challenge you would accept again"],
+      ["a time patience paid off", "a habit you had to unlearn", "a conversation that changed you", "how people know when to keep trying", "a problem that revealed a strength"],
+      ["a moment you asked for help", "a lesson from an unexpected person", "a boundary you learned to set", "how disappointment can create growth", "a risk that taught you courage"],
+      ["a difficult beginning that became easier", "a belief you changed", "a time preparation mattered", "how people can learn from regret", "a lesson you want younger people to know"],
+      ["a challenge that brought people together", "a time you surprised yourself", "the value of starting over", "how humor helps during difficult moments", "a life lesson you are still learning"],
     ],
   },
 ];
@@ -186,14 +261,24 @@ export const conversationStarterCategoryCounts = Object.fromEntries(
 
 export function validateConversationStarters(): string[] {
   const errors: string[] = [];
-  if (conversationStarters.length !== 250) errors.push("Expected exactly 250 questions.");
-  if (new Set(conversationStarters.map(item => item.id)).size !== 250) errors.push("Question IDs must be unique.");
+  if (conversationStarters.length !== 450) errors.push("Expected exactly 450 questions.");
+  if (new Set(conversationStarters.map(item => item.id)).size !== 450) errors.push("Question IDs must be unique.");
+  if (new Set(conversationStarters.map(item => item.question.trim().toLowerCase())).size !== conversationStarters.length) {
+    errors.push("Questions must be unique.");
+  }
   conversationStarters.forEach((item, index) => {
     const expected = `conversation-starter-${String(index + 1).padStart(3, "0")}`;
     if (item.id !== expected) errors.push(`Unexpected ID at position ${index + 1}.`);
-    if (!item.question.trim() || item.followUps.length < 1 || item.followUps.length > 2) {
+    const normalized = [item.question, ...item.followUps].map(value => value.trim().toLowerCase());
+    if (!item.question.trim() || item.followUps.length !== 2 || item.followUps.some(value => !value.trim())) {
       errors.push(`Incomplete question: ${item.id}`);
     }
+    if (new Set(normalized).size !== normalized.length) errors.push(`Repeated prompt: ${item.id}`);
+    if (!conversationStarterCategories.includes(item.category)) errors.push(`Invalid category: ${item.id}`);
+    if (!["easy", "medium", "deep"].includes(item.difficulty)) errors.push(`Invalid difficulty: ${item.id}`);
+  });
+  conversationStarterCategories.forEach(category => {
+    if (conversationStarterCategoryCounts[category] !== 30) errors.push(`Expected 30 questions for ${category}.`);
   });
   return errors;
 }

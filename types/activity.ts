@@ -20,7 +20,7 @@ export type ActivityLevel = (typeof activityLevels)[number];
 export type SourceType = "interactive" | "naver-cafe" | "internal";
 export type ActivityIconKey =
   | "true-false" | "timed-speaking" | "questions" | "imagination" | "funny"
-  | "icebreaker" | "discussion" | "guessing" | "battle" | "balance" | "conversation-starter"
+  | "icebreaker" | "discussion" | "guessing" | "battle" | "balance"
   | "alphabet" | "debate" | "choose-three" | "useful-expressions"
   | "expression-practice" | "situation-story" | "rank-it" | "time-challenge" | "three-things" | "spyfall"
   | "secret-mission" | "experience-survival";
