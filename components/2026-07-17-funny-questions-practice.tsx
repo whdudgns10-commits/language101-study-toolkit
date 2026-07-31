@@ -1,55 +1,352 @@
 "use client";
+
 import Link from "next/link";
-import { ArrowLeft, Check, ChevronDown, ChevronLeft, ChevronRight, Clock3, Dices, Heart, Settings, Shuffle, SkipForward, Star, Users, X } from "lucide-react";
-import { useEffect,useMemo,useRef,useState } from "react";
-import { FUNNY_CATEGORIES,funnyQuestions,type FunnyQuestion,type FunnyQuestionCategory,type FunnyQuestionDifficulty } from "@/data/2026-07-17-funny-questions";
-import { incrementFunnyStat,readFunnyFavorites,readFunnyRatings,saveFunnyRating,saveFunnySession,toggleFunnyFavorite,type FunnyRating } from "@/lib/2026-07-17-funny-questions-storage";
-import { useLanguage } from "@/hooks/use-language";
+import {
+  ArrowLeft,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Heart,
+  History,
+  MessageCircleMore,
+  Save,
+  Shuffle,
+  UsersRound,
+} from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  FUNNY_CATEGORY_META,
+  funnyQuestionCategoryCounts,
+  funnyQuestions,
+} from "@/data/2026-07-17-funny-questions";
+import {
+  migrateFunnyQuestionStorage,
+  readFunnyFavorites,
+  readFunnyState,
+  saveFunnySession,
+  saveFunnyState,
+  toggleFunnyFavorite,
+  type FunnyPracticeState,
+} from "@/lib/2026-07-17-funny-questions-storage";
 
-type Mode="random"|"number"|"category"; type TimerChoice=0|30|45|60|90;
-const ui={
- en:{title:"Funny Questions",question:"FUNNY QUESTION",settings:"Settings",randomMode:"Random Question",numberMode:"Pick a Number",categoryMode:"Category Challenge",all:"All",next:"Next",previous:"Previous",random:"Random",skip:"Skip",follow:"Show Follow-up Questions",hideFollow:"Hide Follow-up Questions",help:"Need Help?",hideHelp:"Hide Answer Help",personal:"Personal",sensitive:"Sensitive",translation:"Show Translation",challenge:"3-Sentence Challenge",react:"React to the speaker before moving on.",fun:"Fun Challenge",group:"Group Play",finish:"Save Session",saved:"Saved to My Study",numberError:"Enter a number from 1 to 500.",uncomfortable:"You can pass any question that makes you uncomfortable.",great:"Great answer! Keep the conversation going.",timesUp:"Time’s up! Finish your sentence.",nextPlayer:"Next Player",everyone:"Everyone Answers",newQuestion:"New Question",favoriteOnly:"Favorite Questions Only",shuffle:"Shuffle Session",memo:"Session memo",save:"Save to My Study"},
- ko:{title:"재미있는 질문",question:"FUNNY QUESTION",settings:"설정",randomMode:"랜덤 질문",numberMode:"번호 선택",categoryMode:"카테고리 도전",all:"전체",next:"다음",previous:"이전",random:"랜덤",skip:"건너뛰기",follow:"후속 질문 보기",hideFollow:"후속 질문 숨기기",help:"답변 도움말",hideHelp:"답변 도움말 숨기기",personal:"개인 질문",sensitive:"민감 질문",translation:"번역 보기",challenge:"3문장 챌린지",react:"다음 사람으로 넘어가기 전에 답변자에게 영어로 반응해 보세요.",fun:"재미 챌린지",group:"그룹 플레이",finish:"세션 저장",saved:"My Study에 저장했어요",numberError:"1부터 500 사이의 숫자를 입력하세요.",uncomfortable:"불편한 질문은 언제든 건너뛸 수 있습니다.",great:"멋진 답변이에요! 대화를 계속 이어가 보세요.",timesUp:"시간이 끝났어요! 말하던 문장을 마무리하세요.",nextPlayer:"다음 참가자",everyone:"모두 답하기",newQuestion:"새 질문",favoriteOnly:"즐겨찾기만",shuffle:"셔플 세션",memo:"세션 메모",save:"My Study에 저장"}
+const RECENT_LIMIT = 30;
+const validIds = new Set(funnyQuestions.map(question => question.id));
+const initialState: FunnyPracticeState = {
+  currentId: funnyQuestions[0].id,
+  history: [funnyQuestions[0].id],
+  historyIndex: 0,
+  recentIds: [funnyQuestions[0].id],
+  category: "all",
+  level: "all",
+  answerStyle: "everyone",
+  favoritesOnly: false,
 };
-const categoryKo:Record<FunnyQuestionCategory,string>={"Wild What-Ifs":"황당한 상상","Funny Daily Life":"웃긴 일상","Honest TMI":"솔직한 TMI","Food & Weird Tastes":"음식과 독특한 취향","Travel & Adventure":"여행과 모험","Love & Relationships":"연애와 인간관계","Work & Money":"일과 돈","Would You Rather":"기발한 선택","Personality":"성격과 습관","Childhood & Memories":"어린 시절과 추억","Pop Culture & Entertainment":"문화와 엔터테인먼트","Superpowers & Fantasy":"초능력과 판타지","Awkward Moments":"민망한 순간","Light Debates":"가벼운 논쟁","Future & Dreams":"미래와 꿈"};
-const ratingOptions:[FunnyRating,string][]=[["very-funny","😂 Very Funny"],["fun","😄 Fun"],["easy","🙂 Easy Conversation"],["interesting","💭 Interesting"]];
 
-export function FunnyQuestionsPractice(){
- const {language}=useLanguage();const l=language==="ko"?"ko":"en";const c=ui[l];
- const [mode,setMode]=useState<Mode>("random"),[category,setCategory]=useState<FunnyQuestionCategory|"all">("all"),[difficulty,setDifficulty]=useState<FunnyQuestionDifficulty|"all">("all"),[sensitive,setSensitive]=useState(false),[personal,setPersonal]=useState(true),[favoriteOnly,setFavoriteOnly]=useState(false),[funOn,setFunOn]=useState(true),[timerChoice,setTimerChoice]=useState<TimerChoice>(0),[groupOn,setGroupOn]=useState(false),[showTranslation,setShowTranslation]=useState(true),[settings,setSettings]=useState(false);
- const [current,setCurrent]=useState<FunnyQuestion>(funnyQuestions[0]),[history,setHistory]=useState<string[]>([funnyQuestions[0].id]),[historyIndex,setHistoryIndex]=useState(0),[recent,setRecent]=useState<string[]>([funnyQuestions[0].id]),[seen,setSeen]=useState<string[]>([funnyQuestions[0].id]),[shuffleIds,setShuffleIds]=useState<string[]>([]),[shuffleIndex,setShuffleIndex]=useState(0);
- const [favorites,setFavorites]=useState<string[]>([]),[ratings,setRatings]=useState<Record<string,FunnyRating>>({}),[follow,setFollow]=useState(false),[help,setHelp]=useState(false),[checks,setChecks]=useState([false,false,false]),[reaction,setReaction]=useState(""),[number,setNumber]=useState(""),[error,setError]=useState(""),[players,setPlayers]=useState(["Player 1","Player 2"]),[playerIndex,setPlayerIndex]=useState(0),[everyone,setEveryone]=useState(false),[remaining,setRemaining]=useState(0),[timeUp,setTimeUp]=useState(false),[memo,setMemo]=useState(""),[message,setMessage]=useState("");
- const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
- useEffect(()=>{const load=setTimeout(()=>{setFavorites(readFunnyFavorites().map(item=>item.questionId));setRatings(readFunnyRatings());incrementFunnyStat(funnyQuestions[0].id,"viewed")},0);return()=>clearTimeout(load)},[]);
- useEffect(()=>{if(timerRef.current)clearInterval(timerRef.current);if(!timerChoice)return;timerRef.current=setInterval(()=>setRemaining(value=>{if(value<=1){if(timerRef.current)clearInterval(timerRef.current);setTimeUp(true);return 0}return value-1}),1000);return()=>{if(timerRef.current)clearInterval(timerRef.current)}},[current.id,timerChoice]);
- const filtered=useMemo(()=>funnyQuestions.filter(q=>(category==="all"||q.category===category)&&(difficulty==="all"||q.difficulty===difficulty)&&(sensitive||q.sensitivity!=="sensitive")&&(personal||q.sensitivity==="safe")&&(!favoriteOnly||favorites.includes(q.id))),[category,difficulty,sensitive,personal,favoriteOnly,favorites]);
- function showQuestion(next:FunnyQuestion,replaceHistory=false){setCurrent(next);setFollow(false);setHelp(false);setChecks([false,false,false]);setReaction("");setError("");setTimeUp(false);setRemaining(timerChoice);setRecent(items=>[...items.filter(id=>id!==next.id),next.id].slice(-20));setSeen(items=>items.includes(next.id)?items:[...items,next.id]);incrementFunnyStat(next.id,"viewed");if(!replaceHistory){setHistory(items=>[...items.slice(0,historyIndex+1),next.id]);setHistoryIndex(value=>value+1)}}
- function randomQuestion(skip=false){let pool=filtered.filter(q=>q.id!==current.id&&!recent.includes(q.id));if(!pool.length)pool=filtered.filter(q=>q.id!==current.id);if(!pool.length)pool=filtered;if(!pool.length){setError("No questions match these settings.");return}if(skip)incrementFunnyStat(current.id,"skipped");showQuestion(pool[Math.floor(Math.random()*pool.length)])}
- function goHistory(delta:number){const index=historyIndex+delta;if(index<0||index>=history.length)return;const found=funnyQuestions.find(q=>q.id===history[index]);if(found){setHistoryIndex(index);setCurrent(found);setFollow(false);setHelp(false);setChecks([false,false,false])}}
- function pickNumber(){const value=Number(number);if(!Number.isInteger(value)||value<1||value>500){setError(c.numberError);return}showQuestion(funnyQuestions[value-1])}
- function startShuffle(){const ids=[...filtered].sort(()=>Math.random()-.5).map(q=>q.id);setShuffleIds(ids);setShuffleIndex(0);const first=funnyQuestions.find(q=>q.id===ids[0]);if(first)showQuestion(first);}
- function nextShuffle(){if(!shuffleIds.length){startShuffle();return}const index=(shuffleIndex+1)%shuffleIds.length;setShuffleIndex(index);const next=funnyQuestions.find(q=>q.id===shuffleIds[index]);if(next)showQuestion(next)}
- function toggleFavorite(){const next=toggleFunnyFavorite(current);setFavorites(next.map(item=>item.questionId))}
- function rate(value:FunnyRating){setRatings(saveFunnyRating(current.id,value))}
- function addPlayer(){if(players.length<10)setPlayers(items=>[...items,`Player ${items.length+1}`])}
- function nextPlayer(){if(playerIndex===players.length-1&&everyone){setMessage("Everyone answered! Choose a new question.");setEveryone(false);return}setPlayerIndex(value=>(value+1)%players.length)}
- function save(){const now=new Date();saveFunnySession({id:`funny-session-${now.getTime()}`,activity:"funny-questions",date:now.toLocaleDateString("en-CA"),mode,participants:players,viewedCount:seen.length,answeredQuestionIds:seen,categories:[...new Set(seen.map(id=>funnyQuestions.find(q=>q.id===id)?.category).filter(Boolean))] as FunnyQuestionCategory[],favoriteQuestionIds:favorites,funniestQuestionId:Object.entries(ratings).find(([,value])=>value==="very-funny")?.[0],reactions:reaction?[reaction]:[],memo,createdAt:now.toISOString()});setMessage(c.saved)}
- const contentLanguage=language==="ko"?"ko":language==="zh"?"zh":language==="ja"?"ja":"en";
- return <main className="funny-practice">
-  <header className="funny-header"><Link href="/activities/funny-questions"><ArrowLeft/> {c.title}</Link><div><button onClick={()=>setSettings(true)}><Settings/> {c.settings}</button></div></header>
-  <section className="funny-shell">
-   {groupOn&&<div className="funny-turn"><Users/><b>{players[playerIndex]}’s Turn</b><span>{playerIndex+1}/{players.length}</span></div>}
-   <article className="funny-question-card"><div className="funny-card-meta"><span>#{current.number}</span><span>{language==="ko"?categoryKo[current.category]:current.category}</span><span>{current.difficulty}</span>{current.sensitivity!=="safe"&&<span className={current.sensitivity}>{current.sensitivity==="personal"?c.personal:c.sensitive}</span>}<button aria-label="Favorite" className={favorites.includes(current.id)?"is-active":""} onClick={toggleFavorite}><Heart/></button></div><small>{c.question}</small><h1>{current.question.en}</h1>{showTranslation&&contentLanguage!=="en"&&<p>{current.question[contentLanguage]||current.question.en}</p>}<p className="funny-comfort">{c.uncomfortable}</p></article>
-   {timerChoice>0&&<div className={`funny-timer ${timeUp?"is-up":""}`}><Clock3/><strong>{remaining}s</strong>{timeUp&&<span>{c.timesUp}</span>}</div>}
-   <section className="funny-challenge"><h2>{c.challenge}</h2><ol><li>Give your answer.</li><li>Explain why.</li><li>Add an example or experience.</li></ol><div>{checks.map((checked,index)=><button className={checked?"is-active":""} key={index} onClick={()=>setChecks(items=>items.map((item,i)=>i===index?!item:item))}>{checked&&<Check/>} Sentence {index+1}</button>)}</div>{checks.every(Boolean)&&<b>{c.great}</b>}</section>
-   {funOn&&<aside className="funny-fun"><Star/><div><b>{c.fun}</b><p>{current.funChallenge}</p></div></aside>}
-   <div className="funny-disclosures"><button onClick={()=>setHelp(!help)}>{help?c.hideHelp:c.help}<ChevronDown/></button>{help&&<div className="funny-helper">{current.answerStarters.en.map((item,index)=><p key={item}><b>{item}</b>{contentLanguage!=="en"&&<span>{current.answerStarters[contentLanguage][index]||item}</span>}</p>)}</div>}<button onClick={()=>setFollow(!follow)}>{follow?c.hideFollow:c.follow}<ChevronDown/></button>{follow&&<ol className="funny-helper">{current.followUps.en.map((item,index)=><li key={item}><b>{item}</b>{contentLanguage!=="en"&&<span>{current.followUps[contentLanguage][index]||item}</span>}</li>)}</ol>}</div>
-   <section className="funny-reactions"><h2>Reaction Challenge</h2><p>{c.react}</p><div>{current.reactionPrompts.map(item=><button className={reaction===item?"is-active":""} onClick={()=>setReaction(item)} key={item}>{item}</button>)}</div></section>
-   <section className="funny-ratings">{ratingOptions.map(([value,label])=><button className={ratings[current.id]===value?"is-active":""} onClick={()=>rate(value)} key={value}>{label}</button>)}</section>
-   {mode==="number"&&<div className="funny-number"><input inputMode="numeric" min="1" max="500" value={number} onChange={e=>setNumber(e.target.value)} placeholder="1–500"/><button onClick={pickNumber}>Go</button></div>}{error&&<p className="funny-error">{error}</p>}
-   {groupOn?<div className="funny-actions group"><button onClick={()=>randomQuestion(true)}><SkipForward/> {c.skip}</button><button onClick={nextPlayer}><Users/> {c.nextPlayer}</button><button onClick={()=>randomQuestion()}><Dices/> {c.newQuestion}</button><button onClick={()=>{setEveryone(true);setPlayerIndex(0)}}>{c.everyone}</button></div>:<div className="funny-actions"><button disabled={historyIndex===0} onClick={()=>goHistory(-1)}><ChevronLeft/> {c.previous}</button><button onClick={()=>randomQuestion()}><Dices/> {c.random}</button><button onClick={()=>shuffleIds.length?nextShuffle():randomQuestion()}>{c.next} <ChevronRight/></button></div>}
-   <section className="funny-save"><textarea value={memo} onChange={e=>setMemo(e.target.value)} placeholder={c.memo}/><button onClick={save}>{c.save}</button>{message&&<p>{message}</p>}</section>
-  </section>
-  {settings&&<div className="funny-settings-backdrop" onClick={()=>setSettings(false)}><section className="funny-settings" onClick={e=>e.stopPropagation()}><header><h2>{c.settings}</h2><button onClick={()=>setSettings(false)}><X/></button></header><label>Mode<select value={mode} onChange={e=>setMode(e.target.value as Mode)}><option value="random">{c.randomMode}</option><option value="number">{c.numberMode}</option><option value="category">{c.categoryMode}</option></select></label><label>Category<select value={category} onChange={e=>setCategory(e.target.value as FunnyQuestionCategory|"all")}><option value="all">{c.all}</option>{FUNNY_CATEGORIES.map(item=><option key={item}>{item}</option>)}</select></label><label>Difficulty<select value={difficulty} onChange={e=>setDifficulty(e.target.value as FunnyQuestionDifficulty|"all")}><option value="all">{c.all}</option><option value="beginner">Beginner</option><option value="intermediate">Intermediate</option><option value="advanced">Advanced</option></select></label><label>Timer<select value={timerChoice} onChange={e=>setTimerChoice(Number(e.target.value) as TimerChoice)}><option value="0">Off</option>{[30,45,60,90].map(value=><option value={value} key={value}>{value} seconds</option>)}</select></label>{[[c.sensitive,sensitive,setSensitive],[c.personal,personal,setPersonal],[c.fun,funOn,setFunOn],[c.group,groupOn,setGroupOn],[c.translation,showTranslation,setShowTranslation],[c.favoriteOnly,favoriteOnly,setFavoriteOnly]] .map(([label,value,setter])=><label className="funny-toggle" key={String(label)}><span>{String(label)}</span><input type="checkbox" checked={Boolean(value)} onChange={e=>(setter as (v:boolean)=>void)(e.target.checked)}/></label>)}{groupOn&&<div className="funny-players">{players.map((name,index)=><input key={index} value={name} onChange={e=>setPlayers(items=>items.map((item,i)=>i===index?e.target.value:item))}/>)}<button onClick={addPlayer} disabled={players.length>=10}>+ Player</button></div>}<button className="button button-secondary" onClick={startShuffle}><Shuffle/> {c.shuffle}</button><p>{filtered.length} / 500 questions</p></section></div>}
- </main>
+const answerStyles = {
+  everyone: {
+    label: "Everyone Answers",
+    description: "Everyone answers the same question one by one.",
+  },
+  one: {
+    label: "One Person Answers",
+    description: "One person answers, and the group asks follow-up questions.",
+  },
+  pair: {
+    label: "Pair Discussion",
+    description: "Discuss the question in pairs before sharing with the group.",
+  },
+  vote: {
+    label: "Vote First, Explain After",
+    description: "Choose your personal answer silently, reveal together, then explain.",
+  },
+} as const;
+
+function cleanIds(value: unknown): string[] {
+  return Array.isArray(value)
+    ? value.filter((id): id is string => typeof id === "string" && validIds.has(id))
+    : [];
+}
+
+export function FunnyQuestionsPractice() {
+  const [state, setState] = useState<FunnyPracticeState>(initialState);
+  const [favorites, setFavorites] = useState<string[]>([]);
+  const [showFollowUps, setShowFollowUps] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [memo, setMemo] = useState("");
+  const [saved, setSaved] = useState(false);
+  const [isShuffling, setIsShuffling] = useState(false);
+  const shuffleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      migrateFunnyQuestionStorage(validIds);
+      const stored = readFunnyState(initialState);
+      const history = cleanIds(stored.history);
+      const recentIds = cleanIds(stored.recentIds).slice(-RECENT_LIMIT);
+      const currentId = validIds.has(stored.currentId) ? stored.currentId : funnyQuestions[0].id;
+      setState({
+        ...initialState,
+        ...stored,
+        currentId,
+        history: history.length ? history : [currentId],
+        historyIndex: Math.min(Math.max(stored.historyIndex || 0, 0), Math.max(history.length - 1, 0)),
+        recentIds: recentIds.length ? recentIds : [currentId],
+      });
+      setFavorites(readFunnyFavorites(validIds).map(item => item.questionId));
+    }, 0);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    saveFunnyState(state);
+  }, [state]);
+
+  useEffect(() => () => {
+    if (shuffleTimer.current) clearTimeout(shuffleTimer.current);
+  }, []);
+
+  const filtered = useMemo(() => funnyQuestions.filter(question =>
+    (state.category === "all" || question.category === state.category) &&
+    (state.level === "all" || question.level === state.level) &&
+    (!state.favoritesOnly || favorites.includes(question.id))
+  ), [state.category, state.level, state.favoritesOnly, favorites]);
+
+  const current = filtered.find(question => question.id === state.currentId) ?? filtered[0];
+
+  const showQuestion = useCallback((id: string, addToHistory = true) => {
+    if (!validIds.has(id)) return;
+    setShowFollowUps(false);
+    setState(previous => {
+      const history = addToHistory
+        ? [...previous.history.slice(0, previous.historyIndex + 1), id]
+        : previous.history;
+      return {
+        ...previous,
+        currentId: id,
+        history,
+        historyIndex: addToHistory ? history.length - 1 : previous.historyIndex,
+        recentIds: [...previous.recentIds.filter(recentId => recentId !== id), id].slice(-RECENT_LIMIT),
+      };
+    });
+  }, []);
+
+  const previousQuestion = useCallback(() => {
+    if (state.historyIndex <= 0) return;
+    const historyIndex = state.historyIndex - 1;
+    setShowFollowUps(false);
+    setState(previous => ({
+      ...previous,
+      currentId: previous.history[historyIndex],
+      historyIndex,
+    }));
+  }, [state.historyIndex]);
+
+  const nextQuestion = useCallback(() => {
+    if (!current || filtered.length === 0) return;
+    const index = filtered.findIndex(question => question.id === current.id);
+    showQuestion(filtered[(index + 1) % filtered.length].id);
+  }, [current, filtered, showQuestion]);
+
+  const shuffleQuestion = useCallback(() => {
+    if (isShuffling || filtered.length === 0) return;
+    setIsShuffling(true);
+    const recent = new Set(state.recentIds.slice(-RECENT_LIMIT));
+    let pool = filtered.filter(question => question.id !== current?.id && !recent.has(question.id));
+    if (pool.length === 0) pool = filtered.filter(question => question.id !== current?.id);
+    if (pool.length === 0) pool = filtered;
+    const selected = pool[Math.floor(Math.random() * pool.length)];
+    shuffleTimer.current = setTimeout(() => {
+      showQuestion(selected.id);
+      setIsShuffling(false);
+    }, 700);
+  }, [current?.id, filtered, isShuffling, showQuestion, state.recentIds]);
+
+  function updateFilters(patch: Partial<FunnyPracticeState>) {
+    setShowFollowUps(false);
+    setState(previous => ({ ...previous, ...patch }));
+  }
+
+  function favoriteQuestion() {
+    if (!current) return;
+    setFavorites(toggleFunnyFavorite(current).map(item => item.questionId));
+  }
+
+  function saveSession() {
+    const now = new Date();
+    saveFunnySession({
+      id: `funny-session-${now.getTime()}`,
+      activity: "funny-questions",
+      date: now.toLocaleDateString("en-CA"),
+      viewedCount: state.recentIds.length,
+      answeredQuestionIds: state.recentIds,
+      categories: [...new Set(state.recentIds.flatMap(id => {
+        const category = funnyQuestions.find(question => question.id === id)?.category;
+        return category ? [category] : [];
+      }))],
+      favoriteQuestionIds: favorites,
+      memo,
+      createdAt: now.toISOString(),
+    });
+    setSaved(true);
+    setTimeout(() => setSaved(false), 1400);
+  }
+
+  const answerStyle = answerStyles[state.answerStyle];
+  const position = current ? filtered.findIndex(question => question.id === current.id) + 1 : 0;
+  const categoryLabel = current
+    ? FUNNY_CATEGORY_META.find(category => category.id === current.category)?.label
+    : "";
+
+  return (
+    <main className="funny-v2-page">
+      <header className="funny-v2-header">
+        <Link href="/activities/funny-questions" aria-label="Back to Funny Questions"><ArrowLeft /></Link>
+        <div>
+          <p>Unexpected Questions, Better Conversations</p>
+          <h1>Funny Questions</h1>
+        </div>
+        <span>{funnyQuestions.length}</span>
+      </header>
+
+      <section className="funny-v2-shell">
+        <div className="funny-v2-categories" role="listbox" aria-label="Question category">
+          <button
+            role="option"
+            aria-selected={state.category === "all"}
+            className={state.category === "all" ? "is-active" : ""}
+            onClick={() => updateFilters({ category: "all" })}
+          >
+            {state.category === "all" && <Check />} All <span>{funnyQuestions.length}</span>
+          </button>
+          {FUNNY_CATEGORY_META.map(category => (
+            <button
+              key={category.id}
+              role="option"
+              aria-selected={state.category === category.id}
+              className={state.category === category.id ? "is-active" : ""}
+              onClick={() => updateFilters({ category: category.id })}
+            >
+              {state.category === category.id && <Check />}
+              {category.label} <span>{funnyQuestionCategoryCounts[category.id]}</span>
+            </button>
+          ))}
+        </div>
+
+        <div className="funny-v2-levels" role="listbox" aria-label="Question level">
+          {(["all", "light", "funny", "wild"] as const).map(level => (
+            <button
+              key={level}
+              role="option"
+              aria-selected={state.level === level}
+              className={state.level === level ? "is-active" : ""}
+              onClick={() => updateFilters({ level })}
+            >
+              {state.level === level && <Check />}
+              {level === "all" ? "All Levels" : level[0].toUpperCase() + level.slice(1)}
+            </button>
+          ))}
+          <button
+            aria-pressed={state.favoritesOnly}
+            className={state.favoritesOnly ? "is-active" : ""}
+            onClick={() => updateFilters({ favoritesOnly: !state.favoritesOnly })}
+          >
+            <Heart /> Favorites
+          </button>
+        </div>
+
+        <div className="funny-v2-answer-styles" aria-label="Answer Style">
+          {(Object.entries(answerStyles) as [FunnyPracticeState["answerStyle"], typeof answerStyles[keyof typeof answerStyles]][]).map(([id, option]) => (
+            <button
+              key={id}
+              aria-pressed={state.answerStyle === id}
+              className={state.answerStyle === id ? "is-active" : ""}
+              onClick={() => updateFilters({ answerStyle: id })}
+            >
+              {id === "everyone" ? <UsersRound /> : <MessageCircleMore />}
+              <span><b>{option.label}</b><small>{option.description}</small></span>
+            </button>
+          ))}
+        </div>
+
+        {current ? (
+          <>
+            <article className={`funny-v2-card${isShuffling ? " is-shuffling" : ""}`}>
+              <div className="funny-v2-card-meta">
+                <span>{position} / {filtered.length}</span>
+                <span>{categoryLabel}</span>
+                <span>{current.level}</span>
+              </div>
+              <p>{answerStyle.label}</p>
+              <h2>{isShuffling ? "Finding an unexpected question..." : current.question}</h2>
+              <button
+                aria-label={favorites.includes(current.id) ? "Remove from favorites" : "Add to favorites"}
+                aria-pressed={favorites.includes(current.id)}
+                className={favorites.includes(current.id) ? "is-active" : ""}
+                onClick={favoriteQuestion}
+              >
+                <Heart />
+              </button>
+            </article>
+
+            <button className="funny-v2-follow-toggle" onClick={() => setShowFollowUps(value => !value)}>
+              {showFollowUps ? "Hide Follow-up Questions" : "Show Follow-up Questions"}
+            </button>
+            {showFollowUps && (
+              <div className="funny-v2-followups">
+                {current.followUps.map((followUp, index) => (
+                  <p key={followUp}><span>{index + 1}</span>{followUp}</p>
+                ))}
+              </div>
+            )}
+
+            <div className="funny-v2-actions">
+              <button disabled={state.historyIndex <= 0} onClick={previousQuestion}>
+                <ChevronLeft /> <span>Previous Question</span>
+              </button>
+              <button disabled={isShuffling} onClick={shuffleQuestion}>
+                <Shuffle /> <span>{isShuffling ? "Shuffling..." : "Shuffle"}</span>
+              </button>
+              <button onClick={nextQuestion}>
+                <span>Next Question</span> <ChevronRight />
+              </button>
+            </div>
+          </>
+        ) : (
+          <div className="funny-v2-empty">
+            <Heart />
+            <h2>No questions match these filters.</h2>
+            <p>Try another category or add questions to your favorites.</p>
+            <button onClick={() => updateFilters({ category: "all", level: "all", favoritesOnly: false })}>
+              Reset Filters
+            </button>
+          </div>
+        )}
+
+        <button className="funny-v2-history-toggle" onClick={() => setShowHistory(value => !value)}>
+          <History /> Recent History ({state.recentIds.length})
+        </button>
+        {showHistory && (
+          <div className="funny-v2-history">
+            {[...state.recentIds].reverse().map(id => {
+              const question = funnyQuestions.find(item => item.id === id);
+              return question ? (
+                <button key={id} onClick={() => showQuestion(id)}>
+                  <span>{FUNNY_CATEGORY_META.find(category => category.id === question.category)?.label}</span>
+                  {question.question}
+                </button>
+              ) : null;
+            })}
+          </div>
+        )}
+
+        <section className="funny-v2-save">
+          <label>
+            Session memo
+            <textarea value={memo} onChange={event => setMemo(event.target.value)} placeholder="What made the group laugh?" />
+          </label>
+          <button onClick={saveSession}><Save />{saved ? "Saved to My Study" : "Save to My Study"}</button>
+        </section>
+      </section>
+    </main>
+  );
 }

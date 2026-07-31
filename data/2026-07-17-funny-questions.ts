@@ -1,58 +1,364 @@
-export const FUNNY_CATEGORIES = ["Wild What-Ifs","Funny Daily Life","Honest TMI","Food & Weird Tastes","Travel & Adventure","Love & Relationships","Work & Money","Would You Rather","Personality","Childhood & Memories","Pop Culture & Entertainment","Superpowers & Fantasy","Awkward Moments","Light Debates","Future & Dreams"] as const;
-export type FunnyQuestionCategory = typeof FUNNY_CATEGORIES[number];
-export type FunnyQuestionDifficulty = "beginner"|"intermediate"|"advanced";
-export type FunnyQuestionSensitivity = "safe"|"personal"|"sensitive";
-export type FunnyLanguage = "en"|"ko"|"zh"|"ja";
-export type LocalizedText = Record<FunnyLanguage,string>;
-export type FunnyQuestion = {id:string;number:number;sourceNumber?:number;question:LocalizedText;category:FunnyQuestionCategory;difficulty:FunnyQuestionDifficulty;sensitivity:FunnyQuestionSensitivity;followUps:Record<FunnyLanguage,string[]>;answerStarters:Record<FunnyLanguage,string[]>;reactionPrompts:string[];funChallenge:string};
+export const FUNNY_CATEGORY_META = [
+  { id: "awkward-moments", label: "Awkward Moments" },
+  { id: "dating-disasters", label: "Dating Disasters" },
+  { id: "weird-habits", label: "Weird Habits" },
+  { id: "food-confessions", label: "Food Confessions" },
+  { id: "school-childhood", label: "School & Childhood" },
+  { id: "work-adult-life", label: "Work & Adult Life" },
+  { id: "travel-chaos", label: "Travel Chaos" },
+  { id: "hypothetical-chaos", label: "Hypothetical Chaos" },
+  { id: "friends-social-life", label: "Friends & Social Life" },
+  { id: "random-personality", label: "Random Personality" },
+] as const;
 
-const themes:Record<FunnyQuestionCategory,readonly string[]>={
-  "Wild What-Ifs":["your phone could talk","animals ran social media","gravity stopped for ten minutes","every lie made your hair glow","your life had a loading-screen tip","your alarm clock had a personality","shadows could give advice","everyone could read one thought","weekends lasted five days","your home had one ridiculous feature"],
-  "Funny Daily Life":["the strangest thing in your bag","a useless skill you do surprisingly well","the funniest typo you have sent","your most dramatic reaction to a tiny problem","an everyday object that would be rude if it spoke","a chore that deserves an award ceremony","the silliest reason you were late","a habit your friends tease you about","the weirdest place you found a lost item","a sound that instantly annoys you"],
-  "Honest TMI":["a harmless thing you pretend to understand","your most embarrassing comfort show","the longest you have avoided a simple task","a food combination you hide from people","the last time you talked to yourself","a tiny purchase you immediately regretted","your strangest search history topic","a song you secretly know every word to","a harmless rule you often break","the oddest thing you do when nobody is watching"],
-  "Food & Weird Tastes":["a food that would make the worst perfume","a meal you could eat for seven days","a popular food you do not understand","the strangest snack combination worth trying","a dish that matches your personality","a food that should never be served cold","the best midnight snack","a vegetable that needs better marketing","a meal you would name after yourself","a flavor that belongs in every dessert"],
-  "Travel & Adventure":["a trip where everything went wrong","the oddest souvenir you would buy","a city you would visit for its food","the funniest travel misunderstanding","an imaginary country you would create","a place you would revisit with one rule","the worst seat on any journey","a travel item people always forget","an adventure you would try with a friend","a vacation planned by your pet"],
-  "Love & Relationships":["the funniest green flag in a friend","a friendship rule everyone should follow","the strangest way two people could meet","a tiny gesture that makes you feel appreciated","a harmless habit that tests a friendship","the best excuse for canceling a date","a quality that makes conversations easy","a funny tradition for close friends","a lesson from an awkward crush","a relationship question you would rather skip"],
-  "Work & Money":["a warning label for your job","the funniest business idea that might work","a job you would be terrible at","a useless office meeting award","one thing you would buy with surprise money","the strangest way to earn ten dollars","a workplace rule you would invent","a skill that deserves a salary bonus","a ridiculous product you could sell","a money habit you want to improve"],
-  "Would You Rather":["always speak in rhymes or always sing","have a rewind button or a pause button","eat sweet pizza or spicy ice cream","give up maps or give up weather forecasts","live with a tiny dragon or a giant hamster","wear wet socks or hear one song all day","travel only by bicycle or only by boat","know every language or play every instrument","be famous for dancing or for cooking","swap voices with a friend or swap laughs"],
-  "Personality":["your personality as a weather forecast","the emoji that best represents you","a habit that reveals your personality","your social battery as a percentage","the title of your personal instruction manual","a trait you borrowed from a friend","the animal that matches your energy","your most predictable reaction","a compliment that describes you well","the funniest weakness in your personality"],
-  "Childhood & Memories":["a childhood belief that makes you laugh","the weirdest game you invented","a snack that brings back memories","the first thing you saved money for","a childhood fashion choice you regret","the funniest school rule you remember","an imaginary friend or character you created","a toy you treated like a treasure","a silly fear you had","a memory that feels like a movie scene"],
-  "Pop Culture & Entertainment":["the worst song to play at a wedding","a movie title that describes your week","a character who would be a terrible roommate","a show you would enter as a contestant","a celebrity job swap that would be funny","a film that needs a ridiculous sequel","the soundtrack for your morning routine","a fictional restaurant you would visit","a famous scene you would rewrite","an unpopular entertainment opinion"],
-  "Superpowers & Fantasy":["a superhero weakness you would have","a useless superpower you would still want","a magical creature as your coworker","a spell for fixing daily problems","a fantasy job you would apply for","a secret door in your home","a villain with a very small ambition","an object you would make magical","a superhero name based on your habit","a world where dreams become advertisements"],
-  "Awkward Moments":["the funniest misunderstanding you have had","a time you waved at the wrong person","an awkward silence you wanted to escape","a message sent to the wrong chat","a name you forgot immediately","a joke nobody understood","a door you pushed instead of pulled","a moment you wore the wrong outfit","a greeting that went completely wrong","a small mistake that became a funny story"],
-  "Light Debates":["whether cereal is soup","whether pineapple belongs on pizza","whether naps should count as hobbies","whether socks should match","whether spoilers expire after one year","whether breakfast food is best at night","whether voice messages are better than texts","whether being early is better than being exactly on time","whether books are better than their movies","whether the middle seat deserves a discount"],
-  "Future & Dreams":["a strange museum you would open","what you might become famous for overnight","a dream home with one absurd room","a future invention you want first","a skill you hope to master","a message from your future self","a tradition you want to start","a job that may exist in fifty years","a dream trip with no budget","a goal that is not set in stone"],
+export type FunnyQuestionCategory = (typeof FUNNY_CATEGORY_META)[number]["id"];
+export type FunnyQuestionLevel = "light" | "funny" | "wild";
+
+export type FunnyQuestion = {
+  id: string;
+  category: FunnyQuestionCategory;
+  level: FunnyQuestionLevel;
+  question: string;
+  followUps: [string, string];
+  tags: string[];
 };
 
-const koCategory:Record<FunnyQuestionCategory,string>={"Wild What-Ifs":"황당한 상상","Funny Daily Life":"웃긴 일상","Honest TMI":"솔직한 TMI","Food & Weird Tastes":"음식과 독특한 취향","Travel & Adventure":"여행과 모험","Love & Relationships":"연애와 인간관계","Work & Money":"일과 돈","Would You Rather":"기발한 선택","Personality":"성격과 습관","Childhood & Memories":"어린 시절과 추억","Pop Culture & Entertainment":"문화와 엔터테인먼트","Superpowers & Fantasy":"초능력과 판타지","Awkward Moments":"민망한 순간","Light Debates":"가벼운 논쟁","Future & Dreams":"미래와 꿈"};
-const reactions=["No way!","Me too!","That’s hilarious!","Fair enough.","I’ve been there.","That makes sense.","You’ve got a point.","Seriously?","Good one!","Tell me more.","Same here.","That’s wild!","I know the feeling."];
-const challenges=["Answer in exactly three sentences.","Answer without saying ‘I think.’","Use one funny sound effect.","Choose another player to answer first.","Give the most dramatic answer possible.","Answer as if you were a movie character.","Use one of today’s Useful Expressions.","Give a serious answer to a ridiculous question.","Give a ridiculous answer to a serious question.","Everyone must answer in 30 seconds."];
-const followEn=["What detail makes your answer especially memorable?","How might another person in the group answer differently?","What example or experience best explains your answer?"];
-const followKo=["어떤 점 때문에 그 답이 특히 기억에 남나요?","그룹의 다른 사람은 어떻게 다르게 답할까요?","답을 가장 잘 설명하는 예시나 경험은 무엇인가요?"];
-const startsEn=["My first thought is...","The main reason is...","For example, one time...","If that really happened, I would..."];
-const startsKo=["가장 먼저 떠오르는 답은…","가장 큰 이유는…","예를 들어, 한 번은…","그 일이 실제로 일어난다면 저는…"];
-const local=(en:string,ko:string):LocalizedText=>({en,ko,zh:en,ja:en});
-const list=(en:string[],ko:string[])=>({en,ko,zh:en,ja:en});
+const questionGroups: Record<FunnyQuestionCategory, string[]> = {
+  "awkward-moments": [
+    "What is the longest you have pretended to remember someone’s name?",
+    "What is the most awkward message you have sent to the wrong person?",
+    "When have you laughed even though you had no idea what was happening?",
+    "What is the most embarrassing thing that has happened during a quiet moment?",
+    "What happened when you entered the wrong room and tried to act normal?",
+    "What is the strangest way you have accidentally greeted a stranger?",
+    "When did you realize you had been calling someone by the wrong name?",
+    "What is the funniest thing you have misheard in a serious conversation?",
+    "What awkward silence felt much longer than it really was?",
+    "What happened when your phone made a loud sound at the worst possible time?",
+    "What is your most memorable elevator interaction with a stranger?",
+    "What online meeting mistake would you never want to repeat?",
+    "When has your phone screen revealed something harmless but embarrassing?",
+    "What is the funniest excuse you used after arriving at the wrong place?",
+    "What happened when you waved back at someone who was not waving at you?",
+    "What important moment was interrupted by an unexpected laugh?",
+    "When did you confidently answer a question nobody had asked you?",
+    "What is the most awkward way you have tried to leave a conversation?",
+    "What happened when you forgot how you knew someone?",
+    "What simple introduction became unexpectedly complicated?",
+    "If your most awkward public moment had a title, what would it be?",
+    "What social mistake did you notice several hours too late?",
+    "What is the most dramatic recovery you attempted after tripping or dropping something?",
+    "When have you agreed with someone before realizing you misunderstood them?",
+    "What harmless moment would make you disappear instantly if you could?",
+  ],
+  "dating-disasters": [
+    "What is the fastest way someone could make a first date awkward?",
+    "What romantic plan sounds good in a movie but terrible in real life?",
+    "What is the funniest believable excuse for leaving a bad date early?",
+    "What small texting mistake could create a huge misunderstanding?",
+    "What is the worst place you can imagine for a first date?",
+    "What dating advice sounds wise but is actually useless?",
+    "What is the funniest difference two people could have in their date expectations?",
+    "How could someone overprepare for a simple coffee date?",
+    "What food is most dangerous to order when you are trying to look graceful?",
+    "What harmless profile detail would make you ask many questions?",
+    "What is the most confusing signal someone can send while flirting?",
+    "What should people do when both expect the other person to plan the date?",
+    "What romantic surprise has the greatest chance of going wrong?",
+    "What is a polite way to recover after forgetting an important detail about someone?",
+    "What would make a blind date arranged by friends especially funny?",
+    "What texting habit creates unnecessary drama when people first meet?",
+    "What is the most awkward way to discuss splitting a date bill?",
+    "What date activity reveals someone’s personality surprisingly quickly?",
+    "What is a dating rule people follow even though nobody understands it?",
+    "How can two people rescue a date after the conversation suddenly stops?",
+    "If a bad first date became a comedy, what scene would be in the trailer?",
+    "What ridiculous misunderstanding could happen because someone replies too slowly?",
+    "What romantic gesture would be charming from one person but strange from another?",
+    "What would be the funniest accidental double-booking on a date?",
+    "What dating disaster would probably become a great story a year later?",
+  ],
+  "weird-habits": [
+    "What strange habit did you only notice after someone pointed it out?",
+    "What completely unnecessary rule have you created for yourself?",
+    "What do you always check twice even when you know it is fine?",
+    "What is the weirdest thing you do while waiting for food?",
+    "What harmless habit would you never want recorded on video?",
+    "What order do you follow when eating a meal, and why does it matter?",
+    "What object do you keep even though it has no practical value?",
+    "What do you talk to when nobody else is around?",
+    "What is unusual about the way you organize your room or desk?",
+    "How many alarms do you set, and what story do they tell about you?",
+    "What phone habit steals more of your time than you admit?",
+    "What tiny routine makes your morning feel wrong when you skip it?",
+    "What do you repeatedly watch even though you know every part?",
+    "What is the strangest thing you do before falling asleep?",
+    "What personal rule makes perfect sense only to you?",
+    "What do you save for later but almost never use?",
+    "What song or speech do you perform when you are alone?",
+    "What everyday item are you strangely protective of?",
+    "What habit appears whenever you are nervous or excited?",
+    "What is your most unnecessary method for choosing what to wear?",
+    "If your private routine became a public trend, which part would confuse everyone?",
+    "What bizarre reward system have you invented to finish boring tasks?",
+    "What harmless obsession could you give a ten-minute presentation about?",
+    "What would a documentary crew find funniest about your daily routine?",
+    "Which habit would be hardest to explain to someone from another planet?",
+  ],
+  "food-confessions": [
+    "What food combination do you love but feel embarrassed to recommend?",
+    "What is the worst meal you have ever cooked for yourself?",
+    "What food do you pretend to enjoy because everyone else loves it?",
+    "What is the most dramatic reaction you have had to spicy food?",
+    "What is the strangest thing you have eaten because you were too hungry to care?",
+    "What snack disappears too quickly when you are alone?",
+    "What cooking shortcut would make a professional chef disappointed?",
+    "What late-night food decision seemed brilliant at the time?",
+    "What delivery mistake led to an unexpectedly memorable meal?",
+    "What food have you confidently ordered without understanding the menu?",
+    "When did you praise a meal mainly to be polite?",
+    "What dish do you always make look less attractive than it tastes?",
+    "What expired food have you examined for far too long before making a decision?",
+    "What is the oldest mystery item you have discovered in a refrigerator?",
+    "What food do you eat in an order that other people find strange?",
+    "What simple recipe are you surprisingly unable to cook?",
+    "What restaurant order have you regretted immediately?",
+    "What food-related lie did you tell as a child?",
+    "What ingredient do you secretly add far too much of?",
+    "What meal would you choose if nobody could judge your choice?",
+    "If your cooking failures had a restaurant, what would its signature dish be?",
+    "What food would cause the funniest argument at a dinner party?",
+    "What unusual food purchase would you defend in court?",
+    "If your eating habits had a warning label, what would it say?",
+    "What meal would become complete chaos if you had to cook it for twenty people?",
+  ],
+  "school-childhood": [
+    "What is the funniest thing you believed was true as a child?",
+    "What was the most ridiculous rule at your school?",
+    "What childhood nickname would you never use now?",
+    "What was your most embarrassing classroom moment?",
+    "What job did you think would be easy when you were a child?",
+    "What harmless trouble did you regularly get into at school?",
+    "What school supply did you forget at the worst time?",
+    "What strange game did you invent with friends as a child?",
+    "What food from school lunch do you remember most clearly?",
+    "What trend at your school would look ridiculous today?",
+    "When did you accidentally call a teacher by the wrong title?",
+    "What presentation mistake still makes you laugh?",
+    "What subject did you misunderstand in a surprisingly creative way?",
+    "What school trip moment became more memorable than the trip itself?",
+    "What were you afraid of as a child that seems funny now?",
+    "What excuse did you use when you had not done your homework?",
+    "What classroom object became part of a legendary school story?",
+    "What fashion choice from childhood deserves an explanation?",
+    "What did adults say that you understood completely differently?",
+    "What skill did you proudly show everyone even though it was not impressive?",
+    "If your childhood self planned your life now, what would be most chaotic?",
+    "What school memory would be funniest as a dramatic movie scene?",
+    "What old school rule would be impossible to explain to students today?",
+    "Which childhood invention did you believe would make you rich?",
+    "If your classmates made awards about old memories, what would you win?",
+  ],
+  "work-adult-life": [
+    "What part of being an adult feels like everyone is secretly pretending?",
+    "What is the most useless thing you have spent money on?",
+    "What work phrase do people use when they really mean something else?",
+    "What is the most creative excuse you have heard for being late?",
+    "What have you done at work while pretending to be busy?",
+    "What adult responsibility would you happily give away forever?",
+    "What purchase made sense in the store but nowhere else?",
+    "What email mistake could become a workplace comedy?",
+    "What happened when you misunderstood a piece of workplace language?",
+    "What is the strangest question someone could ask in a job interview?",
+    "How have you avoided using a coworker’s name because you forgot it?",
+    "What remote-work moment reminded you that you were at home?",
+    "What task sounds simple until you become responsible for it?",
+    "What meeting could have been replaced by one sentence?",
+    "What is the most confusing thing about taxes, bills, or paperwork?",
+    "What professional skill do you mostly perform with confidence rather than knowledge?",
+    "What harmless office habit would your coworkers recognize immediately?",
+    "What impulse purchase best represents adult stress?",
+    "What chore makes you feel strangely accomplished?",
+    "What work outfit mistake would be difficult to recover from?",
+    "If adulthood had customer support, what would you complain about first?",
+    "What job title would describe what you actually do all day?",
+    "If your bank account could send notifications with opinions, what would it say?",
+    "What adult decision would be easier with a game-show audience?",
+    "Which everyday responsibility would become an Olympic event in your life?",
+  ],
+  "travel-chaos": [
+    "What is the funniest way you have gotten lost?",
+    "What travel mistake became a good story later?",
+    "What is the strangest thing you have packed for a trip?",
+    "When have you looked most obviously like a tourist?",
+    "What is the funniest misunderstanding you have had while traveling?",
+    "What travel plan failed immediately but still became memorable?",
+    "What weather did you prepare for completely incorrectly?",
+    "What happened when a map app sent you somewhere unexpected?",
+    "What item have you almost forgotten at the worst travel moment?",
+    "What food did you order abroad without knowing what would arrive?",
+    "What transportation mistake cost you the most time?",
+    "What souvenir purchase made little sense after you returned home?",
+    "What accommodation problem required the most creative solution?",
+    "What phrase did you say incorrectly while trying to use another language?",
+    "What moment made you check for your passport repeatedly?",
+    "What travel companion habit becomes annoying after several days?",
+    "What currency mistake made something seem much cheaper or more expensive?",
+    "What question did you ask a local that sounded different from what you intended?",
+    "What is the most unnecessary item you carried through an entire trip?",
+    "What travel photo has the funniest story behind it?",
+    "If your worst travel day became a tour package, what would it include?",
+    "What destination would be hardest to visit with your usual travel habits?",
+    "If airports gave awards, what embarrassing category might you win?",
+    "What travel disaster would you rather experience with friends than alone?",
+    "If your suitcase could describe the trip, what would it complain about?",
+  ],
+  "hypothetical-chaos": [
+    "If you could pause time for one hour, what would you actually do?",
+    "If animals could leave online reviews about humans, what would they complain about?",
+    "If you had to replace handshakes with another greeting, what would you choose?",
+    "If one useless skill could make you famous, which skill would you choose?",
+    "If you could understand every language for one day, where would you go?",
+    "If your life had background music, what would play during your morning?",
+    "If you could speak with one type of animal, which conversation would be funniest?",
+    "If you had to eat one meal for a month, how would you keep it interesting?",
+    "If you met your younger self for ten minutes, what would surprise them most?",
+    "If your phone disappeared for a day, what would you do first?",
+    "If your thoughts appeared as subtitles for one day, when would you be in the most trouble?",
+    "If your life had a laugh track, which moment would get the loudest reaction?",
+    "If you could not tell a lie for one week, which situation would become hardest?",
+    "If you switched lives with a celebrity for one day, what ordinary task would you try?",
+    "If you could watch one memory like a movie, which scene would you choose?",
+    "If you could call your future self for three minutes, what would you ask?",
+    "If your home became a museum, which object would confuse visitors most?",
+    "If everyone had a harmless superpower, which one would create the most chaos?",
+    "If your week became a movie, what genre would it be?",
+    "If you could make one annoying task disappear, what unexpected problem might follow?",
+    "If every excuse became visible above your head, where would you avoid going?",
+    "If your personality changed completely for a day, what would your friends notice first?",
+    "If you had an invisible assistant with a bad sense of humor, what could go wrong?",
+    "If your memories were searchable online, what search would embarrass you most?",
+    "If one random decision controlled your day, what rule would create the best story?",
+  ],
+  "friends-social-life": [
+    "What would your friends reveal about you if they had five minutes?",
+    "What role do you naturally play on a group trip?",
+    "What is the funniest argument you have had with a friend?",
+    "What is something your friends never let you forget?",
+    "Which friend would survive best in a ridiculous emergency, and why?",
+    "What is the worst advice a friend has confidently given you?",
+    "What group-chat mistake created the most confusion?",
+    "What harmless nickname has the longest story behind it?",
+    "What happened when friends remembered the same event completely differently?",
+    "What game makes your group unexpectedly competitive?",
+    "What item have you borrowed from a friend for far too long?",
+    "What misunderstanding about a meeting place became a funny story?",
+    "What habit would your closest friends recognize without seeing your name?",
+    "What was your funniest attempt to impress a new group?",
+    "What party moment did not go according to plan?",
+    "What type of friend always arrives late with the best excuse?",
+    "What unusual tradition does your friend group have?",
+    "What is the strangest useful thing a friend has taught you?",
+    "What simple plan became complicated because too many friends joined?",
+    "What friend would you trust to choose your outfit for an important event?",
+    "If your friend group were a comedy show, what character would you be?",
+    "Which friend would accidentally become famous, and for what?",
+    "If your group chat became public for one minute, what would need explaining?",
+    "What ridiculous team challenge would reveal everyone’s true personality?",
+    "If your friends planned a surprise based only on your habits, what would happen?",
+  ],
+  "random-personality": [
+    "What completely useless skill are you strangely proud of?",
+    "What small inconvenience makes you react far too dramatically?",
+    "What opinion do you defend even though it does not really matter?",
+    "What simple thing are you surprisingly bad at?",
+    "What object best represents your personality, and why?",
+    "What is the most ridiculous thing you would buy if you suddenly became rich?",
+    "What content have you watched so many times that you could perform it?",
+    "What harmless fear makes the least sense when you explain it?",
+    "What excuse do you use so often that nobody believes it anymore?",
+    "What activity makes you strangely competitive?",
+    "What tiny achievement makes you feel unusually proud?",
+    "What fashion choice seemed excellent at the time?",
+    "What task wastes more of your time than it should?",
+    "What everyday object do you have unusually strong opinions about?",
+    "What is your personal logic for making a decision that nobody else understands?",
+    "What compliment would be strange but accurate for you?",
+    "What is the least impressive thing that can improve your mood?",
+    "What ordinary situation makes you act like a completely different person?",
+    "What would the title of your most common daydream be?",
+    "What talent would your friends say you should never demonstrate publicly?",
+    "If your personality came with instructions, what warning would appear first?",
+    "If you became famous tomorrow, what old habit would surprise your fans?",
+    "What minor problem would turn you into the villain of a comedy?",
+    "If your inner voice had a celebrity narrator, who would make it funniest?",
+    "What ridiculous challenge would reveal your strongest personality trait?",
+  ],
+};
 
-function makePrompt(category:FunnyQuestionCategory,theme:string,variant:number){
-  const starters=[`What is the funniest thing about ${theme}?`,`How would you explain ${theme} to a new friend?`,`Imagine a story about ${theme}. What happens next?`,`What rule would you create about ${theme}, and why?`];
-  if(category==="Wild What-Ifs"||category==="Superpowers & Fantasy") return [`If ${theme}, what would happen first and why?`,`Imagine ${theme}. How would your day change?`,`What would be the funniest result if ${theme}?`,`How would you handle it if ${theme}?`][variant];
-  if(category==="Would You Rather") return [`Would you rather ${theme}, and what is your main reason?`,`Which choice is easier: ${theme}, and what would you miss?`,`If your group had to choose between ${theme}, what argument would you make?`,`How would your life change if you had to ${theme}?`][variant];
-  if(category==="Light Debates") return [`Do you agree with ${theme}, and what is your best argument?`,`What is the strongest reason for or against ${theme}?`,`How would you persuade a friend about ${theme}?`,`What funny rule could settle the debate about ${theme}?`][variant];
-  return starters[variant];
+const levelForIndex = (index: number): FunnyQuestionLevel =>
+  index < 9 ? "light" : index < 20 ? "funny" : "wild";
+
+export const funnyQuestions: FunnyQuestion[] = FUNNY_CATEGORY_META.flatMap(category =>
+  questionGroups[category.id].map((question, index) => ({
+    id: "",
+    category: category.id,
+    level: levelForIndex(index),
+    question,
+    followUps: (index % 2 === 0
+      ? ["What detail makes that answer especially memorable?", "How did the other people involved react?"]
+      : ["What happened next?", "Would you handle the same situation differently now?"]) as [string, string],
+    tags: [category.id, levelForIndex(index), index < 9 ? "easy-story" : "conversation"],
+  })),
+).map((item, index) => ({
+  ...item,
+  id: `funny-question-${String(index + 1).padStart(3, "0")}`,
+}));
+
+export const funnyQuestionCategoryCounts = Object.fromEntries(
+  FUNNY_CATEGORY_META.map(category => [
+    category.id,
+    funnyQuestions.filter(question => question.category === category.id).length,
+  ]),
+) as Record<FunnyQuestionCategory, number>;
+
+export const funnyQuestionStats = {
+  total: funnyQuestions.length,
+  byCategory: funnyQuestionCategoryCounts,
+  byLevel: Object.fromEntries(
+    (["light", "funny", "wild"] as const).map(level => [
+      level,
+      funnyQuestions.filter(question => question.level === level).length,
+    ]),
+  ) as Record<FunnyQuestionLevel, number>,
+};
+
+export function validateFunnyQuestions(): string[] {
+  const errors: string[] = [];
+  const ids = new Set<string>();
+  const texts = new Set<string>();
+  if (funnyQuestions.length !== 250) errors.push(`Expected 250 questions, received ${funnyQuestions.length}.`);
+  funnyQuestions.forEach((item, index) => {
+    const expectedId = `funny-question-${String(index + 1).padStart(3, "0")}`;
+    const normalized = item.question.toLowerCase().replace(/[^a-z0-9 ]/g, "").replace(/\s+/g, " ").trim();
+    if (item.id !== expectedId) errors.push(`Unexpected ID at position ${index + 1}.`);
+    if (ids.has(item.id)) errors.push(`Duplicate ID: ${item.id}.`);
+    if (texts.has(normalized)) errors.push(`Duplicate question: ${item.id}.`);
+    if (!item.question.trim() || !item.question.endsWith("?")) errors.push(`Invalid question: ${item.id}.`);
+    if (!FUNNY_CATEGORY_META.some(category => category.id === item.category)) errors.push(`Invalid category: ${item.id}.`);
+    if (!["light", "funny", "wild"].includes(item.level)) errors.push(`Invalid level: ${item.id}.`);
+    if (item.followUps.length < 1 || item.followUps.length > 2 || item.followUps.some(value => !value.trim())) {
+      errors.push(`Invalid follow-ups: ${item.id}.`);
+    }
+    if (new Set(item.followUps).size !== item.followUps.length) errors.push(`Duplicate follow-up: ${item.id}.`);
+    ids.add(item.id);
+    texts.add(normalized);
+  });
+  for (const category of FUNNY_CATEGORY_META) {
+    if (funnyQuestionCategoryCounts[category.id] !== 25) errors.push(`Expected 25 questions for ${category.id}.`);
+  }
+  return errors;
 }
 
-const targetCounts=FUNNY_CATEGORIES.map((_,i)=>i<5?34:33);
-let sequence=0;
-export const funnyQuestions:FunnyQuestion[]=FUNNY_CATEGORIES.flatMap((category,categoryIndex)=>{
-  const candidates=themes[category].flatMap((theme)=>[0,1,2,3].map(variant=>({theme,variant}))).slice(0,targetCounts[categoryIndex]);
-  return candidates.map(({theme,variant},localIndex)=>{
-    sequence+=1; const en=makePrompt(category,theme,variant); const ko=`${koCategory[category]} 주제: ${theme}에 대해 어떻게 생각하나요? 이유와 예시를 함께 말해 보세요.`;
-    const sensitivity:FunnyQuestionSensitivity=category==="Love & Relationships"&&localIndex>=28?"sensitive":["Honest TMI","Love & Relationships","Work & Money","Awkward Moments"].includes(category)&&localIndex%4===0?"personal":"safe";
-    return {id:`funny-${String(sequence).padStart(3,"0")}`,number:sequence,question:local(en,ko),category,difficulty:localIndex%7===0?"advanced":localIndex%3===0?"intermediate":"beginner",sensitivity,followUps:list(followEn,followKo),answerStarters:list(startsEn,startsKo),reactionPrompts:[reactions[sequence%reactions.length],reactions[(sequence+4)%reactions.length],reactions[(sequence+8)%reactions.length]],funChallenge:challenges[sequence%challenges.length]};
-  });
-});
-
-export const funnyQuestionStats={total:funnyQuestions.length,sourceOriginal:0,generated:funnyQuestions.length,byCategory:Object.fromEntries(FUNNY_CATEGORIES.map(category=>[category,funnyQuestions.filter(q=>q.category===category).length])),byDifficulty:Object.fromEntries(["beginner","intermediate","advanced"].map(value=>[value,funnyQuestions.filter(q=>q.difficulty===value).length])),bySensitivity:Object.fromEntries(["safe","personal","sensitive"].map(value=>[value,funnyQuestions.filter(q=>q.sensitivity===value).length]))};
-
-export function validateFunnyQuestions(){const errors:string[]=[];if(funnyQuestions.length!==500)errors.push(`Expected 500 questions, received ${funnyQuestions.length}`);const ids=new Set<string>(),numbers=new Set<number>(),normalized=new Set<string>();for(const item of funnyQuestions){const norm=item.question.en.toLowerCase().replace(/[^a-z0-9 ]/g,"").replace(/\s+/g," ").trim();if(ids.has(item.id))errors.push(`Duplicate id: ${item.id}`);if(numbers.has(item.number))errors.push(`Duplicate number: ${item.number}`);if(normalized.has(norm))errors.push(`Duplicate question: ${item.question.en}`);ids.add(item.id);numbers.add(item.number);normalized.add(norm);if(!item.question.en||!item.question.ko||!item.category||!item.difficulty||!item.sensitivity)errors.push(`Missing required field: ${item.id}`);if(!item.question.en.endsWith("?"))errors.push(`Invalid punctuation: ${item.id}`);for(const language of ["en","ko","zh","ja"] as const){if(item.followUps[language].length!==3)errors.push(`Follow-up count: ${item.id}/${language}`);if(item.answerStarters[language].length<3)errors.push(`Answer starter count: ${item.id}/${language}`);if(item.followUps[language].some(value=>!value.trim())||item.answerStarters[language].some(value=>!value.trim()))errors.push(`Blank helper: ${item.id}/${language}`);}}for(let n=1;n<=500;n++)if(!numbers.has(n))errors.push(`Missing number: ${n}`);return errors;}
+export const FUNNY_CATEGORIES = FUNNY_CATEGORY_META.map(category => category.id);
+export type FunnyQuestionDifficulty = FunnyQuestionLevel;
