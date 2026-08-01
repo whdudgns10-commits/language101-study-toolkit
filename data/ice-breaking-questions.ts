@@ -217,36 +217,63 @@ const topicGroups: TopicGroup[] = [
   },
 ];
 
+const lightTopics: Record<ConversationStarterCategory, string[]> = {
+  "Dating & Romance":["blind dates","group dates","first impressions","your ideal type","celebrity crushes","texting a date","first-date places","confessing feelings","long-distance dating","dating apps","romantic surprises","dating someone older","dating someone younger","couple anniversaries","personal time while dating"],
+  "Career & Work":["your first part-time job","your childhood dream job","working from home","morning commutes","a good boss","lunch breaks","funny work mistakes","changing careers","jobs you would avoid","company dinners","your dream job","surviving Mondays","office clothes","work messages","life after work"],
+  "School Days":["your favorite subject","your least favorite subject","school uniforms","school lunches","being late for class","school clubs","funny school memories","college group dates","school festivals","a memorable teacher","sleeping in class","childhood dream jobs","school trips","class presentations","homework excuses"],
+  "Language Learning":["studying English","difficult English skills","hard English words","favorite English expressions","watching shows with subtitles","funny English mistakes","easy conversation topics","English names","speaking English often","remembering new words","making foreign friends","English accents","language exchanges","English videos","using English while traveling"],
+  "Friendship & Relationships":["meeting your best friend","contacting close friends","having a few close friends","making new friends","weekends with friends","traveling with friends","being a good friend","friends from other countries","funny things friends do","group chats","solving small arguments","birthday gifts for friends","introducing two friends","old school friends","making friends as an adult"],
+  "Food & Drinks":["food you eat every week","food you avoid","spicy food","late-night snacks","delivery food","daily coffee","cafe drinks","cooking at home","Korean food for visitors","strange food combinations","eating alone","convenience-store food","favorite desserts","breakfast habits","trying food abroad"],
+  "Hobbies & Free Time":["your current hobby","a hobby you want to try","weekend plans","indoor activities","outdoor activities","favorite exercise","video games","YouTube videos","karaoke","recent movies","relaxing after work","taking photos","shopping for fun","reading books","short trips"],
+  "Culture & Traditions":["favorite holidays","birthday celebrations","weddings","dating culture","workplace social events","special-day food","age when meeting people","Korean customs","common gifts","welcoming guests","New Year traditions","table manners","traditional clothes","holiday games","culture shocks"],
+  "Travel & Life Abroad":["countries you visited","your next trip","solo travel","trips with friends","living abroad","working holidays","great travel memories","missing a flight","packing for a trip","hotels and guesthouses","food while traveling","funny travel mistakes","language problems abroad","tourist attractions","long stays abroad"],
+  "Personality & Everyday Life":["being a morning person","making plans","setting alarms","favorite phone apps","keeping your room clean","online shopping","sleeping enough","relieving stress","your MBTI","other people's first impressions","small daily happiness","spending time alone","daily routines","cleaning habits","making quick decisions"],
+  "Dreams & Future":["your goal this year","your bucket list","a new skill","a future home city","plans for five years from now","taking a year off","living in another country","something you want to buy","a new challenge","your ideal future","a dream trip","your future job","a home you want","retirement plans","a class you want to take"],
+  "Money & Lifestyle":["your biggest expense","saving money","impulse purchases","things worth spending on","subscription services","lottery tickets","comparing prices","expensive hobbies","online shopping","happy purchases","delivery fees","travel budgets","secondhand shopping","using coupons","paying by card"],
+  "Technology & Social Media":["your most-used app","time on social media","posting on Instagram","favorite online videos","replying to messages","changing profile photos","AI tools","a day without your phone","daily screen time","calls and text messages","your latest photo","short videos","online shopping apps","digital breaks","phone notifications"],
+  "Entertainment & Pop Culture":["your favorite celebrity","Korean actors","a drama you watch now","favorite idols","songs you play these days","concert experiences","movies you rewatch","celebrities you want to meet","YouTube channels","reality shows","karaoke songs","favorite comedians","childhood cartoons","movie snacks","fan merchandise"],
+  "Challenges & Life Lessons":["a current challenge","trying a diet","a difficult exercise","a funny mistake","presenting in English","a hobby you quickly quit","learning a new skill","traveling alone","a small proud moment","trying something again","learning to drive","a cooking failure","being late","facing a small fear","starting a workout routine"],
+};
+
 const questionFrames = [
-  (topic: string) => `What comes to mind when you think about ${topic}?`,
-  (topic: string) => `What personal experience have you had with ${topic}?`,
-  (topic: string) => `What makes ${topic} meaningful or interesting to you?`,
-  (topic: string) => `How has your view of ${topic} changed over time?`,
-  (topic: string) => `What story would you share about ${topic}?`,
+  (topic:string)=>`What is your opinion about ${topic}?`,
+  (topic:string)=>`Tell us about an experience with ${topic}.`,
+  (topic:string)=>`What do you like about ${topic}?`,
+  (topic:string)=>`What do you dislike about ${topic}?`,
+  (topic:string)=>`What is one question you have about ${topic}?`,
+  (topic:string)=>`What is a funny memory related to ${topic}?`,
+  (topic:string)=>`When did you last talk about ${topic}?`,
+  (topic:string)=>`Who would you talk to about ${topic}?`,
+  (topic:string)=>`Would you like to know more about ${topic}? Why?`,
+  (topic:string)=>`Is ${topic} part of your daily life? Why?`,
 ] as const;
 
-const followUpFrames: [string, string][] = [
-  ["What is the first example you can think of?", "Would your answer have been different five years ago?"],
-  ["What happened, and how did you feel?", "What did you learn from that experience?"],
-  ["Why does that matter to you?", "Do you think other people would agree?"],
-  ["What caused your perspective to change?", "How might your view change in the future?"],
-  ["What detail makes that story memorable?", "What question would you ask someone with a different story?"],
+const followUpFrames: [string,string][] = [
+  ["Why did you choose that?","Can you give us an example?"],
+  ["When did it happen?","Would you do it again?"],
+  ["Who was with you?","What happened next?"],
+  ["What do you enjoy about it?","Has your answer always been the same?"],
+  ["What do they usually say?","Do your friends agree with you?"],
+  ["Why do you like that place?","When did you last go there?"],
+  ["When do you usually do it?","Would you like to do it more often?"],
+  ["What surprised you?","How did you react?"],
+  ["What would you try first?","Who would you invite?"],
+  ["Why do you prefer that?","What is the best part?"],
 ];
 
-const difficultyForVariant = (variant: number): ConversationStarterDifficulty =>
-  variant < 2 ? "easy" : variant < 4 ? "medium" : "deep";
+const difficultyForPosition=(categoryIndex:number,position:number):ConversationStarterDifficulty=>{
+  const easyLimit=categoryIndex<8?20:19;
+  if(position<easyLimit)return "easy";
+  if(position<easyLimit+9)return "medium";
+  return "deep";
+};
 
-export const conversationStarters: ConversationStarter[] = topicGroups.flatMap(group =>
-  group.topics.flatMap(topicSet =>
-    topicSet.map((topic, variant) => ({
-      id: "",
-      category: group.category,
-      difficulty: difficultyForVariant(variant),
-      question: questionFrames[variant](topic),
-      followUps: followUpFrames[variant],
-      tags: [...group.tags, topic.split(" ").slice(-2).join("-")],
-    })),
-  ),
+export const conversationStarters: ConversationStarter[] = conversationStarterCategories.flatMap((category,categoryIndex)=>
+  lightTopics[category].flatMap((topic,topicIndex)=>[0,1].map(variant=>{
+    const position=topicIndex*2+variant;
+    const frameIndex=position%questionFrames.length;
+    return {id:"",category,difficulty:difficultyForPosition(categoryIndex,position),question:questionFrames[frameIndex](topic),followUps:followUpFrames[frameIndex],tags:[category.toLowerCase().replaceAll(" ","-"),...topic.split(" ").slice(-2)]};
+  })),
 ).map((item, index) => ({
   ...item,
   id: `conversation-starter-${String(index + 1).padStart(3, "0")}`,
@@ -261,6 +288,7 @@ export const conversationStarterCategoryCounts = Object.fromEntries(
 
 export function validateConversationStarters(): string[] {
   const errors: string[] = [];
+  if (topicGroups.length !== conversationStarterCategories.length) errors.push("Legacy category coverage changed unexpectedly.");
   if (conversationStarters.length !== 450) errors.push("Expected exactly 450 questions.");
   if (new Set(conversationStarters.map(item => item.id)).size !== 450) errors.push("Question IDs must be unique.");
   if (new Set(conversationStarters.map(item => item.question.trim().toLowerCase())).size !== conversationStarters.length) {
@@ -273,6 +301,7 @@ export function validateConversationStarters(): string[] {
     if (!item.question.trim() || item.followUps.length !== 2 || item.followUps.some(value => !value.trim())) {
       errors.push(`Incomplete question: ${item.id}`);
     }
+    if (item.question.split(/\s+/).length > 14) errors.push(`Question is too long: ${item.id}`);
     if (new Set(normalized).size !== normalized.length) errors.push(`Repeated prompt: ${item.id}`);
     if (!conversationStarterCategories.includes(item.category)) errors.push(`Invalid category: ${item.id}`);
     if (!["easy", "medium", "deep"].includes(item.difficulty)) errors.push(`Invalid difficulty: ${item.id}`);
@@ -280,6 +309,9 @@ export function validateConversationStarters(): string[] {
   conversationStarterCategories.forEach(category => {
     if (conversationStarterCategoryCounts[category] !== 30) errors.push(`Expected 30 questions for ${category}.`);
   });
+  const distribution={easy:0,medium:0,deep:0};
+  conversationStarters.forEach(item=>distribution[item.difficulty]++);
+  if(distribution.easy!==293||distribution.medium!==135||distribution.deep!==22) errors.push("Unexpected difficulty distribution.");
   return errors;
 }
 
