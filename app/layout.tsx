@@ -4,6 +4,7 @@ import { siteConfig } from "@/config/site";
 import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 import { LanguageProvider } from "@/components/language-provider";
 import { TutorialProvider } from "@/components/tutorial/tutorial-provider";
+import { ActivityLanguageBridge } from "@/components/2026-08-03-activity-language-bridge";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.siteUrl),
@@ -20,5 +21,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en-US" suppressHydrationWarning><body style={{ "--purple": siteConfig.brandColor } as React.CSSProperties}><LanguageProvider><TutorialProvider>{children}<MobileBottomNav/></TutorialProvider></LanguageProvider></body></html>;
+  return <html lang="en-US" suppressHydrationWarning><body style={{ "--purple": siteConfig.brandColor } as React.CSSProperties}><LanguageProvider><TutorialProvider><ActivityLanguageBridge/>{children}<MobileBottomNav/></TutorialProvider></LanguageProvider></body></html>;
 }
