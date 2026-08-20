@@ -1,8 +1,8 @@
 export type GuessingWordsLevel="beginner"|"intermediate"|"advanced";
 export type GuessingWordsTopic="daily"|"food"|"travel"|"people"|"places"|"objects"|"nature"|"work"|"learning"|"health"|"feelings"|"communication"|"society"|"technology"|"culture";
-export type GuessingWord={id:string;word:string;level:GuessingWordsLevel;topic:GuessingWordsTopic;speakingQuestions:[string,string]};
+export type GuessingWord={id:string;word:string;korean:string;level:GuessingWordsLevel;topic:GuessingWordsTopic;speakingQuestions:[string,string]};
 
-type WordGroup={topic:GuessingWordsTopic;words:string[]};
+type WordGroup={topic:GuessingWordsTopic;words:string[];korean?:string[]};
 
 const beginnerGroups:WordGroup[]=[
  {topic:"daily",words:["breakfast","weekend","birthday","vacation","morning","evening","shower","laundry","homework","shopping","exercise","sleep","schedule","holiday","party","picnic","hobby","music","movie","game"]},
@@ -58,6 +58,101 @@ const advancedGroups:WordGroup[]=[
  {topic:"culture",words:["cultural identity","cultural preservation","artistic expression","representation","cultural diversity","popular culture","creative industry","historical interpretation","cultural influence","artistic freedom","traditional craftsmanship","cultural stereotype","social commentary","literary criticism","cultural exchange","creative ownership","historical narrative","audience perception","artistic legacy","cultural globalization"]},
 ];
 
+const beginnerKorean:string[][]=[
+ ["아침 식사","주말","생일","휴가","아침","저녁","샤워","세탁","숙제","쇼핑","운동","잠, 수면","일정","공휴일","파티","소풍","취미","음악","영화","게임"],
+ ["커피","닭고기","피자","샌드위치","샐러드","국수, 면","쌀, 밥","빵","치즈","초콜릿","바나나","사과","오렌지","딸기","수박","쿠키","케이크","수프, 국","차","식당"],
+ ["공항","여권","지하철","호텔","해변","카메라","여행 가방","표, 티켓","기차","비행기","버스","택시","지도","관광객","캠핑","여행","역","항공편","자전거","다리"],
+ ["교사","가족","친구","이웃","의사","간호사","학생","아기","부모","형제, 남자 형제","자매, 여자 형제","할머니","할아버지","요리사","운전기사","경찰관","고객","손님","커플","팀"],
+ ["병원","학교","도서관","은행","시장","빵집","박물관","공원","사무실","영화관","약국","부엌","화장실","침실","정원","체육관","공장","농장","동물원","경기장"],
+ ["우산","휴대전화","컴퓨터","지갑","열쇠","시계","거울","베개","담요","병","안경","의자","탁자","공책","연필","배낭","칫솔","가위","선물","냉장고"],
+ ["날씨","산","강","바다","숲","꽃","나무","비","눈","구름","햇빛","달","별","섬","동물","개","고양이","새","물고기","말"],
+ ["직업, 일","회의","상사","회사","유니폼","돈","이메일","프로젝트","면접","급여","휴식","직장 동료","달력","문서","가게","서비스","직장","관리자","계산원","배달"],
+ ["영어","언어","질문","답","책","수업","과","시험","단어","문장","이야기","그림","사전","문법","연습","실수","생각, 아이디어","예시","대화","번역"],
+ ["약","두통","치통","감기","열","물","걷기","달리기","수영","축구","테니스","농구","요가","건강한 음식","휴식","에너지","통증","붕대","구급차","병원 방문"],
+ ["행복한","슬픈","화난","피곤한","배고픈","목마른","신이 난","긴장한","놀란","지루한","두려운","자랑스러운","외로운","친절한","재미있는","조용한","바쁜","운이 좋은","걱정되는","편안한"],
+ ["안녕하세요","안녕히 가세요","메시지","전화","편지","이름","주소","농담","약속","비밀","소식","목소리","미소","웃음","울음","도움","조언","초대","칭찬","사과"],
+ ["나라","도시","마을","거리","교통","축제","결혼식","지역사회","문화","전통","국기","경찰","소방관","우체국","교회","사원, 절","식당 메뉴","줄","군중","규칙"],
+ ["인터넷","웹사이트","비밀번호","화면","키보드","마우스","영상","사진","앱","충전기","배터리","헤드폰","텔레비전","라디오","온라인 쇼핑","문자 메시지","소셜 미디어","와이파이","로봇","프린터"],
+ ["노래","춤","그림, 회화","배우","가수","콘서트","기타","피아노","드럼","노래방","만화책","만화 영화","의상","사진","요리법","기념품","불꽃놀이","공연","무대","관객"],
+];
+
+const intermediateKorean:string[][]=[
+ ["약속, 예약","예약","동네","일과, 루틴","볼일","통근","집안일","배달료","회원 자격","구독","추천","불만","결정","습관","마감일","예산","허락","경우, 행사","선호","편리함"],
+ ["재료","전채 요리","음료","요리, 음식 문화","남은 음식","1인분, 양","요리책","채식주의자","알레르기","양념","포장 음식","뷔페","특산품","영양","해산물","그릴, 석쇠","디저트 메뉴","집에서 만든 식사","위안이 되는 음식","식사 예절"],
+ ["목적지","숙소","여행 일정","출발","도착","수하물 허용량","세관","환전","관광","여행 안내원","호스텔","명소","기념품 가게","자동차 여행","여행자 보험","지연된 항공편","탑승권","대중교통","현지 시장","당일 여행"],
+ ["성격","관계, 연애 관계","동료","룸메이트","낯선 사람","친척","파트너","멘토","지도자","자원봉사자","고객","승객","방문객","직원","고용주","팀 동료","반 친구","집주인","세입자","행사 진행자"],
+ ["동네 공원","주민 센터","쇼핑몰","공연장","미술관","기차 승강장","대기실","주차장","회의실","푸드 코트","서점","백화점","피트니스 센터","미용실","빨래방","법원","대사관","대학 캠퍼스","지하철 입구","전망대"],
+ ["영수증","리모컨","보조 배터리","노트북 받침대","여행용 어댑터","재사용 물병","쇼핑 바구니","이름표","명함","USB 메모리","안전벨트","구급상자","알람 시계","커피 머신","진공청소기","에어컨","식기세척기","전기 주전자","자외선 차단제","손 소독제"],
+ ["환경","기후","오염","재활용","야생 동물","풍경","일몰","폭포","화산","지진","뇌우","폭염","계절 변화","국립공원","등산로","해류","대기질","천연자원","멸종 위기종","일기 예보"],
+ ["기회","성취, 업적","도전","승진","업무량","피드백","발표","급여 협상","팀워크","책임","자격","진로","원격 근무","취업 면접","교육 시간","인사 평가","고객 서비스","직장 문화","시간제 일","출장"],
+ ["자신감","경험","의사소통","발음","어휘","유창함","집중력","동기","과제","토론","연구","요약","설명","지시, 안내","발표 능력","공부 파트너","온라인 강좌","학습 방식","조별 과제","기말시험"],
+ ["증상","치료","회복","처방전","건강검진","보험","응급 상황","스트레스 해소","균형 잡힌 식단","정신 건강","체력","수면 일정","의학적 조언","건강한 생활 방식","식중독","근육통","호흡 운동","하루 걸음 수","스포츠 부상","대기 명단"],
+ ["실망","당혹감","좌절","호기심","감사","질투","안도","자신감 향상","향수병","흥분","인내심","동정","신뢰","존중","후회","만족","압박감","혼란","열정","평온함"],
+ ["대화 시작 질문","몸짓 언어","눈맞춤","음성 메시지","가벼운 대화","잘못된 발음","후속 질문","개인 의견","솔직한 답변","첫인상","유머 감각","단체 채팅","영상 통화","대중 연설","적극적 경청","언어 장벽","정중한 요청","친절한 알림","사교 초대","감사 편지"],
+ ["가족 관습","세대","인구","교육 제도","공공 안전","지방 선거","공공 서비스","사회 문제","문화 차이","국경일","자원봉사","지역 행사","여론","주거 비용","일과 삶의 균형","동등한 기회","사회적 책임","대중교통","도시 계획","지역 사업체"],
+ ["계정 보안","온라인 개인정보 보호","소프트웨어 업데이트","검색 엔진","스트리밍 서비스","화상 회의","디지털 결제","온라인 후기","알림","클라우드 저장소","무선 연결","스마트 기기","모바일 앱","온라인 뱅킹","화면 사용 시간","인공지능","가상 현실","온라인 공동체","기술 문제","데이터 백업"],
+ ["다큐멘터리","전시회","무대 작품","유명인","오락, 연예","자막","배경 음악","소설","사진 촬영","패션 유행","거리 미술","음악 축제","전통 의상","문화유산","영화 평론","팬 공동체","연극","무용 공연","시상식","창의적인 취미"],
+];
+
+const advancedKorean:string[][]=[
+ ["우선순위 설정","미루기","적응력","독립성","자기 절제","시간 관리","개인적 경계","장기 계획","생활 방식 조정","경제적 안정","결정 피로","일상 생산성","사회적 기대","개인적 약속","일과 삶의 통합","예상치 못한 지출","가사 책임","소비자 선택","삶의 질","인생 전환기"],
+ ["지속 가능성","식량 불안","윤리적 소비","요리 전통","식이 제한","식품 보존","농업 관행","공급망","문화적 도용","고급 외식","식물성 식단","음식물 쓰레기","지역 요리","소비자 선호","영양 결핍","유기농업","가공식품","식사량 조절","맛의 특징","요리 혁신"],
+ ["문화 체험","책임 있는 관광","과잉 관광","여행 제한","문화 간 교류","외딴 목적지","도시 탐험","환경 영향","비자 요건","문화 예절","해외에서의 언어 장벽","여행 접근성","문화유산 관광","디지털 노마드 생활","국제 이동성","관광 경제","국경 통제","문화 적응","해외 거주 생활","역문화 충격"],
+ ["고정관념","평판","영향력","카리스마","책임 의식","진실성","공감","회복력","취약함","성숙함","리더십 방식","사회적 정체성","개인적 편견","역할 모델","또래 압력","감성 지능","상호 존중","갈등 중재자","지원망","인맥"],
+ ["대도시권","농촌 공동체","역사 지구","문화 기관","공유 업무 공간","공공 기반 시설","주거 단지","상업 지구","보호 서식지","산업 지대","보행자 구역","도시 명소","역사 기념물","지역 보호소","혁신 중심지","교통망","공공 광장","재개발 사업","국경 지역","문화유산지"],
+ ["생체 인식 여권","재생 가능 배터리","감시 카메라","보조 기기","디지털 신원","보호 장비","비상 물자","무선 센서","재활용 소재","자율주행차","의료 장비","스마트 가전","보안 시스템","가상현실 헤드셋","태양 전지판","전기차","휴대용 발전기","공기청정기","번역 기기","웨어러블 기술"],
+ ["생물 다양성","보존","생태계","삼림 벌채","재생 에너지","탄소 발자국","기후 회복력","서식지 손실","자연재해","환경 정책","지속 가능한 발전","물 부족","극한 기후","해양 오염","생태 균형","자원 고갈","도시 녹지","야생 동물 보호","기후 이주","환경 의식"],
+ ["협상","타협","전문성","업무 위임","협업","생산성","기업가 정신","경력 발전","조직 문화","직장 갈등","직원 유지","성과 보상","전략적 계획","전문성 개발","윤리적 리더십","직무 만족","기업의 책임","경쟁 우위","노동력 부족","승계 계획"],
+ ["관점, 시각","해석","추측, 가정","비판적 사고","미디어 이해력","학문적 진실성","인지 편향","평생 학습","지식 격차","교육 불평등","언어 습득","문화 간 역량","학습 자율성","분석 능력","창의적 사고","문제 해결 전략","지적 호기심","건설적인 비판","연구 방법론","정보 과부하"],
+ ["예방 진료","의료 접근성","만성 질환","공중 보건","의료 윤리","심리적 안녕","번아웃 예방","건강 불평등","환자 비밀 보장","유전자 검사","의료 기술","치료 선택지","정신적 회복력","산업 보건","사전 동의","의학적 진단","물질 의존","사회적 고립","정서적 소진","양질의 의료"],
+ ["양가감정","원망","만족감","불안감","연민","결단력","벅참","자기 인식","감정적 갈등","소속감","실패에 대한 두려움","개인적 성취감","사회 불안","도덕적 불편함","정서적 애착","내적 갈등","자존감","정서적 지지","개인적 성장","불확실성"],
+ ["오해","설득","명확한 설명","대립","건설적 대화","비언어적 의사소통","문화적 뉘앙스","의사소통 단절","공적 담론","외교적 답변","갈등 해결","적극적 참여","수사적 질문","사회적 상호작용","업무 서신","민감한 주제","상호 이해","의사소통 전략","개방형 질문","문화 간 의사소통"],
+ ["논란","불평등","차별","다양성","포용","사회 이동성","인구 변화","공공 정책","시민의 책임","문화 통합","사회 결속","경제적 격차","표현의 자유","지역사회 참여","사회 복지","도시화","세계화","공적 책임","세대 갈등","공동 책임"],
+ ["알고리즘","자동화","데이터 개인정보 보호","허위 정보","사이버 보안","디지털 격차","기술 의존","얼굴 인식","기계 학습","온라인 괴롭힘","디지털 발자국","콘텐츠 관리","지식 재산권","기술 혁신","정보 보안","플랫폼 규제","디지털 이해력","원격 협업","자동화된 결정","윤리적 기술"],
+ ["문화적 정체성","문화 보존","예술적 표현","재현, 대표성","문화 다양성","대중문화","창조 산업","역사 해석","문화적 영향","예술의 자유","전통 공예","문화적 고정관념","사회 비평","문학 비평","문화 교류","창작물 소유권","역사적 서사","관객 인식","예술적 유산","문화 세계화"],
+];
+
+const makeGroup=(topic:GuessingWordsTopic,entries:[string,string][]):WordGroup=>({topic,words:entries.map(([word])=>word),korean:entries.map(([,korean])=>korean)});
+
+const beginnerAdditionalGroups:WordGroup[]=[
+ makeGroup("daily",[["weekday","평일"],["lunch break","점심시간"],["dinner","저녁 식사"],["alarm","알람"],["nap","낮잠"],["plan","계획"],["choice","선택"],["problem","문제"],["solution","해결책"],["chance","기회"],["reason","이유"],["result","결과"],["change","변화"],["turn","차례"],["visit","방문"],["trip","여행"],["date","데이트, 날짜"],["promise note","약속 메모"],["daily walk","매일 걷기"],["free time","자유 시간"]]),
+ makeGroup("food",[["snack","간식"],["menu","메뉴"],["meal","식사"],["pasta","파스타"],["hamburger","햄버거"],["sausage","소시지"],["egg","달걀"],["milk","우유"],["yogurt","요구르트"],["honey","꿀"],["sugar","설탕"],["salt","소금"],["pepper","후추"],["onion","양파"],["potato","감자"],["tomato","토마토"],["mushroom","버섯"],["ice cream","아이스크림"],["lemonade","레모네이드"],["dining table","식탁"]]),
+ makeGroup("travel",[["ferry","여객선"],["harbor","항구"],["highway","고속도로"],["tunnel","터널"],["crosswalk","횡단보도"],["traffic light","신호등"],["motorcycle","오토바이"],["van","승합차"],["boat","보트"],["cruise","크루즈 여행"],["backpacker","배낭여행객"],["travel guide","여행 안내서"],["hotel lobby","호텔 로비"],["window seat","창가 좌석"],["exit","출구"],["entrance","입구"],["route","경로"],["direction","방향"],["lost luggage","분실 수하물"],["train ticket","기차표"]]),
+ makeGroup("people",[["aunt","이모, 고모"],["uncle","삼촌, 아저씨"],["cousin","사촌"],["son","아들"],["daughter","딸"],["husband","남편"],["wife","아내"],["boyfriend","남자 친구"],["girlfriend","여자 친구"],["best friend","가장 친한 친구"],["waiter","남자 종업원"],["waitress","여자 종업원"],["mechanic","정비사"],["dentist","치과 의사"],["photographer","사진작가"],["farmer","농부"],["musician","음악가"],["artist","예술가"],["coach","코치"],["tourist group","관광객 일행"]]),
+ makeGroup("places",[["café","카페"],["playground","놀이터"],["supermarket","슈퍼마켓"],["airport gate","공항 탑승구"],["bus stop","버스 정류장"],["train station","기차역"],["hotel room","호텔 방"],["living room","거실"],["dining room","식당, 식사 공간"],["balcony","발코니"],["rooftop","옥상"],["basement","지하실"],["elevator","엘리베이터"],["staircase","계단"],["classroom","교실"],["clinic","의원, 진료소"],["police station","경찰서"],["fire station","소방서"],["gas station","주유소"],["flower shop","꽃집"]]),
+ makeGroup("objects",[["cash","현금"],["coin","동전"],["credit card","신용카드"],["receipt book","영수증철"],["shopping bag","쇼핑백"],["menu board","메뉴판"],["plate","접시"],["bowl","그릇"],["spoon","숟가락"],["fork","포크"],["knife","칼"],["cup","컵"],["mug","머그잔"],["towel","수건"],["soap","비누"],["comb","빗"],["hair dryer","헤어드라이어"],["lamp","램프"],["candle","초"],["doorbell","초인종"]]),
+ makeGroup("nature",[["wind","바람"],["storm","폭풍"],["rainbow","무지개"],["fog","안개"],["ice","얼음"],["season","계절"],["spring rain","봄비"],["summer heat","여름 더위"],["autumn leaves","단풍잎"],["winter coat weather","겨울 외투 날씨"],["desert","사막"],["valley","계곡"],["lake","호수"],["pond","연못"],["field","들판"],["grass","풀"],["leaf","잎"],["butterfly","나비"],["rabbit","토끼"],["dolphin","돌고래"]]),
+ makeGroup("work",[["work shift","근무 시간대"],["desk","책상"],["work bag","업무용 가방"],["phone call","전화 통화"],["task","업무, 과제"],["goal","목표"],["work plan","업무 계획"],["day off","휴무일"],["business lunch","업무상 점심"],["work trip","출장"],["team leader","팀장"],["new employee","신입 직원"],["work email","업무 이메일"],["office chair","사무실 의자"],["meeting room","회의실"],["name card","명함"],["work uniform","근무복"],["coffee break","커피 휴식"],["payday","급여일"],["overtime","초과 근무"]]),
+ makeGroup("technology",[["smartphone","스마트폰"],["tablet","태블릿"],["earbuds","이어폰"],["webcam","웹캠"],["microphone","마이크"],["speaker","스피커"],["smartwatch","스마트워치"],["game console","게임기"],["memory card","메모리 카드"],["phone case","휴대전화 케이스"],["touchscreen","터치스크린"],["QR code","QR 코드"],["download","다운로드"],["upload","업로드"],["username","사용자 이름"],["login","로그인"],["emoji","이모지"],["selfie","셀카"],["podcast","팟캐스트"],["livestream","실시간 방송"]]),
+ makeGroup("culture",[["drama","드라마"],["comedy","코미디"],["action movie","액션 영화"],["horror movie","공포 영화"],["romance movie","로맨스 영화"],["pop song","대중가요"],["music video","뮤직비디오"],["dance class","댄스 수업"],["movie star","영화배우"],["TV show","TV 프로그램"],["museum ticket","박물관 입장권"],["fan","팬"],["poster","포스터"],["festival food","축제 음식"],["traditional dance","전통 춤"],["fashion","패션"],["magazine","잡지"],["newspaper","신문"],["fairy tale","동화"],["board game","보드게임"]]),
+];
+
+const intermediateAdditionalGroups:WordGroup[]=[
+ makeGroup("daily",[["attraction","매력, 끌림"],["argument","말다툼, 논쟁"],["behavior","행동, 태도"],["boundary","경계, 한계"],["career","직업, 경력"],["connection","연결, 유대"],["encouragement","격려"],["friendship","우정"],["impression","인상"],["independence","독립성"],["lifestyle","생활 방식"],["opinion","의견"],["situation","상황"],["solution idea","해결 방안"],["suggestion","제안"],["surprise","놀라움, 깜짝 일"],["stress","스트레스"],["social plan","사교 일정"],["life goal","인생 목표"],["personal choice","개인적 선택"]]),
+ makeGroup("food",[["craving","강한 식욕"],["food preference","음식 취향"],["signature dish","대표 요리"],["family recipe","가족 요리법"],["dining experience","식사 경험"],["food delivery app","음식 배달 앱"],["cooking skill","요리 실력"],["spicy flavor","매운맛"],["sweet tooth","단것을 좋아함"],["food allergy","음식 알레르기"],["healthy snack","건강 간식"],["late-night meal","야식"],["shared dish","함께 나눠 먹는 요리"],["seasonal food","제철 음식"],["street-food stall","길거리 음식 노점"],["restaurant review","식당 후기"],["cooking class","요리 수업"],["meal preparation","식사 준비"],["grocery budget","식료품 예산"],["special occasion meal","특별한 날의 식사"]]),
+ makeGroup("travel",[["travel companion","여행 동반자"],["local experience","현지 체험"],["travel memory","여행 추억"],["unexpected delay","예상치 못한 지연"],["language help","언어 도움"],["travel mistake","여행 실수"],["hidden gem","숨은 명소"],["scenic route","경치 좋은 길"],["overnight stay","1박 숙박"],["travel season","여행 철"],["solo adventure","혼자 하는 모험"],["group tour","단체 여행"],["cultural experience","문화 체험"],["travel expense","여행 경비"],["packing list","짐 목록"],["return ticket","왕복표"],["airport transfer","공항 이동"],["room upgrade","객실 승급"],["local transportation","현지 교통"],["travel recommendation","여행 추천"]]),
+ makeGroup("people",[["acquaintance","지인"],["childhood friend","어릴 적 친구"],["mutual friend","공통 친구"],["close colleague","친한 동료"],["supportive partner","힘이 되는 연인"],["role-model teacher","본보기가 되는 교사"],["helpful neighbor","도움이 되는 이웃"],["difficult customer","까다로운 고객"],["reliable teammate","믿음직한 팀원"],["conversation partner","대화 상대"],["online friend","온라인 친구"],["former classmate","옛 동급생"],["family member","가족 구성원"],["community leader","지역 지도자"],["creative coworker","창의적인 동료"],["travel buddy","여행 친구"],["friendly stranger","친절한 낯선 사람"],["public figure","공인"],["event organizer","행사 기획자"],["language tutor","언어 튜터"]]),
+ makeGroup("places",[["coworking space","공유 사무실"],["cultural center","문화 센터"],["night market","야시장"],["local restaurant","현지 식당"],["rooftop café","옥상 카페"],["mountain village","산골 마을"],["seaside town","해안 마을"],["historic street","역사적인 거리"],["airport lounge","공항 라운지"],["concert venue","공연장"],["sports complex","종합 체육 시설"],["study café","스터디 카페"],["shared apartment","공동 주택"],["wedding hall","예식장"],["tourist information center","관광 안내소"],["emergency room","응급실"],["local library","지역 도서관"],["outdoor market","야외 시장"],["subway platform","지하철 승강장"],["city center","도심"]]),
+ makeGroup("objects",[["wireless charger","무선 충전기"],["noise-canceling headphones","노이즈 캔슬링 헤드폰"],["digital camera","디지털 카메라"],["travel pillow","여행용 베개"],["reusable cup","다회용 컵"],["folding umbrella","접이식 우산"],["storage box","수납 상자"],["desk organizer","책상 정리함"],["electric blanket","전기 담요"],["fitness tracker","운동량 측정기"],["recipe card","요리법 카드"],["gift certificate","상품권"],["membership card","회원 카드"],["parking ticket","주차권"],["contact lens","콘택트렌즈"],["portable fan","휴대용 선풍기"],["luggage tag","수하물 표찰"],["shopping receipt","쇼핑 영수증"],["notebook planner","다이어리"],["water filter","정수 필터"]]),
+ makeGroup("feelings",[["affection","애정"],["annoyance","짜증"],["anxiety","불안"],["awkwardness","어색함"],["contentment feeling","만족감"],["discouragement","낙담"],["eagerness","열의"],["emotional pressure","감정적 압박"],["fear","두려움"],["guilt","죄책감"],["hope","희망"],["irritation","불쾌감"],["joy","기쁨"],["nervous excitement","설렘과 긴장"],["optimism","낙관"],["pessimism","비관"],["pride","자부심"],["sadness","슬픔"],["shyness","수줍음"],["worry","걱정"]]),
+ makeGroup("work",[["career change","이직, 진로 변경"],["job offer","채용 제안"],["work schedule","근무 일정"],["professional goal","직업적 목표"],["team meeting","팀 회의"],["workplace friendship","직장 내 우정"],["job application","입사 지원"],["career advice","진로 조언"],["office politics","직장 내 정치"],["work stress","업무 스트레스"],["leadership skill","리더십 능력"],["work experience","업무 경험"],["flexible schedule","유연 근무 일정"],["career break","경력 공백"],["salary expectation","희망 급여"],["workplace rule","직장 규칙"],["job training","직무 교육"],["team conflict","팀 갈등"],["professional image","전문적인 이미지"],["career decision","진로 결정"]]),
+ makeGroup("communication",[["compliment style","칭찬 방식"],["conversation flow","대화 흐름"],["direct message","개인 메시지"],["emotional support","정서적 지지"],["friendly advice","친절한 조언"],["honest opinion","솔직한 의견"],["misunderstood message","오해받은 메시지"],["online conversation","온라인 대화"],["personal question","개인적인 질문"],["polite disagreement","정중한 반대"],["positive feedback","긍정적 피드백"],["private conversation","사적인 대화"],["shared interest","공통 관심사"],["social cue","사회적 신호"],["spoken expression","구어 표현"],["storytelling skill","이야기 전달 능력"],["texting habit","문자 습관"],["tone of voice","말투"],["verbal promise","말로 한 약속"],["written invitation","서면 초대"]]),
+ makeGroup("culture",[["cultural custom","문화 관습"],["holiday tradition","명절 전통"],["local etiquette","현지 예절"],["popular trend","대중적 유행"],["cultural event","문화 행사"],["foreign film","외국 영화"],["traditional music","전통 음악"],["family celebration","가족 행사"],["regional accent","지역 억양"],["cultural misunderstanding","문화적 오해"],["social norm","사회 규범"],["generational difference","세대 차이"],["fashion style","패션 스타일"],["music taste","음악 취향"],["international festival","국제 축제"],["local artist","지역 예술가"],["traditional meal","전통 음식"],["fan culture","팬 문화"],["creative expression","창의적 표현"],["cultural symbol","문화적 상징"]]),
+];
+
+const advancedAdditionalGroups:WordGroup[]=[
+ makeGroup("daily",[["ambition","야망, 포부"],["authenticity","진정성"],["compatibility","궁합, 양립 가능성"],["credibility","신뢰성"],["curiosity trait","호기심"],["dilemma","딜레마"],["expectation gap","기대 차이"],["flexibility","유연성"],["hesitation","망설임"],["intuition","직관"],["misconception","잘못된 생각"],["perception","인식"],["priority conflict","우선순위 충돌"],["sacrifice","희생"],["tendency","경향"],["personal responsibility","개인적 책임"],["life balance","생활의 균형"],["moral choice","도덕적 선택"],["personal principle","개인적 원칙"],["social confidence","사회적 자신감"]]),
+ makeGroup("feelings",[["acceptance","수용"],["anticipation","기대감"],["apprehension","불안, 염려"],["belonging","소속감"],["bitterness","씁쓸함, 원망"],["emotional clarity","감정의 명확함"],["emotional distance","정서적 거리"],["emotional maturity","정서적 성숙"],["forgiveness","용서"],["fulfillment","성취감, 충족감"],["grief","슬픔, 비탄"],["impatience","조급함"],["nostalgia","향수"],["reassurance","안심시킴"],["reluctance","꺼림, 주저함"],["remorse","깊은 후회"],["self-doubt","자기 의심"],["serenity","평온함"],["suspicion","의심"],["emotional vulnerability","정서적 취약함"]]),
+ makeGroup("people",[["authority figure","권위 있는 인물"],["career mentor","직업 멘토"],["community advocate","지역사회 옹호자"],["conflict avoider","갈등을 피하는 사람"],["decision maker","의사 결정자"],["emotional supporter","정서적 지원자"],["industry expert","업계 전문가"],["informal leader","비공식 리더"],["mediator","중재자"],["motivational speaker","동기 부여 연설가"],["opinion leader","여론 주도자"],["perfectionist","완벽주의자"],["risk taker","위험을 감수하는 사람"],["social connector","사람들을 연결하는 사람"],["strategic thinker","전략적 사고를 하는 사람"],["trusted adviser","신뢰받는 조언자"],["independent thinker","독립적 사고를 하는 사람"],["critical observer","비판적 관찰자"],["creative problem solver","창의적 문제 해결자"],["cultural ambassador","문화 홍보대사"]]),
+ makeGroup("work",[["career mobility","경력 이동성"],["competitive pressure","경쟁 압박"],["decision authority","의사 결정 권한"],["employee autonomy","직원 자율성"],["ethical dilemma","윤리적 딜레마"],["executive decision","경영진 결정"],["organizational change","조직 변화"],["professional credibility","직업적 신뢰성"],["recruitment strategy","채용 전략"],["remote leadership","원격 리더십"],["reputation management","평판 관리"],["resource allocation","자원 배분"],["risk assessment","위험 평가"],["salary transparency","급여 투명성"],["stakeholder","이해관계자"],["team dynamics","팀 역학"],["workplace diversity","직장 내 다양성"],["workplace hierarchy","직장 내 위계"],["workplace motivation","직장 내 동기"],["career uncertainty","경력 불확실성"]]),
+ makeGroup("communication",[["ambiguity","모호함"],["assertiveness","자기주장"],["credibility gap","신뢰도 차이"],["defensive response","방어적 반응"],["difficult conversation","어려운 대화"],["emotional disclosure","감정 공개"],["implicit message","암묵적 메시지"],["interpersonal conflict","대인 갈등"],["miscommunication","의사소통 오류"],["negotiating style","협상 방식"],["persuasive argument","설득력 있는 주장"],["public perception","대중의 인식"],["respectful confrontation","존중하는 대립"],["social persuasion","사회적 설득"],["strategic silence","전략적 침묵"],["subtle criticism","간접적 비판"],["trust-building","신뢰 형성"],["unspoken expectation","말하지 않은 기대"],["verbal reassurance","말로 하는 안심"],["constructive disagreement","건설적인 반대"]]),
+ makeGroup("society",[["accessibility","접근성"],["civic engagement","시민 참여"],["collective identity","집단 정체성"],["community resilience","지역사회 회복력"],["cultural sensitivity","문화적 감수성"],["economic mobility","경제적 이동성"],["ethical responsibility","윤리적 책임"],["gender expectation","성별에 대한 기대"],["institutional trust","제도에 대한 신뢰"],["media influence","미디어 영향"],["minority voice","소수자의 목소리"],["public awareness","대중 인식"],["social acceptance","사회적 수용"],["social pressure","사회적 압력"],["social privilege","사회적 특권"],["social trust","사회적 신뢰"],["urban inequality","도시 불평등"],["value conflict","가치관 충돌"],["community ownership","지역사회 주인의식"],["cultural accountability","문화적 책임"]]),
+ makeGroup("technology",[["algorithmic bias","알고리즘 편향"],["attention economy","관심 경제"],["automation anxiety","자동화에 대한 불안"],["data ownership","데이터 소유권"],["digital addiction","디지털 중독"],["digital consent","디지털 동의"],["digital reputation","온라인 평판"],["information credibility","정보 신뢰성"],["online anonymity","온라인 익명성"],["online authenticity","온라인 진정성"],["platform accountability","플랫폼 책임"],["privacy concern","개인정보 우려"],["recommendation algorithm","추천 알고리즘"],["remote connection","원격 연결"],["social-media influence","소셜 미디어 영향"],["technology anxiety","기술 불안"],["virtual identity","가상 정체성"],["digital well-being","디지털 웰빙"],["human oversight","인간의 감독"],["responsible innovation","책임 있는 혁신"]]),
+ makeGroup("culture",[["cultural authenticity","문화적 진정성"],["cultural boundary","문화적 경계"],["cultural continuity","문화적 연속성"],["cultural criticism","문화 비평"],["cultural expectation","문화적 기대"],["cultural memory","문화적 기억"],["cultural ownership","문화적 소유권"],["cultural perception","문화적 인식"],["cultural responsibility","문화적 책임"],["historical bias","역사적 편견"],["historical memory","역사적 기억"],["identity representation","정체성 재현"],["media representation","미디어 재현"],["national identity","국가 정체성"],["public art","공공 예술"],["shared heritage","공유 문화유산"],["social narrative","사회적 서사"],["traditional value","전통적 가치"],["cultural influence online","온라인 문화 영향"],["global cultural trend","세계적 문화 유행"]]),
+ makeGroup("learning",[["analytical reasoning","분석적 추론"],["argument quality","논리의 질"],["conceptual understanding","개념적 이해"],["evidence-based thinking","근거 기반 사고"],["independent learning","자기주도 학습"],["intellectual humility","지적 겸손"],["learning persistence","학습 지속력"],["logical fallacy","논리적 오류"],["memory strategy","기억 전략"],["metacognition","메타인지"],["open-mindedness","열린 마음"],["practical knowledge","실용 지식"],["reflective thinking","성찰적 사고"],["self-directed study","자기주도 공부"],["skill transfer","기술 전이"],["source evaluation","정보원 평가"],["structured thinking","구조적 사고"],["thought experiment","사고 실험"],["uncertain evidence","불확실한 증거"],["learning mindset","학습 태도"]]),
+ makeGroup("health",[["caregiver burden","돌봄 부담"],["emotional burnout","감정적 번아웃"],["health autonomy","건강 관리 자율성"],["health misconception","건강에 대한 오해"],["invisible illness","보이지 않는 질환"],["lifestyle disease","생활 습관병"],["medical uncertainty","의학적 불확실성"],["mental-health stigma","정신 건강에 대한 낙인"],["patient advocacy","환자 권익 옹호"],["preventive habit","예방 습관"],["recovery mindset","회복을 대하는 태도"],["sleep deprivation","수면 부족"],["stress management","스트레스 관리"],["treatment decision","치료 결정"],["wellness culture","웰니스 문화"],["workplace burnout","직장 번아웃"],["healthcare trust","의료 신뢰"],["personal well-being","개인의 안녕"],["emotional regulation","감정 조절"],["healthy boundary","건강한 경계"]]),
+];
+
 const questionTemplates:Record<GuessingWordsTopic,(word:string)=>[string,string]>={
  daily:word=>[`How does ${word} fit into your daily life?`,`What is one memorable experience you have had with ${word}?`],
  food:word=>[`What do you think about ${word}?`,`When or where would you usually choose ${word}?`],
@@ -76,26 +171,34 @@ const questionTemplates:Record<GuessingWordsTopic,(word:string)=>[string,string]
  culture:word=>[`What do you enjoy or notice about ${word}?`,`How can ${word} connect people from different cultures?`],
 };
 
-function buildLevel(level:GuessingWordsLevel,groups:WordGroup[],offset:number):GuessingWord[]{
- let index=0;
- return groups.flatMap(group=>group.words.map(word=>{index+=1;return{id:`guessing-word-${String(offset+index).padStart(3,"0")}`,word,level,topic:group.topic,speakingQuestions:questionTemplates[group.topic](word)}}));
+function attachKorean(groups:WordGroup[],translations:string[][]):WordGroup[]{
+ return groups.map((group,index)=>({...group,korean:translations[index]}));
 }
 
-export const beginnerGuessingWords=buildLevel("beginner",beginnerGroups,0);
-export const intermediateGuessingWords=buildLevel("intermediate",intermediateGroups,300);
-export const advancedGuessingWords=buildLevel("advanced",advancedGroups,600);
+const allBeginnerGroups=[...attachKorean(beginnerGroups,beginnerKorean),...beginnerAdditionalGroups];
+const allIntermediateGroups=[...attachKorean(intermediateGroups,intermediateKorean),...intermediateAdditionalGroups];
+const allAdvancedGroups=[...attachKorean(advancedGroups,advancedKorean),...advancedAdditionalGroups];
+
+function buildLevel(level:GuessingWordsLevel,groups:WordGroup[],offset:number):GuessingWord[]{
+ let index=0;
+ return groups.flatMap(group=>group.words.map((word,wordIndex)=>{index+=1;const uniqueWord=level==="intermediate"&&word==="independence"?"personal autonomy":level==="intermediate"&&word==="emotional support"?"supportive communication":word;return{id:`guessing-word-${String(offset+index).padStart(4,"0")}`,word:uniqueWord,korean:group.korean?.[wordIndex]??"",level,topic:group.topic,speakingQuestions:questionTemplates[group.topic](uniqueWord)}}));
+}
+
+export const beginnerGuessingWords=buildLevel("beginner",allBeginnerGroups,0);
+export const intermediateGuessingWords=buildLevel("intermediate",allIntermediateGroups,500);
+export const advancedGuessingWords=buildLevel("advanced",allAdvancedGroups,1000);
 export const guessingWords=[...beginnerGuessingWords,...intermediateGuessingWords,...advancedGuessingWords];
 export const guessingWordsByLevel:Record<GuessingWordsLevel,GuessingWord[]>={beginner:beginnerGuessingWords,intermediate:intermediateGuessingWords,advanced:advancedGuessingWords};
 
 export function validateGuessingWords(){
  const errors:string[]=[];
- for(const level of ["beginner","intermediate","advanced"] as const)if(guessingWordsByLevel[level].length!==300)errors.push(`${level} must contain exactly 300 words.`);
- if(guessingWords.length!==900)errors.push("The dataset must contain exactly 900 words.");
+ for(const level of ["beginner","intermediate","advanced"] as const)if(guessingWordsByLevel[level].length!==500)errors.push(`${level} must contain exactly 500 words.`);
+ if(guessingWords.length!==1500)errors.push("The dataset must contain exactly 1,500 words.");
  const normalized=guessingWords.map(item=>item.word.trim().toLocaleLowerCase("en-US"));
- if(new Set(normalized).size!==900)errors.push("All words and phrases must be unique across levels.");
- if(new Set(guessingWords.map(item=>item.id)).size!==900)errors.push("All IDs must be unique.");
- for(const item of guessingWords){if(!item.word.trim())errors.push(`Missing word: ${item.id}`);if(!item.level)errors.push(`Missing level: ${item.id}`);if(item.speakingQuestions.length!==2||item.speakingQuestions.some(question=>!question.trim()))errors.push(`Missing speaking question: ${item.id}`)}
+ if(new Set(normalized).size!==1500)errors.push("All words and phrases must be unique across levels.");
+ if(new Set(guessingWords.map(item=>item.id)).size!==1500)errors.push("All IDs must be unique.");
+ for(const item of guessingWords){if(!item.word.trim())errors.push(`Missing word: ${item.id}`);if(!item.korean.trim())errors.push(`Missing Korean meaning: ${item.id}`);if(!item.level)errors.push(`Missing level: ${item.id}`);if(item.speakingQuestions.length!==2||item.speakingQuestions.some(question=>!question.trim()))errors.push(`Missing speaking question: ${item.id}`)}
  return errors;
 }
 
-export const guessingWordsStats={beginner:beginnerGuessingWords.length,intermediate:intermediateGuessingWords.length,advanced:advancedGuessingWords.length,total:guessingWords.length,unique:new Set(guessingWords.map(item=>item.word.toLowerCase())).size,missingQuestions:guessingWords.filter(item=>item.speakingQuestions.some(question=>!question.trim())).length};
+export const guessingWordsStats={beginner:beginnerGuessingWords.length,intermediate:intermediateGuessingWords.length,advanced:advancedGuessingWords.length,total:guessingWords.length,unique:new Set(guessingWords.map(item=>item.word.toLowerCase())).size,koreanMeanings:guessingWords.filter(item=>item.korean.trim()).length,missingKorean:guessingWords.filter(item=>!item.korean.trim()).length,speakingQuestions:guessingWords.reduce((total,item)=>total+item.speakingQuestions.length,0),missingQuestions:guessingWords.filter(item=>item.speakingQuestions.some(question=>!question.trim())).length};

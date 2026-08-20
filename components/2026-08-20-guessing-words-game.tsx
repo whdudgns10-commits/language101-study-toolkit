@@ -48,18 +48,18 @@ export function GuessingWordsGame(){
   <h1>Describe the word without saying it.<br/>Can your teammates guess it?</h1>
   <fieldset className="guessing-timer-select"><legend><Timer/> Choose a Timer</legend><div>{timerOptions.map(value=><button type="button" className={timerSeconds===value?"is-active":""} onClick={()=>chooseTimer(value)} key={value}>{value?`${value} sec`:"No Timer"}</button>)}</div></fieldset>
   <div className="guessing-levels">
-   <button type="button" onClick={()=>begin("beginner")}><span className="level-dot beginner"/><strong>Beginner</strong><small>300 Words</small><Play/></button>
-   <button type="button" onClick={()=>begin("intermediate")}><span className="level-dot intermediate"/><strong>Intermediate</strong><small>300 Words</small><Play/></button>
-   <button type="button" onClick={()=>begin("advanced")}><span className="level-dot advanced"/><strong>Advanced</strong><small>300 Words</small><Play/></button>
+   <button type="button" onClick={()=>begin("beginner")}><span className="level-dot beginner"/><strong>Beginner</strong><small>500 Words</small><Play/></button>
+   <button type="button" onClick={()=>begin("intermediate")}><span className="level-dot intermediate"/><strong>Intermediate</strong><small>500 Words</small><Play/></button>
+   <button type="button" onClick={()=>begin("advanced")}><span className="level-dot advanced"/><strong>Advanced</strong><small>500 Words</small><Play/></button>
   </div>
  </section>;
 
  return <section className="guessing-game guessing-round" data-no-activity-translate>
-  <header><button type="button" onClick={exitGame} aria-label="Back to level selection"><ChevronLeft/></button><div><p>GUESSING WORDS</p><h1>{level}</h1></div><span>Word {Math.min(stats.played+1,300)} / 300</span></header>
+  <header><button type="button" onClick={exitGame} aria-label="Back to level selection"><ChevronLeft/></button><div><p>GUESSING WORDS</p><h1>{level}</h1></div><span>Word {Math.min(stats.played+1,500)} / 500</span></header>
   <div className="guessing-stats" aria-label="Game statistics"><span><b>{stats.played}</b> Played</span><span><b>{stats.correct}</b> Correct</span><span><b>{stats.skipped}</b> Skipped</span></div>
   <div className={`guessing-clock${timeUp?" is-up":""}`} style={{"--timer-progress":`${progress*360}deg`} as React.CSSProperties}><strong>{timeUp?"TIME'S UP!":clock}</strong></div>
   <button type="button" className={`guessing-word-card${revealed?" is-revealed":""}`} onClick={reveal} aria-label={revealed?`Revealed word: ${current.word}`:"Tap to reveal the word"}>
-   {revealed?<span className="guessing-card-content guessing-card-back"><small>YOUR WORD</small><strong>{current.word.toLocaleUpperCase("en-US")}</strong><b>DON&apos;T SAY THE WORD!</b></span>:<span className="guessing-card-content guessing-card-front"><Eye/><strong>TAP TO REVEAL</strong><small>Tap when you&apos;re ready</small></span>}
+   {revealed?<span className="guessing-card-content guessing-card-back"><small>YOUR WORD</small><strong>{current.word.toLocaleUpperCase("en-US")}</strong><span className="guessing-korean-meaning">{current.korean}</span><b>DON&apos;T SAY THE WORD!</b></span>:<span className="guessing-card-content guessing-card-front"><Eye/><strong>TAP TO REVEAL</strong><small>Tap when you&apos;re ready</small></span>}
   </button>
   {revealed&&<div className="guessing-reveal-content">
    <section className="guessing-rule"><b>DESCRIBE THE WORD</b><p>Explain this word in English without saying the word itself.</p></section>
