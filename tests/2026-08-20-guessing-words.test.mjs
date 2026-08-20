@@ -10,6 +10,8 @@ test("Guessing Words contains exactly fifteen hundred bilingual learning words",
  assert.equal(data.guessingWords.length,1500);
  assert.equal(new Set(data.guessingWords.map(item=>item.word.trim().toLowerCase())).size,1500);
  assert.equal(new Set(data.guessingWords.map(item=>item.id)).size,1500);
+ assert.equal(data.guessingWords.filter(item=>item.word.trim().split(/\s+/).length!==1||/\s/.test(item.word)).length,0);
+ assert.ok(data.guessingWords.every(item=>/^[A-Za-z]+$/.test(item.word)));
  assert.ok(data.guessingWords.every(item=>item.word&&item.korean&&item.level&&item.speakingQuestions.length===2&&item.speakingQuestions.every(Boolean)));
  assert.equal(data.guessingWords.reduce((total,item)=>total+item.speakingQuestions.length,0),3000);
  assert.deepEqual(data.validateGuessingWords(),[]);
@@ -38,7 +40,7 @@ test("Guessing Words implements reveal-first random play, timer controls, scorin
   readFile(new URL("../components/2026-08-20-guessing-words-game.tsx",import.meta.url),"utf8"),
   readFile(new URL("../components/2026-08-20-guessing-words-game.css",import.meta.url),"utf8"),
  ]);
- for(const contract of ["TAP TO REVEAL","Tap when you&apos;re ready","DON&apos;T SAY THE WORD!","SPEAKING QUESTIONS","TIME'S UP!","CORRECT","SKIP","Pause","Resume","Reset","Math.random","usedIds"])assert.ok(game.includes(contract),`missing ${contract}`);
+ for(const contract of ["TAP TO REVEAL","Tap when you&apos;re ready","DESCRIBE THIS WORD IN ENGLISH!","SPEAKING QUESTIONS","TIME'S UP!","CORRECT","SKIP","Pause","Resume","Reset","Math.random","usedIds"])assert.ok(game.includes(contract),`missing ${contract}`);
  assert.match(game,/current\.korean/);
  assert.match(game,/500 Words/);
  assert.match(game,/\/ 500/);

@@ -59,7 +59,7 @@ export function GuessingWordsGame(){
   <div className="guessing-stats" aria-label="Game statistics"><span><b>{stats.played}</b> Played</span><span><b>{stats.correct}</b> Correct</span><span><b>{stats.skipped}</b> Skipped</span></div>
   <div className={`guessing-clock${timeUp?" is-up":""}`} style={{"--timer-progress":`${progress*360}deg`} as React.CSSProperties}><strong>{timeUp?"TIME'S UP!":clock}</strong></div>
   <button type="button" className={`guessing-word-card${revealed?" is-revealed":""}`} onClick={reveal} aria-label={revealed?`Revealed word: ${current.word}`:"Tap to reveal the word"}>
-   {revealed?<span className="guessing-card-content guessing-card-back"><small>YOUR WORD</small><strong>{current.word.toLocaleUpperCase("en-US")}</strong><span className="guessing-korean-meaning">{current.korean}</span><b>DON&apos;T SAY THE WORD!</b></span>:<span className="guessing-card-content guessing-card-front"><Eye/><strong>TAP TO REVEAL</strong><small>Tap when you&apos;re ready</small></span>}
+   {revealed?<span className="guessing-card-content guessing-card-back"><small>YOUR WORD</small><strong>{current.word.toLocaleUpperCase("en-US")}</strong><span className="guessing-korean-meaning">{current.korean}</span><b>DESCRIBE THIS WORD IN ENGLISH!</b></span>:<span className="guessing-card-content guessing-card-front"><Eye/><strong>TAP TO REVEAL</strong><small>Tap when you&apos;re ready</small></span>}
   </button>
   {revealed&&<div className="guessing-reveal-content">
    <section className="guessing-rule"><b>DESCRIBE THE WORD</b><p>Explain this word in English without saying the word itself.</p></section>
