@@ -132,7 +132,8 @@ test("Naver Cafe text activities use internal content while operational links re
   const activities=await readFile(new URL("../data/activities.ts",import.meta.url),"utf8");
   assert.doesNotMatch(activities,/cafe\.naver\.com|m\.cafe\.naver\.com/);
   assert.ok((activities.match(/sourceType:\s*"internal"/g)??[]).length>=10);
-  assert.ok((activities.match(/sourceType: "interactive"/g)??[]).length>=6);
+  assert.ok((activities.match(/sourceType: "interactive"/g)??[]).length>=5);
+  const guessingWords=activities.split('id: "guessing-words"')[1].split("},")[0];assert.match(guessingWords,/sourceType: "internal"/);assert.match(guessingWords,/externalUrl: ""/);
   const response=await render("/activities/true-or-false");assert.equal(response.status,200);
   const html=await response.text();assert.match(html,/Start a conversation here/);assert.match(html,/Start conversation/);assert.doesNotMatch(html,/네이버 로그인|카페 가입/);
 });

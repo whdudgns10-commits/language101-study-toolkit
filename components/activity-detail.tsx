@@ -18,6 +18,7 @@ import { recordSessionActivity } from "@/lib/storage";
 
 const AlphabetChallengeGame=dynamic(()=>import("@/components/alphabet-challenge-game").then(module=>module.AlphabetChallengeGame),{loading:()=>null});
 const ConversationContentViewer=dynamic(()=>import("@/components/conversation-content-viewer").then(module=>module.ConversationContentViewer),{loading:()=>null});
+const GuessingWordsGame=dynamic(()=>import("@/components/2026-08-20-guessing-words-game").then(module=>module.GuessingWordsGame),{loading:()=>null});
 
 export function ActivityDetail({ activity }: { activity:Activity }) {
   const { language, t } = useLanguage();
@@ -33,6 +34,7 @@ export function ActivityDetail({ activity }: { activity:Activity }) {
     return () => clearTimeout(timer);
   }, [activity.id]);
 
+  if (activity.id === "guessing-words") return <><SiteHeader showSearch={false}/><main className="detail-page guessing-words-page"><div className="detail-shell"><Link href="/activities" className="back-link"><ArrowLeft size={18}/>{t("activity.back")}</Link><GuessingWordsGame/></div></main></>;
   if (activity.id === "describing-picture-game") return <><SiteHeader showSearch={false}/><main className="detail-page"><div className="detail-shell"><Link href="/activities" className="back-link"><ArrowLeft size={18}/>{t("activity.back")}</Link><SituationSentenceGame/></div></main></>;
 
   return <>
