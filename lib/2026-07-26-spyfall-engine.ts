@@ -26,10 +26,11 @@ export function shuffleSpyfallItems<T>(items: readonly T[], random = Math.random
 
 export function chooseSpyfallAnswer(
   category: SpyfallCategory,
-  previousAnswer: string | null,
+  recentAnswers: readonly string[] | string | null,
   random = Math.random,
 ) {
-  const choices = category.items.filter((item) => item !== previousAnswer);
+  const recent = new Set(Array.isArray(recentAnswers) ? recentAnswers : recentAnswers ? [recentAnswers] : []);
+  const choices = category.items.filter((item) => !recent.has(item));
   const pool = choices.length ? choices : category.items;
   return pool[Math.floor(random() * pool.length)];
 }
@@ -98,7 +99,7 @@ export function validateSpyfallCategories() {
   spyfallCategories.forEach((category) => {
     if (ids.has(category.id)) errors.push(`Duplicate category id: ${category.id}`);
     ids.add(category.id);
-    const minimum = category.id === "places" ? 100 : 50;
+    const minimum = category.id === "places" ? 300 : 50;
     if (category.items.length < minimum) {
       errors.push(`${category.id} has ${category.items.length}; expected at least ${minimum}`);
     }

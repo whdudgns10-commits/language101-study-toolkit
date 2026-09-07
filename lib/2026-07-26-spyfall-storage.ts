@@ -15,6 +15,7 @@ import type {
 export const SPYFALL_SETTINGS_KEY = "language101-spyfall-settings";
 export const SPYFALL_SESSION_KEY = "language101-spyfall-active-session";
 export const SPYFALL_LAST_LOCATION_KEY = "language101-spyfall-last-location";
+export const SPYFALL_ANSWER_HISTORY_KEY = "language101-spyfall-answer-history";
 
 export type SpyfallSettings = {
   locations: SpyfallLocation[];
@@ -24,9 +25,10 @@ export type SpyfallSettings = {
 };
 
 export type SpyfallSessionSnapshot = {
-  version: 2;
+  version: 3;
   phase: "handoff" | "reveal" | "ready" | "playing" | "voting" | "vote-summary" | "round-result" | "final";
   playerCount: number;
+  playerNames: string[];
   spyCount: number;
   spyNumbers: number[];
   categoryId: string;
@@ -98,7 +100,14 @@ export function loadSpyfallSession(): SpyfallSessionSnapshot | null {
   if (!isBrowser()) return null;
   try {
     const parsed = JSON.parse(localStorage.getItem(SPYFALL_SESSION_KEY) ?? "null") as SpyfallSessionSnapshot | null;
-    return parsed?.version === 2 ? parsed : null;
+    if (!parsed || ![2, 3].includes(Number(parsed.version))) return null;
+    return {
+      ...parsed,
+      version: 3,
+      playerNames: Array.isArray(parsed.playerNames) && parsed.playerNames.length === parsed.playerCount
+        ? parsed.playerNames
+        : Array.from({ length: parsed.playerCount }, (_, index) => `Player ${index + 1}`),
+    } as SpyfallSessionSnapshot;
   } catch {
     return null;
   }
@@ -120,4 +129,23 @@ export function loadLastSpyfallLocationId() {
 
 export function saveLastSpyfallLocationId(id: string) {
   if (isBrowser()) localStorage.setItem(SPYFALL_LAST_LOCATION_KEY, id);
+}
+
+export function loadSpyfallAnswerHistory(categoryId: string) {
+  if (!isBrowser()) return [];
+  try {
+    const value = JSON.parse(localStorage.getItem(SPYFALL_ANSWER_HISTORY_KEY) ?? "{}") as Record<string, string[]>;
+    return Array.isArray(value[categoryId]) ? value[categoryId] : [];
+  } catch {
+    return [];
+  }
+}
+
+export function saveSpyfallAnswerHistory(categoryId: string, answer: string) {
+  if (!isBrowser()) return;
+  let value: Record<string, string[]> = {};
+  try { value = JSON.parse(localStorage.getItem(SPYFALL_ANSWER_HISTORY_KEY) ?? "{}"); } catch { value = {}; }
+  const limit = categoryId === "places" ? 50 : 30;
+  value[categoryId] = [answer, ...(value[categoryId] ?? []).filter((item) => item !== answer)].slice(0, limit);
+  localStorage.setItem(SPYFALL_ANSWER_HISTORY_KEY, JSON.stringify(value));
 }
