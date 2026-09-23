@@ -1,7 +1,8 @@
 import type { TopicPractice,TopicPracticeCategory } from "./2026-09-23-topic-practice-types";
+import { topicPracticeExpansionSeeds } from "./2026-09-23-topic-practice-expansion";
 
-type TopicSeed={title:string;ko:string;emoji:string;category:TopicPracticeCategory;level:"easy"|"medium"|"mixed";focus?:string[]};
-const categories:TopicPracticeCategory[]=["Food & Drinks","Travel","Dating & Relationships","Work & Career","School & Learning","Entertainment","Technology","Money & Lifestyle","Health & Fitness","Daily Life","Culture & Experiences"];
+type TopicSeed={title:string;ko:string;emoji:string;category:string;level:"easy"|"medium"|"mixed";focus?:string[];isExpansion?:boolean};
+const categories:TopicPracticeCategory[]=["Food & Drinks","Travel","Dating & Relationships","Friends & Social Life","Work & Career","School & Learning","Entertainment","Technology & Social Media","Money & Shopping","Home & Lifestyle","Health & Fitness","Daily Life","Personality","Culture","Life Experiences"];
 export const topicPracticeCategories=categories;
 
 const rows=`
@@ -121,7 +122,7 @@ const specialFocus:Record<string,string[]>= {
  Coffee:["your first cup of the day","how many cups you drink","a cafe you return to","hot versus iced coffee","making coffee at home","caffeine and sleep","specialty coffee prices","ordering coffee abroad","meeting friends at a cafe","a coffee drink you dislike"],
 };
 
-const vocabPacks:Record<TopicPracticeCategory,[string,string][]>= {
+const vocabPacks:Record<string,[string,string][]>= {
  "Food & Drinks":[["flavor","맛"],["ingredient","재료"],["portion","양, 1인분"],["crispy","바삭한"],["chewy","쫄깃한"],["spicy","매운"],["fresh","신선한"],["recipe","조리법"],["recommend","추천하다"],["craving","강하게 당김"]],
  Travel:[["destination","목적지"],["itinerary","여행 일정"],["reservation","예약"],["sightseeing","관광"],["local","현지의"],["luggage","짐"],["departure","출발"],["accommodation","숙소"],["explore","둘러보다"],["memorable","기억에 남는"]],
  "Dating & Relationships":[["chemistry","서로 통하는 느낌"],["crush","좋아하는 사람"],["compatible","잘 맞는"],["trust","신뢰"],["supportive","힘이 되어주는"],["honest","솔직한"],["boundary","관계의 경계"],["commitment","진지한 약속"],["conflict","갈등"],["reconnect","다시 가까워지다"]],
@@ -135,7 +136,7 @@ const vocabPacks:Record<TopicPracticeCategory,[string,string][]>= {
  "Culture & Experiences":[["tradition","전통"],["custom","관습"],["perspective","관점"],["meaningful","의미 있는"],["adapt","적응하다"],["experience","경험"],["identity","정체성"],["community","공동체"],["respect","존중"],["inspire","영감을 주다"]],
 };
 
-const vocabularyExamples:Record<TopicPracticeCategory,string[]>={
+const vocabularyExamples:Record<string,string[]>={
  "Food & Drinks":["The soup has a rich flavor.","Fresh ingredients make a big difference.","The portions here are generous.","The chicken is crispy on the outside.","These rice cakes are pleasantly chewy.","I ordered the least spicy option.","We buy fresh vegetables at the market.","My grandmother gave me this recipe.","Can you recommend a good local restaurant?","I've been craving noodles all day."],
  Travel:["Japan is our next destination.","I shared the itinerary with everyone.","I made a reservation online.","We spent the morning sightseeing.","A local showed us a quiet cafe.","My luggage did not arrive.","Our departure was delayed by an hour.","The accommodation was simple but clean.","We explored the old town on foot.","It was a memorable trip."],
  "Dating & Relationships":["We had great chemistry from the start.","I had a crush on my classmate.","Our personalities are very compatible.","Trust takes time to build.","She was supportive during a difficult week.","Please be honest with me.","It is important to respect each other's boundaries.","He is not ready for a serious commitment.","They resolved the conflict calmly.","I reconnected with an old friend."],
@@ -149,7 +150,7 @@ const vocabularyExamples:Record<TopicPracticeCategory,string[]>={
  "Culture & Experiences":["Sharing food is an important family tradition.","Taking off your shoes indoors is a common custom.","Travel gave me a different perspective.","It was a meaningful conversation.","It took a few months to adapt to life abroad.","That experience made me more confident.","Language is an important part of identity.","The festival brings the community together.","People show respect in different ways.","Her story inspired me to try something new."],
 };
 
-const expressionPacks:Record<TopicPracticeCategory,[string,string,string][]>= {
+const expressionPacks:Record<string,[string,string,string][]>= {
  "Food & Drinks":[["I'm craving ~","~가 당겨.","I'm craving something spicy."],["I'm not a big fan of ~","~를 별로 좋아하지 않아.","I'm not a big fan of seafood."],["It tastes amazing.","정말 맛있다.","This soup tastes amazing."],["I'll have the ~","~로 할게요.","I'll have the pasta."],["It's not really my thing.","내 취향은 아니야.","Very sweet coffee isn't really my thing."]],
  Travel:[["It's on my bucket list.","내 버킷리스트에 있어.","Iceland is on my bucket list."],["I'd love to visit ~","~에 꼭 가보고 싶어.","I'd love to visit Spain."],["How long does it take?","얼마나 걸리나요?","How long does it take by train?"],["Is it within walking distance?","걸어갈 수 있는 거리인가요?","Is the hotel within walking distance?"],["It was totally worth it.","정말 그럴 만한 가치가 있었어.","The long flight was totally worth it."]],
  "Dating & Relationships":[["I'm into someone.","누군가에게 호감이 있어.","I think I'm into someone at work."],["We really hit it off.","우리 정말 잘 통했어.","We really hit it off on our first date."],["That's a red flag for me.","그건 나한테 위험 신호야.","Being rude is a red flag for me."],["We have a lot in common.","우리는 공통점이 많아.","We have a lot in common."],["I need some space.","혼자 생각할 시간이 필요해.","I need some space to think."]],
@@ -164,44 +165,70 @@ const expressionPacks:Record<TopicPracticeCategory,[string,string,string][]>= {
 };
 
 function slug(value:string){return value.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")}
-function focusFor(seed:TopicSeed){return specialFocus[seed.title]??[
+function expandedFocus(title:string,keywords:string[]){return [
+ `your experience with ${keywords[0]} in ${title.toLowerCase()}`,`${keywords[1]} you enjoy or avoid when it comes to ${title.toLowerCase()}`,`${keywords[2]} in everyday ${title.toLowerCase()}`,`${keywords[3]} with other people while discussing ${title.toLowerCase()}`,`${keywords[4]} and a recent ${title.toLowerCase()} example`,
+ `your first experience with ${title.toLowerCase()}`,`your favorite thing about ${title.toLowerCase()}`,`a difficult part of ${title.toLowerCase()}`,`a choice people make about ${title.toLowerCase()}`,`advice for someone new to ${title.toLowerCase()}`,
+ `a funny memory involving ${title.toLowerCase()}`,`how often ${title.toLowerCase()} comes up in your life`,`something you would change about ${title.toLowerCase()}`,`how friends feel about ${title.toLowerCase()}`,`what you want to try next with ${title.toLowerCase()}`];}
+function focusFor(seed:TopicSeed){if(seed.focus?.length===5)return expandedFocus(seed.title,seed.focus);const base=specialFocus[seed.title]??[
   `your first experience with ${seed.title.toLowerCase()}`,`a recent ${seed.title.toLowerCase()} moment`,`your favorite part of ${seed.title.toLowerCase()}`,
   `${seed.title.toLowerCase()} with friends`,`a difficult choice about ${seed.title.toLowerCase()}`,`how ${seed.title.toLowerCase()} fits your routine`,
-  `a common mistake involving ${seed.title.toLowerCase()}`,`the cost of ${seed.title.toLowerCase()}`,`how ${seed.title.toLowerCase()} may change`,`advice about ${seed.title.toLowerCase()}`];}
+  `a common mistake involving ${seed.title.toLowerCase()}`,`the cost of ${seed.title.toLowerCase()}`,`how ${seed.title.toLowerCase()} may change`,`advice about ${seed.title.toLowerCase()}`];return[...base,
+  `a funny memory involving ${seed.title.toLowerCase()}`,`someone who enjoys ${seed.title.toLowerCase()}`,`something you avoid about ${seed.title.toLowerCase()}`,`a plan involving ${seed.title.toLowerCase()}`,`what you want to try next with ${seed.title.toLowerCase()}`];}
 const questionFrames=[
   (x:string)=>`Tell us about ${x}.`,(x:string)=>`What makes ${x} memorable for you?`,(x:string)=>`How do you feel about ${x}?`,
   (x:string)=>`Who would you like to share ${x} with, and why?`,(x:string)=>`What is the hardest thing about ${x}?`,
   (x:string)=>`How has your opinion about ${x} changed?`,(x:string)=>`What have you learned from ${x}?`,
   (x:string)=>`Would you spend more time or money on ${x}? Why?`,(x:string)=>`How do you think ${x} will be different in five years?`,
-  (x:string)=>`What advice would you give a friend about ${x}?`];
-const warmFrames=[(x:string)=>`Have you experienced ${x}?`,(x:string)=>`How often do you think about ${x}?`,(x:string)=>`Do you enjoy ${x}? Why?`,(x:string)=>`When did you last talk about ${x}?`,(x:string)=>`What word describes ${x} for you?`];
-const warmKo=["관련 경험이 있나요?","얼마나 자주 생각하나요?","좋아하나요? 이유는 무엇인가요?","마지막으로 이야기한 때는 언제인가요?","한 단어로 표현하면 무엇인가요?"];
-const mainKo=["관련 경험을 들려주세요.","왜 기억에 남나요?","어떻게 생각하나요?","누구와 함께하고 싶나요?", "가장 어려운 점은 무엇인가요?","생각이 어떻게 바뀌었나요?","무엇을 배웠나요?","시간이나 돈을 더 쓸 의향이 있나요?","5년 뒤에는 어떻게 달라질까요?","친구에게 어떤 조언을 하고 싶나요?"];
+  (x:string)=>`What advice would you give a friend about ${x}?`,(x:string)=>`What is a funny memory you have about ${x}?`,(x:string)=>`Who do you know that enjoys ${x}, and why?`,(x:string)=>`Is there anything you avoid about ${x}?`,(x:string)=>`What plan would you make for ${x}?`,(x:string)=>`What would you like to try next about ${x}?`];
+const mainKo=["관련 경험을 들려주세요.","왜 기억에 남나요?","어떻게 생각하나요?","누구와 함께하고 싶나요?", "가장 어려운 점은 무엇인가요?","생각이 어떻게 바뀌었나요?","무엇을 배웠나요?","시간이나 돈을 더 쓸 의향이 있나요?","5년 뒤에는 어떻게 달라질까요?","친구에게 어떤 조언을 하고 싶나요?","재미있는 기억이 있나요?","누가 좋아하며 그 이유는 무엇인가요?","피하고 싶은 점이 있나요?","어떤 계획을 세우고 싶나요?","다음에는 무엇을 해보고 싶나요?"];
+
+function resolveCategory(title:string,category:string):TopicPracticeCategory{
+ if(category==="Technology")return"Technology & Social Media";if(category==="Money & Lifestyle")return["Housing","Living Alone","Roommates","Moving"].includes(title)?"Home & Lifestyle":"Money & Shopping";
+ if(category==="Culture & Experiences"){if(["Personality","Happiness","Goals","Dreams","Future"].includes(title))return"Personality";if(["Life Abroad","Childhood","Bucket List"].includes(title))return"Life Experiences";return"Culture"}
+ if(category==="Dating & Relationships"&&["Friendship","Making Friends","Best Friends","Social Life"].includes(title))return"Friends & Social Life";
+ return category as TopicPracticeCategory;
+}
+function packCategory(category:TopicPracticeCategory){if(category==="Technology & Social Media")return"Technology";if(category==="Money & Shopping"||category==="Home & Lifestyle")return"Money & Lifestyle";if(category==="Friends & Social Life")return"Dating & Relationships";if(["Personality","Culture","Life Experiences"].includes(category))return"Culture & Experiences";return category;}
+function seedHash(value:string){let result=0;for(const char of value)result=(result*31+char.charCodeAt(0))>>>0;return result}
+function expansionRolePlays(seed:TopicSeed,id:string,expressions:[string,string,string][]):TopicPractice["rolePlays"]{
+ const topic=seed.title.toLowerCase(),ko=seed.ko,useful=[expressions[0][0],expressions[1][0],"What do you think?","That works for me."];
+ const templates:Omit<TopicPractice["rolePlays"][number],"id"|"usefulExpressions">[]=[
+  {title:`Choose the Best ${seed.title} Option`,koreanTitle:`${ko} 선택하기`,situation:`Two people compare different ${topic} options and must choose one.`,koreanSituation:`두 사람이 여러 ${ko} 선택지를 비교해 하나를 골라야 합니다.`,roleA:"Explain your preferred option, price limit, and one concern.",roleB:"Compare another option and ask for a compromise.",mission:"Compare at least two options and make one shared decision."},
+  {title:`Solve a ${seed.title} Problem`,koreanTitle:`${ko} 문제 해결`,situation:`A problem involving ${topic} has interrupted your plans.`,koreanSituation:`${ko}과 관련된 문제로 계획에 차질이 생겼습니다.`,roleA:"Explain exactly what went wrong and request a solution.",roleB:"Ask for details, apologize, and offer two practical solutions.",mission:"Agree on a fair solution politely."},
+  {title:`Give Honest ${seed.title} Advice`,koreanTitle:`${ko} 조언하기`,situation:`One person needs advice about ${topic} before making a decision.`,koreanSituation:`한 사람이 ${ko}에 관한 결정을 앞두고 조언이 필요합니다.`,roleA:"Describe your situation and ask three specific questions.",roleB:"Give honest advice, including one advantage and one risk.",mission:"Finish with a clear next step."},
+  {title:`Recommend ${seed.title} to a Newcomer`,koreanTitle:`${ko} 추천하기`,situation:`A newcomer wants a personal recommendation about ${topic}.`,koreanSituation:`처음 접하는 사람이 ${ko}에 관한 개인적인 추천을 원합니다.`,roleA:"Ask about cost, difficulty, and what to expect.",roleB:"Recommend one specific choice and support it with two reasons.",mission:"Help the newcomer choose confidently."},
+  {title:`Handle a ${seed.title} Misunderstanding`,koreanTitle:`${ko} 오해 풀기`,situation:`Two people misunderstood each other while talking about ${topic}.`,koreanSituation:`두 사람이 ${ko}에 관해 이야기하다 서로 오해했습니다.`,roleA:"Explain what you meant without blaming the other person.",roleB:"Describe how you understood it and ask for clarification.",mission:"Clear up the misunderstanding and agree on what happens next."},
+  {title:`Plan a ${seed.title} Experience`,koreanTitle:`${ko} 경험 계획하기`,situation:`You have limited time and money to plan an experience involving ${topic}.`,koreanSituation:`제한된 시간과 예산으로 ${ko} 관련 경험을 계획해야 합니다.`,roleA:"Suggest the schedule and explain what matters most to you.",roleB:"Check the budget, suggest a change, and confirm the details.",mission:"Create a realistic plan with a time, budget, and next action."},
+  {title:`Make a Polite ${seed.title} Complaint`,koreanTitle:`${ko} 정중하게 항의하기`,situation:`The ${topic} experience was different from what was promised.`,koreanSituation:`${ko} 경험이 약속된 내용과 달랐습니다.`,roleA:"Describe the issue calmly and say what outcome you expect.",roleB:"Respond professionally and negotiate a reasonable solution.",mission:"Resolve the complaint without becoming rude."},
+  {title:`Convince a Partner about ${seed.title}`,koreanTitle:`${ko} 설득하기`,situation:`One person is interested in ${topic}, but the other is unsure.`,koreanSituation:`한 사람은 ${ko}에 관심이 있지만 다른 사람은 망설이고 있습니다.`,roleA:"Give three practical reasons and answer one concern.",roleB:"Explain your doubts and state what would change your mind.",mission:"Reach a yes, no, or compromise with clear reasons."}
+ ];
+ const start=seedHash(id)%templates.length;return[0,1,2].map((offset,index)=>({...templates[(start+offset)%templates.length],id:`${id}-r${index+1}`,usefulExpressions:useful}));
+}
 
 function makeTopic(seed:TopicSeed):TopicPractice{
- const id=slug(seed.title),focus=focusFor(seed),vocab=vocabPacks[seed.category],expressions=expressionPacks[seed.category];
- const warmupQuestions=focus.slice(0,5).map((item,i)=>({id:`${id}-w${i+1}`,question:warmFrames[i](item),korean:warmKo[i],followUps:[`Why do you say that?`,`Can you give an example?`]}));
+ const id=slug(seed.title),category=resolveCategory(seed.title,seed.category),pack=packCategory(category),focus=focusFor(seed),baseVocab=vocabPacks[pack],expressions=expressionPacks[pack];
+ const vocab=seed.isExpansion?[[seed.title.toLowerCase(),seed.ko] as [string,string],...baseVocab.slice(0,9)]:baseVocab;
  const conversationQuestions=focus.map((item,i)=>({id:`${id}-q${i+1}`,question:questionFrames[i](item),korean:mainKo[i],followUps:[i%2?"How did that make you feel?":"What happened next?",i%3?"Would you do it again?":"Has anyone had a similar experience?"]}));
- return {id,title:seed.title,koreanTitle:seed.ko,emoji:seed.emoji,category:seed.category,level:seed.level,warmupQuestions,conversationQuestions,
-  vocabulary:vocab.map(([word,korean],index)=>({word,korean,example:vocabularyExamples[seed.category][index]})),
+ return {id,title:seed.title,koreanTitle:seed.ko,emoji:seed.emoji,category,tags:[category,...(seed.focus??[]),seed.title,seed.ko],level:seed.level,conversationQuestions,
+  vocabulary:vocab.map(([word,korean],index)=>({word,korean,example:seed.isExpansion&&index===0?`We talked about ${seed.title.toLowerCase()} during our language exchange.`:vocabularyExamples[pack][seed.isExpansion?index-1:index]})),
   expressions:expressions.map(([expression,korean,example])=>({expression,korean,example,practice:expression.includes("~")?expression.replace("~","_______"):`Use “${expression}” in your own sentence.`})),
-  rolePlays:[
+  rolePlays:seed.isExpansion?expansionRolePlays(seed,id,expressions):[
    {id:`${id}-r1`,title:`Planning ${seed.title} Together`,koreanTitle:`${seed.ko} 함께 계획하기`,situation:`Two friends have different preferences about ${seed.title.toLowerCase()} and need one shared plan.`,koreanSituation:`두 친구가 ${seed.ko}에 대해 서로 다른 취향을 가지고 하나의 계획을 정해야 합니다.`,roleA:`Explain your first choice and your budget or schedule.`,roleB:`Suggest a different option and ask two follow-up questions.`,mission:"Agree on one realistic plan without using Korean.",usefulExpressions:[expressions[0][0],expressions[1][0],"How about we...?","That works for me."]},
    {id:`${id}-r2`,title:`A Problem with ${seed.title}`,koreanTitle:`${seed.ko} 문제 해결`,situation:`Something went wrong during a ${seed.title.toLowerCase()} experience. Solve it politely.`,koreanSituation:`${seed.ko} 경험 중 문제가 생겼습니다. 정중하게 해결하세요.`,roleA:"Describe the problem clearly and say what solution you want.",roleB:"Ask for details, apologize, and offer two solutions.",mission:"Reach a solution that both roles accept.",usefulExpressions:["Could you help me with this?","I'm sorry about that.","Would it be possible to...?","That sounds fair."]},
    {id:`${id}-r3`,title:`Recommend It to a New Friend`,koreanTitle:"새 친구에게 추천하기",situation:`One person knows a lot about ${seed.title.toLowerCase()}; the other is trying it for the first time.`,koreanSituation:`한 사람은 ${seed.ko}을 잘 알고, 다른 사람은 처음 경험합니다.`,roleA:"Recommend a specific option and explain two reasons.",roleB:"Ask about price, difficulty, and what to expect.",mission:"Choose one recommendation and explain the final decision.",usefulExpressions:["What do you recommend?","What should I expect?","It's worth trying.","I'll give it a try."]}],
   challenges:[{id:`${id}-c1`,title:"30 SECOND CHALLENGE",instruction:`Talk about ${focus[2]} for 30 seconds without stopping.`,korean:`30초 동안 멈추지 않고 ${seed.ko}에 대해 말해보세요.`,seconds:30},{id:`${id}-c2`,title:"USE 3 WORDS",instruction:`Share an opinion about ${seed.title} using all three words.`,korean:`세 단어를 모두 사용해 ${seed.ko}에 대한 의견을 말해보세요.`,seconds:45,words:vocab.slice(0,3).map(item=>item[0])}]};
 }
 
-const seeds:TopicSeed[]=rows.trim().split("\n").map(row=>{const [title,ko,emoji,category,level]=row.split("|");return{title,ko,emoji,category:category as TopicPracticeCategory,level:level as TopicSeed["level"]}});
+const seeds:TopicSeed[]=[...rows.trim().split("\n").map(row=>{const [title,ko,emoji,category,level]=row.split("|");return{title,ko,emoji,category,level:level as TopicSeed["level"]}}),...topicPracticeExpansionSeeds.map(seed=>({...seed,focus:seed.keywords,isExpansion:true}))];
 export const topicPracticeTopics:TopicPractice[]=seeds.map(makeTopic);
 
 export function validateTopicPracticeData(){
- const errors:string[]=[];if(topicPracticeTopics.length!==100)errors.push(`Expected 100 topics, got ${topicPracticeTopics.length}`);
+ const errors:string[]=[];if(topicPracticeTopics.length!==200)errors.push(`Expected 200 topics, got ${topicPracticeTopics.length}`);
  const ids=new Set<string>(),titles=new Set<string>();
  for(const topic of topicPracticeTopics){if(ids.has(topic.id))errors.push(`Duplicate id: ${topic.id}`);ids.add(topic.id);if(titles.has(topic.title))errors.push(`Duplicate title: ${topic.title}`);titles.add(topic.title);
-  if(topic.warmupQuestions.length<5)errors.push(`${topic.id}: warmups`);if(topic.conversationQuestions.length<10)errors.push(`${topic.id}: questions`);if(topic.vocabulary.length<10)errors.push(`${topic.id}: vocabulary`);if(topic.expressions.length<5)errors.push(`${topic.id}: expressions`);if(topic.rolePlays.length<3)errors.push(`${topic.id}: roleplays`);if(topic.challenges.length<2)errors.push(`${topic.id}: challenges`);
+  if(topic.conversationQuestions.length<15)errors.push(`${topic.id}: questions`);if(topic.vocabulary.length<10)errors.push(`${topic.id}: vocabulary`);if(topic.expressions.length<5)errors.push(`${topic.id}: expressions`);if(topic.rolePlays.length<3)errors.push(`${topic.id}: roleplays`);if(topic.challenges.length<2)errors.push(`${topic.id}: challenges`);
   if(topic.vocabulary.some(item=>!item.korean.trim()))errors.push(`${topic.id}: missing vocabulary Korean`);if(topic.expressions.some(item=>!item.korean.trim()))errors.push(`${topic.id}: missing expression Korean`);if(topic.rolePlays.some(item=>!item.roleA||!item.roleB||!item.mission))errors.push(`${topic.id}: incomplete roleplay`);
   if(JSON.stringify(topic).match(/placeholder|lorem ipsum|todo/i))errors.push(`${topic.id}: placeholder`);
- }return errors;
+ }const questionKeys=new Set<string>();for(const topic of topicPracticeTopics)for(const item of topic.conversationQuestions){const key=item.question.toLowerCase().replace(/[^a-z0-9]+/g," ").trim();if(questionKeys.has(key))errors.push(`Duplicate question: ${item.question}`);questionKeys.add(key)}return errors;
 }
-export const topicPracticeCounts={topics:topicPracticeTopics.length,warmups:topicPracticeTopics.reduce((n,t)=>n+t.warmupQuestions.length,0),questions:topicPracticeTopics.reduce((n,t)=>n+t.conversationQuestions.length,0),vocabulary:topicPracticeTopics.reduce((n,t)=>n+t.vocabulary.length,0),expressions:topicPracticeTopics.reduce((n,t)=>n+t.expressions.length,0),rolePlays:topicPracticeTopics.reduce((n,t)=>n+t.rolePlays.length,0),challenges:topicPracticeTopics.reduce((n,t)=>n+t.challenges.length,0)};
+export const topicPracticeCounts={topics:topicPracticeTopics.length,warmups:0,questions:topicPracticeTopics.reduce((n,t)=>n+t.conversationQuestions.length,0),vocabulary:topicPracticeTopics.reduce((n,t)=>n+t.vocabulary.length,0),expressions:topicPracticeTopics.reduce((n,t)=>n+t.expressions.length,0),rolePlays:topicPracticeTopics.reduce((n,t)=>n+t.rolePlays.length,0),challenges:topicPracticeTopics.reduce((n,t)=>n+t.challenges.length,0)};
