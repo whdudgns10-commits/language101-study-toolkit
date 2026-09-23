@@ -1,5 +1,5 @@
 import type { ComponentType, CSSProperties } from "react";
-import { AlarmClock, Brain, CircleHelp, Drama, HandMetal, HeartHandshake, Lightbulb, ListChecks, Medal, MessagesSquare, NotebookPen, Scale, ShieldQuestion, Smile, Sparkles, Swords, Users } from "lucide-react";
+import { AlarmClock, Brain, CircleHelp, Drama, HandMetal, HeartHandshake, Lightbulb, ListChecks, Medal, MessageSquareMore, MessagesSquare, NotebookPen, Scale, ShieldQuestion, Smile, Sparkles, Swords, Users } from "lucide-react";
 import type { ActivityIconKey } from "@/types/activity";
 
 type ActivityIconProps = { iconKey:ActivityIconKey; size?:"sm"|"md"|"lg"; className?:string };
@@ -27,6 +27,7 @@ const activityIcons:Record<ActivityIconKey,DecorativeIcon> = {
   spyfall:ShieldQuestion,
   "secret-mission":Drama,
   "experience-survival":HeartHandshake,
+  "topic-practice":MessageSquareMore,
 };
 
 export function ActivityIcon({iconKey,size="md",className=""}:ActivityIconProps){

@@ -336,6 +336,9 @@ export const activities: Activity[] = [
     translations:{ko:{title:"실전 영어 표현",shortTitle:"영어 표현",description:"영어 표현의 뜻을 추측하고 자연스러운 예문을 확인한 뒤 실제 대화 질문에 답해 보세요.",instructions:["정답을 열지 않고 영어 표현을 읽습니다.","뜻을 자신의 말로 추측합니다.","한국어 뜻과 자연스러운 예문을 확인합니다.","열린 대화 질문 두 개에 답합니다.","도움이 필요할 때만 Answer Hint를 엽니다.","필요한 표현을 즐겨찾기하고 다음 카드로 이동합니다."]},zh:{title:"实用英语表达",shortTitle:"英语表达",description:"猜测英语表达的含义，查看自然例句，并回答真实对话问题。"},ja:{title:"実用英語表現",shortTitle:"英語表現",description:"英語表現の意味を推測し、自然な例文を確認して会話の質問に答えましょう。"}},
   },
   {
+    id:"topic-practice",slug:"topic-practice",iconKey:"topic-practice",title:"Topic Practice",shortTitle:"Topic Practice",category:"Speaking",level:"All Level",durationMinutes:30,groupSizes:["2–5 people"],description:"Practice real conversations with questions, vocabulary, expressions, and role plays.",instructions:["Choose one of 100 everyday conversation topics.","Begin with five warm-up questions.","Discuss ten main questions and use the follow-ups.","Review useful vocabulary and natural expressions.","Complete a two-person role play.","Finish with a timed speaking challenge."],externalUrl:"",sourceType:"internal",tags:["Conversation","Questions","Vocabulary","Role Play","Speaking"],featured:true,randomEligible:true,translations:{ko:{title:"주제별 영어회화",shortTitle:"주제별 회화",description:"다양한 주제로 질문, 단어, 표현, 롤플레이까지 한 번에 연습해보세요.",instructions:["100개의 일상 대화 주제 중 하나를 선택합니다.","다섯 개의 워밍업 질문으로 시작합니다.","열 개의 메인 질문과 후속 질문으로 대화합니다.","유용한 단어와 자연스러운 표현을 확인합니다.","두 사람이 롤플레이를 진행합니다.","시간제한 말하기 챌린지로 마무리합니다."]},ja:{title:"トピック英会話",shortTitle:"トピック練習",description:"質問、単語、表現、ロールプレイで実践会話を練習しましょう。"},zh:{title:"主题英语会话",shortTitle:"主题练习",description:"通过问题、词汇、表达和角色扮演练习真实对话。"}}
+  },
+  {
     id: "describing-picture-game",
     iconKey: "situation-story",
     slug: "describing-picture-game",
@@ -356,7 +359,7 @@ export const activities: Activity[] = [
 ];
 
 const uniqueById=(items:Activity[])=>[...new Map(items.map(item=>[item.id,item])).values()];
-export const FEATURED_ACTIVITY_IDS=["true-or-false","ice-breaking-3","never-have-i-ever","30-second-speaking","time-challenge","3-things-5-seconds","spyfall","secret-mission","20-questions","what-if-challenge","funny-questions","fun-discuss","guessing-words","word-battle","balance-game","rank-it","words-game","debate-pros-cons","choose-one-out-of-three","useful-expressions","describing-picture-game"] as const;
+export const FEATURED_ACTIVITY_IDS=["true-or-false","ice-breaking-3","never-have-i-ever","30-second-speaking","time-challenge","3-things-5-seconds","spyfall","secret-mission","20-questions","what-if-challenge","funny-questions","fun-discuss","guessing-words","word-battle","balance-game","rank-it","words-game","debate-pros-cons","choose-one-out-of-three","useful-expressions","describing-picture-game","topic-practice"] as const;
 const enabledActivities=uniqueById(activities).filter(activity=>activity.enabled!==false&&activity.id.trim()&&activity.title.trim());
 export const activeActivities=FEATURED_ACTIVITY_IDS.map(id=>enabledActivities.find(activity=>activity.id===id)).filter((activity):activity is Activity=>Boolean(activity));
 export const randomEligibleActivities=activeActivities.filter(activity=>activity.randomEligible!==false);
