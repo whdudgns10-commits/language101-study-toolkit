@@ -15,6 +15,8 @@ import {
   conversationStarters,
   type ConversationStarterDifficulty,
 } from "@/data/ice-breaking-questions";
+import { learningPromptFor,localizedActivityCopy } from "@/data/learning-content/2026-10-01-multilingual-content";
+import { useLanguage } from "@/hooks/use-language";
 
 const DATA_VERSION_KEY = "conversationStartersDataVersion";
 const STATE_KEY = "language101-conversation-starters-state-v2";
@@ -56,6 +58,8 @@ function validIds(ids: unknown): string[] {
 }
 
 export function IceBreakingPractice() {
+  const {language}=useLanguage();
+  const copy=localizedActivityCopy[language];
   const [state, setState] = useState<SavedState>(initialState);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [isShuffling, setIsShuffling] = useState(false);
@@ -100,6 +104,7 @@ export function IceBreakingPractice() {
   ), [state.category, state.difficulty, state.favoritesOnly, favorites]);
 
   const current = filtered.find(item => item.id === state.currentId) ?? filtered[0];
+  const localizedCurrent=current?learningPromptFor(current.id):null;
 
   const showQuestion = useCallback((id: string, addToHistory = true) => {
     if (!conversationStarters.some(item => item.id === id)) return;
@@ -162,11 +167,11 @@ export function IceBreakingPractice() {
   return (
     <main className="conversation-starters-page">
       <header className="conversation-starters-header">
-        <Link href="/activities/ice-breaking-3" aria-label="Back to activity">
+        <Link href="/activities/ice-breaking-3" aria-label={copy.previous}>
           <ArrowLeft />
         </Link>
         <div>
-          <h1>Conversation Starters</h1>
+          <h1>{language==="en"?"Conversation Starters":language==="ja"?"会話のきっかけ":language==="zh"?"对话开场": "대화 시작 질문"}</h1>
         </div>
         <span>{conversationStarters.length}</span>
       </header>
@@ -174,7 +179,7 @@ export function IceBreakingPractice() {
       <section className="conversation-starters-shell">
         <div className="conversation-category-scroll" aria-label="Question categories">
           <button className={!state.category ? "is-active" : ""} onClick={() => updateFilter({ category: "" })}>
-            All <span>{conversationStarters.length}</span>
+            {copy.all} <span>{conversationStarters.length}</span>
           </button>
           {conversationStarterCategories.map(category => (
             <button
@@ -195,7 +200,7 @@ export function IceBreakingPractice() {
                 className={state.difficulty === difficulty ? "is-active" : ""}
                 onClick={() => updateFilter({ difficulty })}
               >
-                {difficulty ? difficulty[0].toUpperCase() + difficulty.slice(1) : "All Levels"}
+                {difficulty ? difficulty[0].toUpperCase() + difficulty.slice(1) : copy.allLevels}
               </button>
             ))}
           </div>
@@ -203,13 +208,13 @@ export function IceBreakingPractice() {
             className={state.favoritesOnly ? "is-active" : ""}
             onClick={() => updateFilter({ favoritesOnly: !state.favoritesOnly })}
           >
-            <Heart /> Favorites
+            <Heart /> {copy.favorites}
           </button>
         </div>
 
         {state.difficulty === "deep" && (
           <p className="conversation-deep-note">
-            Deep questions can feel personal. Anyone may skip a question without explaining why.
+            {language==="en"?"Deep questions can feel personal. Anyone may skip a question without explaining why.":language==="ja"?"深い質問は個人的に感じることがあります。理由を言わずにスキップできます。":language==="zh"?"深入问题可能涉及隐私，任何人都可以不说明理由直接跳过。":"깊은 질문은 개인적으로 느껴질 수 있어요. 이유를 말하지 않고 건너뛸 수 있습니다."}
           </p>
         )}
 
@@ -221,7 +226,7 @@ export function IceBreakingPractice() {
                 <span>{current.category}</span>
                 <span>{current.difficulty}</span>
               </div>
-              <h2>{isShuffling ? "Finding a great question..." : current.question}</h2>
+              <h2>{isShuffling ? copy.shuffling : localizedCurrent?.prompt[language]||current.question}</h2>
               <button
                 className={favorites.includes(current.id) ? "is-active" : ""}
                 onClick={toggleFavorite}
@@ -231,8 +236,8 @@ export function IceBreakingPractice() {
                 <Heart />
               </button>
               <div className="conversation-card-followups">
-                <small>Follow-up questions</small>
-                {current.followUps.map((question, index) => (
+                <small>{copy.followUps}</small>
+                {(localizedCurrent?.followUps[language]||current.followUps).map((question, index) => (
                   <p key={question}><span>{index + 1}</span>{question}</p>
                 ))}
               </div>
@@ -240,23 +245,23 @@ export function IceBreakingPractice() {
 
             <div className="conversation-primary-actions">
               <button onClick={previous} disabled={state.historyIndex <= 0}>
-                <ChevronLeft /> Previous
+                <ChevronLeft /> {copy.previous}
               </button>
               <button onClick={shuffle} disabled={isShuffling}>
-                <Shuffle /> {isShuffling ? "Shuffling..." : "Shuffle"}
+                <Shuffle /> {isShuffling ? copy.shuffling : copy.shuffle}
               </button>
               <button onClick={next}>
-                Next <ChevronRight />
+                {copy.next} <ChevronRight />
               </button>
             </div>
           </>
         ) : (
           <div className="conversation-empty">
             <Heart />
-            <h2>No questions match these filters.</h2>
+            <h2>{copy.empty}</h2>
             <p>Try another category or add questions to your favorites.</p>
             <button onClick={() => updateFilter({ category: "", difficulty: "", favoritesOnly: false })}>
-              Reset Filters
+              {copy.reset}
             </button>
           </div>
         )}

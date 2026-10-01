@@ -28,6 +28,8 @@ import {
   toggleFunnyFavorite,
   type FunnyPracticeState,
 } from "@/lib/2026-07-17-funny-questions-storage";
+import { learningPromptFor,localizedActivityCopy } from "@/data/learning-content/2026-10-01-multilingual-content";
+import { useLanguage } from "@/hooks/use-language";
 
 const RECENT_LIMIT = 30;
 const validIds = new Set(funnyQuestions.map(question => question.id));
@@ -68,6 +70,8 @@ function cleanIds(value: unknown): string[] {
 }
 
 export function FunnyQuestionsPractice() {
+  const {language}=useLanguage();
+  const copy=localizedActivityCopy[language];
   const [state, setState] = useState<FunnyPracticeState>(initialState);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [showFollowUps, setShowFollowUps] = useState(false);
@@ -112,6 +116,7 @@ export function FunnyQuestionsPractice() {
   ), [state.category, state.level, state.favoritesOnly, favorites]);
 
   const current = filtered.find(question => question.id === state.currentId) ?? filtered[0];
+  const localizedCurrent=current?learningPromptFor(current.id):null;
 
   const showQuestion = useCallback((id: string, addToHistory = true) => {
     if (!validIds.has(id)) return;
@@ -202,8 +207,8 @@ export function FunnyQuestionsPractice() {
       <header className="funny-v2-header">
         <Link href="/activities/funny-questions" aria-label="Back to Funny Questions"><ArrowLeft /></Link>
         <div>
-          <p>Unexpected Questions, Better Conversations</p>
-          <h1>Funny Questions</h1>
+          <p>{language==="en"?"Unexpected Questions, Better Conversations":language==="ja"?"意外な質問でもっと楽しい会話":language==="zh"?"意想不到的问题，更有趣的对话":"엉뚱한 질문으로 더 즐거운 대화"}</p>
+          <h1>{language==="en"?"Funny Questions":language==="ja"?"面白い質問":language==="zh"?"趣味问题":"재미있는 질문"}</h1>
         </div>
         <span>{funnyQuestions.length}</span>
       </header>
@@ -216,7 +221,7 @@ export function FunnyQuestionsPractice() {
             className={state.category === "all" ? "is-active" : ""}
             onClick={() => updateFilters({ category: "all" })}
           >
-            {state.category === "all" && <Check />} All <span>{funnyQuestions.length}</span>
+            {state.category === "all" && <Check />} {copy.all} <span>{funnyQuestions.length}</span>
           </button>
           {FUNNY_CATEGORY_META.map(category => (
             <button
@@ -242,7 +247,7 @@ export function FunnyQuestionsPractice() {
               onClick={() => updateFilters({ level })}
             >
               {state.level === level && <Check />}
-              {level === "all" ? "All Levels" : level[0].toUpperCase() + level.slice(1)}
+              {level === "all" ? copy.allLevels : level[0].toUpperCase() + level.slice(1)}
             </button>
           ))}
           <button
@@ -250,7 +255,7 @@ export function FunnyQuestionsPractice() {
             className={state.favoritesOnly ? "is-active" : ""}
             onClick={() => updateFilters({ favoritesOnly: !state.favoritesOnly })}
           >
-            <Heart /> Favorites
+            <Heart /> {copy.favorites}
           </button>
         </div>
 
@@ -277,7 +282,7 @@ export function FunnyQuestionsPractice() {
                 <span>{current.level}</span>
               </div>
               <p>{answerStyle.label}</p>
-              <h2>{isShuffling ? "Finding an unexpected question..." : current.question}</h2>
+              <h2>{isShuffling ? copy.shuffling : localizedCurrent?.prompt[language]||current.question}</h2>
               <button
                 aria-label={favorites.includes(current.id) ? "Remove from favorites" : "Add to favorites"}
                 aria-pressed={favorites.includes(current.id)}
@@ -289,11 +294,11 @@ export function FunnyQuestionsPractice() {
             </article>
 
             <button className="funny-v2-follow-toggle" onClick={() => setShowFollowUps(value => !value)}>
-              {showFollowUps ? "Hide Follow-up Questions" : "Show Follow-up Questions"}
+              {showFollowUps?(language==="en"?"Hide Follow-up Questions":language==="ja"?"追加質問を隠す":language==="zh"?"隐藏追加问题":"추가 질문 숨기기"):(language==="en"?"Show Follow-up Questions":language==="ja"?"追加質問を見る":language==="zh"?"显示追加问题":"추가 질문 보기")}
             </button>
             {showFollowUps && (
               <div className="funny-v2-followups">
-                {current.followUps.map((followUp, index) => (
+                {(localizedCurrent?.followUps[language]||current.followUps).map((followUp, index) => (
                   <p key={followUp}><span>{index + 1}</span>{followUp}</p>
                 ))}
               </div>
@@ -301,23 +306,23 @@ export function FunnyQuestionsPractice() {
 
             <div className="funny-v2-actions">
               <button disabled={state.historyIndex <= 0} onClick={previousQuestion}>
-                <ChevronLeft /> <span>Previous Question</span>
+                <ChevronLeft /> <span>{copy.previous}</span>
               </button>
               <button disabled={isShuffling} onClick={shuffleQuestion}>
-                <Shuffle /> <span>{isShuffling ? "Shuffling..." : "Shuffle"}</span>
+                <Shuffle /> <span>{isShuffling ? copy.shuffling : copy.shuffle}</span>
               </button>
               <button onClick={nextQuestion}>
-                <span>Next Question</span> <ChevronRight />
+                <span>{copy.next}</span> <ChevronRight />
               </button>
             </div>
           </>
         ) : (
           <div className="funny-v2-empty">
             <Heart />
-            <h2>No questions match these filters.</h2>
+            <h2>{copy.empty}</h2>
             <p>Try another category or add questions to your favorites.</p>
             <button onClick={() => updateFilters({ category: "all", level: "all", favoritesOnly: false })}>
-              Reset Filters
+              {copy.reset}
             </button>
           </div>
         )}
