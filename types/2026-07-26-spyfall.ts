@@ -3,18 +3,14 @@ export type SpyfallCategoryId =
   | "countries"
   | "jobs"
   | "movies"
-  | "animals"
-  | "foods"
   | "sports"
   | "celebrities"
   | "brands"
   | "history"
   | "space"
-  | "school-subjects"
-  | "dating-relationships"
-  | "funny-situations"
-  | "hobbies-activities"
-  | "movies-entertainment";
+  | "transportation"
+  | "everyday-objects"
+  | "famous-landmarks";
 
 export type SpyfallDifficulty = "beginner" | "intermediate" | "advanced";
 

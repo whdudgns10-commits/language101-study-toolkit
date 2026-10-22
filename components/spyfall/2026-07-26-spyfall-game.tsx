@@ -149,7 +149,7 @@ export function SpyfallGame() {
     setPlayerNames(snapshot.playerNames);
     setDurationMinutes(snapshot.durationMinutes);
     setSpyNumbers(snapshot.spyNumbers);
-    setSelectedCategoryId(snapshot.categoryId);
+    setSelectedCategoryId(categories.some((item) => item.id === snapshot.categoryId) ? snapshot.categoryId : "places");
     setAnswer(snapshot.answer);
     setCandidates(snapshot.candidates);
     setExampleQuestions(snapshot.exampleQuestions);
@@ -168,7 +168,7 @@ export function SpyfallGame() {
     setWinnerReason(snapshot.winnerReason);
     setPhase(snapshot.phase === "reveal" ? "handoff" : snapshot.phase);
     setResumeSnapshot(null);
-  }, []);
+  }, [categories]);
 
   useEffect(() => {
     if (!timerRunning || phase !== "playing") return;
@@ -383,7 +383,6 @@ export function SpyfallGame() {
       <p>Most players receive the same word. The spy doesn&apos;t know the answer.<small>대부분의 플레이어는 같은 단어를 받지만, 스파이는 정답을 알 수 없습니다.</small></p>
       <p>Ask questions and give clues without making the answer too obvious.<small>정답이 너무 티 나지 않도록 질문하고 힌트를 주세요.</small></p>
       <fieldset className="spyfall-category-picker"><legend>Category<small>카테고리 · 어떤 종류의 정답으로 플레이할지 선택하세요.</small></legend><div>
-        <button className="spyfall-random-category" onClick={() => setSelectedCategoryId(categories[secureIndex(categories.length)].id)}><b>Random Category 🎲</b><small>랜덤 카테고리</small></button>
         {categories.map((item) => <button
           aria-pressed={selectedCategoryId === item.id}
           className={selectedCategoryId === item.id ? "is-active" : ""}

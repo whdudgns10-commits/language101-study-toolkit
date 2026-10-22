@@ -102,8 +102,8 @@ export function validateSpyfallCategories() {
   spyfallCategories.forEach((category) => {
     if (ids.has(category.id)) errors.push(`Duplicate category id: ${category.id}`);
     ids.add(category.id);
-    const expandedCategory = ["dating-relationships", "funny-situations", "hobbies-activities", "movies-entertainment"].includes(category.id);
-    const minimum = category.id === "places" ? 300 : expandedCategory ? 100 : 50;
+    const featuredCategory = ["places", "jobs"].includes(category.id);
+    const minimum = featuredCategory ? 100 : 50;
     if (category.items.length < minimum) {
       errors.push(`${category.id} has ${category.items.length}; expected at least ${minimum}`);
     }

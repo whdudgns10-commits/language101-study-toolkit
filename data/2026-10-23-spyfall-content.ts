@@ -42,11 +42,8 @@ const exactKorean = new Map<string, string>([
 const koreanLists: Partial<Record<SpyfallCategoryId, string[]>> = {
   countries: "대한민국|일본|중국|미국|캐나다|멕시코|브라질|아르헨티나|칠레|페루|영국|아일랜드|프랑스|독일|스페인|포르투갈|이탈리아|네덜란드|벨기에|스위스|오스트리아|덴마크|스웨덴|노르웨이|핀란드|아이슬란드|폴란드|체코|그리스|튀르키예|이집트|모로코|남아프리카공화국|케냐|나이지리아|가나|에티오피아|탄자니아|호주|뉴질랜드|인도|파키스탄|방글라데시|스리랑카|네팔|태국|베트남|필리핀|인도네시아|말레이시아|헝가리|루마니아|크로아티아|콜롬비아".split("|"),
   jobs: "교사|의사|간호사|경찰관|소방관|요리사|제빵사|조종사|승무원|엔지니어|소프트웨어 개발자|디자이너|건축가|변호사|판사|기자|사진작가|배우|가수|무용가|음악가|예술가|작가|번역가|여행 가이드|호텔 매니저|바리스타|웨이터|농부|수의사|치과의사|약사|과학자|우주비행사|정비사|전기기사|배관공|목수|미용사|피트니스 트레이너|프로 운동선수|코치|회계사|은행원|마케팅 매니저|영업사원|사업가|사회복지사|사서|배달 기사|응급구조사|상담사|연구원|접수원|통역사".split("|"),
-  animals: "개|고양이|사자|호랑이|코끼리|기린|얼룩말|원숭이|고릴라|판다|코알라|캥거루|곰|늑대|여우|토끼|사슴|말|소|돼지|양|염소|닭|오리|독수리|부엉이|펭귄|홍학|앵무새|공작|돌고래|고래|상어|문어|해파리|바다거북|악어|뱀|도마뱀|개구리|나비|벌|개미|거미|전갈|햄스터|수달|너구리|고슴도치|나무늘보|미어캣|카멜레온|펠리컨|해마|불가사리|바닷가재|게|백조|매".split("|"),
-  foods: "피자|햄버거|파스타|스테이크|치킨|타코|부리토|초밥|라면|카레|비빔밥|김치|떡볶이|삼겹살|쌀국수|팟타이|볶음밥|만두|훠궈|샌드위치|샐러드|수프|팬케이크|와플|프렌치토스트|오믈렛|크루아상|베이글|도넛|치즈케이크|아이스크림|초콜릿|쿠키|애플파이|브라우니|팝콘|감자튀김|나초|피시앤칩스|케밥|파에야|라자냐|리소토|치킨윙|해산물 모둠|구운 연어|과일 샐러드|요거트|시리얼|아보카도 토스트|짜장면|짬뽕|케이크|소주|칵테일|만두 한 개|팬케이크 한 장".split("|"),
   sports: "축구|농구|야구|배구|테니스|배드민턴|탁구|골프|수영|달리기|사이클|복싱|레슬링|유도|태권도|가라테|펜싱|양궁|체조|피겨스케이팅|스피드스케이팅|아이스하키|스키|스노보드|서핑|스케이트보드|암벽등반|등산|조정|요트|럭비|미식축구|크리켓|필드하키|핸드볼|스쿼시|볼링|당구|다트|역도|철인3종|마라톤|경마|자동차 경주|다이빙|수구|치어리딩|얼티밋 프리스비|라크로스|컬링|클라이밍|스케이팅".split("|"),
   space: "태양|수성|금성|지구|달|화성|목성|토성|천왕성|해왕성|명왕성|은하수|안드로메다은하|블랙홀|초신성|성운|혜성|소행성|유성|일식|월식|국제우주정거장|우주왕복선|로켓|인공위성|우주망원경|화성 탐사 로버|우주비행사|외계인|미확인 비행물체|별자리|북극성|북두칠성|오리온자리|중력|광년|궤도|대기|태양계|우주|빅뱅|암흑물질|외계행성|적색거성|백색왜성|은하단|우주유영|달 기지|화성 식민지|웜홀|소행성대|왜행성|우주 탐사선|발사대|관제 센터".split("|"),
-  "school-subjects": "수학|영어|한국어|일본어|중국어|스페인어|프랑스어|독일어|역사|세계사|지리|경제|정치|법|윤리|철학|심리학|사회학|생물학|화학|물리학|지구과학|천문학|환경과학|컴퓨터과학|코딩|로봇공학|공학|통계학|회계학|경영학|마케팅|미술|음악|연극|무용|체육|보건|가정|목공|사진|미디어학|문예창작|대중연설|토론|문학|종교학|진로교육|디자인|건축|저널리즘".split("|"),
 };
 
 const categoryFallback: Record<string, string> = {
@@ -118,50 +115,89 @@ function answersFromPairs(categoryId: SpyfallCategoryId, pairs: readonly Pair[])
   }));
 }
 
-function expandPairs(bases: readonly Pair[], variants: readonly Pair[]): Pair[] {
-  return bases.flatMap(([english, korean]) => variants.map(([suffixEn, suffixKo]) => [
-    suffixEn ? `${english} ${suffixEn}` : english,
-    suffixKo ? `${korean} ${suffixKo}` : korean,
-  ] as const));
+function uniqueAnswers(items: SpyfallAnswer[]) {
+  return [...new Map(items.map((item) => [item.english.trim().toLocaleLowerCase(), item])).values()];
 }
 
-const relationshipBases: Pair[] = [
-  ["Blind Date", "소개팅"], ["First Date", "첫 데이트"], ["Breakup", "이별"], ["Marriage", "결혼"],
-  ["Secret Crush", "짝사랑"], ["Jealousy", "질투"], ["Flirting", "플러팅"], ["Love Confession", "사랑 고백"],
-  ["Anniversary", "기념일"], ["Long-Distance Relationship", "장거리 연애"], ["Couple Argument", "커플 싸움"],
-  ["Meeting the Parents", "부모님께 인사하기"], ["Wedding Proposal", "청혼"], ["Online Dating", "온라인 데이팅"],
-  ["Getting Back Together", "재결합"], ["Friendship", "우정"], ["Roommate Conflict", "룸메이트 갈등"],
-  ["Office Romance", "사내 연애"], ["Double Date", "더블 데이트"], ["Wedding Ceremony", "결혼식"],
-];
-const relationshipVariants: Pair[] = [["", ""], ["Conversation", "대화"], ["Plan", "계획"], ["Story", "이야기"], ["Advice", "조언"]];
+const extraAnswers: Partial<Record<SpyfallCategoryId, Pair[]>> = {
+  places: [
+    ["Escape Room", "방 탈출 카페"], ["Cat Cafe", "고양이 카페"], ["Dog Cafe", "강아지 카페"], ["Comic Book Cafe", "만화 카페"],
+    ["Board Game Cafe", "보드게임 카페"], ["Silent Disco", "사일런트 디스코"], ["Haunted House", "유령의 집"], ["Secret Bar", "비밀 바"],
+    ["Food Truck Festival", "푸드트럭 축제"], ["Night Market", "야시장"], ["Drive-in Theater", "자동차 극장"], ["VR Arcade", "VR 게임장"],
+    ["Photo Booth", "셀프 사진관"], ["Fortune Teller's Shop", "점집"], ["Tattoo Studio", "타투숍"], ["Pet Hotel", "반려동물 호텔"],
+    ["Cooking Studio", "요리 스튜디오"], ["Indoor Skydiving Center", "실내 스카이다이빙장"], ["Trampoline Park", "트램펄린 파크"], ["Ice Hotel", "얼음 호텔"],
+    ["Capsule Hotel", "캡슐 호텔"], ["Treehouse Hotel", "트리하우스 호텔"], ["Floating Restaurant", "수상 레스토랑"], ["Underground Mall", "지하상가"],
+    ["Observatory Deck", "전망대"], ["Aquarium Tunnel", "수족관 터널"], ["Chocolate Factory", "초콜릿 공장"], ["Movie Set", "영화 촬영장"],
+    ["Backstage Dressing Room", "무대 뒤 분장실"], ["Celebrity Waiting Room", "연예인 대기실"], ["Airport Lost and Found", "공항 분실물 센터"], ["Police Interrogation Room", "경찰 조사실"],
+    ["Luxury Yacht", "호화 요트"], ["Desert Camp", "사막 캠프"], ["Jungle Lodge", "정글 롯지"], ["Volcano Observatory", "화산 관측소"],
+    ["Robot Cafe", "로봇 카페"], ["Zero-Waste Store", "제로 웨이스트 상점"], ["Wedding Photo Studio", "웨딩 촬영 스튜디오"], ["Tiny House", "초소형 주택"],
+  ],
+  jobs: [
+    ["Detective", "탐정"], ["Private Investigator", "사설 조사관"], ["Magician", "마술사"], ["Stunt Performer", "스턴트 배우"],
+    ["Voice Actor", "성우"], ["Game Streamer", "게임 스트리머"], ["Content Creator", "콘텐츠 크리에이터"], ["Podcast Host", "팟캐스트 진행자"],
+    ["Drone Pilot", "드론 조종사"], ["Professional Gamer", "프로게이머"], ["Theme Park Designer", "테마파크 디자이너"], ["Toy Designer", "장난감 디자이너"],
+    ["Chocolate Taster", "초콜릿 테이스터"], ["Food Stylist", "푸드 스타일리스트"], ["Mystery Shopper", "미스터리 쇼퍼"], ["Pet Sitter", "펫시터"],
+    ["Dog Trainer", "반려견 훈련사"], ["Zookeeper", "사육사"], ["Wildlife Photographer", "야생동물 사진작가"], ["Storm Chaser", "폭풍 추적가"],
+    ["Treasure Hunter", "보물 사냥꾼"], ["Archaeologist", "고고학자"], ["Volcanologist", "화산학자"], ["Marine Biologist", "해양생물학자"],
+    ["Crime Scene Investigator", "과학수사관"], ["Forensic Scientist", "법의학자"], ["Cybersecurity Expert", "사이버 보안 전문가"], ["Ethical Hacker", "화이트 해커"],
+    ["Robotics Engineer", "로봇공학자"], ["AI Researcher", "AI 연구원"], ["Space Tour Guide", "우주여행 가이드"], ["Astronaut Trainer", "우주비행사 훈련관"],
+    ["Movie Director", "영화감독"], ["Casting Director", "캐스팅 디렉터"], ["Special Effects Artist", "특수효과 아티스트"], ["Foley Artist", "음향효과 아티스트"],
+    ["Fashion Stylist", "패션 스타일리스트"], ["Perfumer", "조향사"], ["Wedding Planner", "웨딩 플래너"], ["Party Planner", "파티 플래너"],
+    ["Professional Organizer", "정리 전문가"], ["Sleep Coach", "수면 코치"], ["Life Coach", "라이프 코치"], ["Dating Coach", "연애 코치"],
+    ["Sommelier", "소믈리에"], ["Tea Master", "티 마스터"], ["Brewmaster", "양조 전문가"], ["Ice Cream Maker", "아이스크림 제조사"],
+    ["Roller Coaster Tester", "롤러코스터 테스터"], ["Water Slide Tester", "워터슬라이드 테스터"], ["Professional Cuddler", "전문 포옹가"], ["Fortune Cookie Writer", "포춘쿠키 문구 작가"],
+    ["Island Caretaker", "섬 관리인"], ["Luxury Travel Reviewer", "럭셔리 여행 리뷰어"], ["Meme Creator", "밈 크리에이터"], ["Escape Room Designer", "방 탈출 디자이너"],
+  ],
+  countries: [["Singapore", "싱가포르"], ["Mongolia", "몽골"], ["Cambodia", "캄보디아"], ["Laos", "라오스"], ["United Arab Emirates", "아랍에미리트"], ["Saudi Arabia", "사우디아라비아"], ["Israel", "이스라엘"], ["Jordan", "요르단"], ["Cuba", "쿠바"], ["Costa Rica", "코스타리카"]],
+  movies: [["Parasite", "기생충"], ["Interstellar", "인터스텔라"], ["The Truman Show", "트루먼 쇼"], ["La La Land", "라라랜드"], ["The Grand Budapest Hotel", "그랜드 부다페스트 호텔"], ["Everything Everywhere All at Once", "에브리씽 에브리웨어 올 앳 원스"], ["The Devil Wears Prada", "악마는 프라다를 입는다"], ["Knives Out", "나이브스 아웃"], ["Inside Out", "인사이드 아웃"], ["Coco", "코코"]],
+  sports: [["Pickleball", "피클볼"], ["Padel", "파델"], ["Breakdancing", "브레이킹"], ["Parkour", "파쿠르"], ["Drone Racing", "드론 레이싱"], ["E-sports", "e스포츠"], ["Sepak Takraw", "세팍타크로"], ["Bouldering", "볼더링"], ["Freediving", "프리다이빙"], ["Snowkiting", "스노카이팅"]],
+  celebrities: [["Bong Joon-ho", "봉준호"], ["Son Heung-min", "손흥민"], ["IU", "아이유"], ["BTS", "방탄소년단"], ["Taylor Swift", "테일러 스위프트"], ["Zendaya", "젠데이아"], ["Ryan Reynolds", "라이언 레이놀즈"], ["Emma Stone", "엠마 스톤"], ["Gordon Ramsay", "고든 램지"], ["MrBeast", "미스터비스트"]],
+  brands: [["Netflix", "넷플릭스"], ["Spotify", "스포티파이"], ["Airbnb", "에어비앤비"], ["LEGO", "레고"], ["Nintendo", "닌텐도"], ["Dyson", "다이슨"], ["Patagonia", "파타고니아"], ["Red Bull", "레드불"], ["Kakao", "카카오"], ["Naver", "네이버"]],
+  history: [["The Moon Landing", "달 착륙"], ["The Renaissance", "르네상스"], ["The Industrial Revolution", "산업혁명"], ["The Fall of the Berlin Wall", "베를린 장벽 붕괴"], ["The Invention of the Internet", "인터넷의 발명"], ["The Gold Rush", "골드러시"], ["The Silk Road", "실크로드"], ["The Titanic Disaster", "타이타닉 침몰"], ["The Printing Press", "인쇄술의 발명"], ["The First Olympic Games", "최초의 올림픽"]],
+  space: [["James Webb Space Telescope", "제임스 웹 우주망원경"], ["Saturn's Rings", "토성의 고리"], ["The Dark Side of the Moon", "달의 뒷면"], ["Mars Helicopter", "화성 헬리콥터"], ["Space Tourism", "우주 관광"], ["Lunar Eclipse", "월식"], ["Solar Flare", "태양 플레어"], ["Neutron Star", "중성자별"], ["Galaxy Collision", "은하 충돌"], ["Alien Signal", "외계 신호"]],
+};
 
-const funnyBases: Pair[] = [
-  ["Missing the Last Train", "막차 놓치기"], ["Falling Asleep", "졸다가 잠들기"], ["Sending a Message to the Wrong Person", "메시지 잘못 보내기"],
-  ["Forgetting Someone's Name", "이름 까먹기"], ["Getting Caught Lying", "거짓말하다 들키기"], ["Losing Your Wallet", "지갑 잃어버리기"],
-  ["Awkward Silence", "어색한 침묵"], ["Getting Lost", "길 잃기"], ["Being Late", "지각하기"], ["Calling Your Ex by Accident", "전 애인에게 실수로 전화하기"],
-  ["Tripping in Public", "사람들 앞에서 넘어지기"], ["Wearing Clothes Inside Out", "옷을 뒤집어 입기"], ["Forgetting Your Lines", "대사 잊어버리기"],
-  ["Laughing at the Wrong Time", "엉뚱한 순간에 웃기"], ["Singing Off-Key", "음치로 노래하기"], ["Breaking Something", "물건 깨뜨리기"],
-  ["Walking into the Wrong Room", "방을 잘못 들어가기"], ["Mistaking a Stranger for a Friend", "낯선 사람을 친구로 착각하기"],
-  ["Food Stuck in Your Teeth", "이에 음식 끼기"], ["Phone Ringing at a Quiet Moment", "조용한 순간에 휴대폰 울리기"],
+const transportationAnswers: Pair[] = [
+  ["City Bus", "시내버스"], ["Express Bus", "고속버스"], ["School Bus", "통학버스"], ["Double-Decker Bus", "2층 버스"], ["Party Bus", "파티 버스"],
+  ["Subway", "지하철"], ["Bullet Train", "고속열차"], ["Night Train", "야간열차"], ["Sleeper Train", "침대열차"], ["Monorail", "모노레일"],
+  ["Taxi", "택시"], ["Limousine", "리무진"], ["Rental Car", "렌터카"], ["Convertible", "오픈카"], ["Sports Car", "스포츠카"],
+  ["Ambulance", "구급차"], ["Fire Engine", "소방차"], ["Police Car", "경찰차"], ["Garbage Truck", "쓰레기 수거차"], ["Food Truck", "푸드트럭"],
+  ["Motorcycle", "오토바이"], ["Electric Scooter", "전동 킥보드"], ["Bicycle", "자전거"], ["Tandem Bicycle", "2인용 자전거"], ["Skateboard", "스케이트보드"],
+  ["Airplane", "비행기"], ["Private Jet", "전용기"], ["Helicopter", "헬리콥터"], ["Hot-Air Balloon", "열기구"], ["Hang Glider", "행글라이더"],
+  ["Ferry", "여객선"], ["Cruise Ship", "크루즈선"], ["Speedboat", "쾌속정"], ["Sailboat", "요트"], ["Submarine", "잠수함"],
+  ["Cable Car", "케이블카"], ["Gondola", "곤돌라"], ["Rickshaw", "인력거"], ["Tuk-Tuk", "툭툭"], ["Horse-Drawn Carriage", "마차"],
+  ["Snowmobile", "스노모빌"], ["Jet Ski", "제트스키"], ["Hovercraft", "호버크래프트"], ["Segway", "세그웨이"], ["Camper Van", "캠핑카"],
+  ["Monster Truck", "몬스터 트럭"], ["Forklift", "지게차"], ["Bulldozer", "불도저"], ["Tractor", "트랙터"], ["Golf Cart", "골프 카트"],
+  ["Rocket", "로켓"], ["Space Shuttle", "우주왕복선"], ["Mars Rover", "화성 탐사 로버"], ["Drone Taxi", "드론 택시"], ["Self-Driving Car", "자율주행차"],
 ];
-const funnyVariants: Pair[] = [["", ""], ["at School", "학교에서"], ["at Work", "직장에서"], ["on a Date", "데이트 중"], ["While Traveling", "여행 중"]];
 
-const hobbyBases: Pair[] = [
-  ["Camping", "캠핑"], ["Hiking", "등산"], ["Bowling", "볼링"], ["Karaoke", "노래방"], ["Gaming", "게임"],
-  ["Swimming", "수영"], ["Dancing", "춤추기"], ["Photography", "사진 촬영"], ["Cooking", "요리"], ["Traveling", "여행"],
-  ["Yoga", "요가"], ["Fishing", "낚시"], ["Cycling", "자전거 타기"], ["Running", "달리기"], ["Painting", "그림 그리기"],
-  ["Reading", "독서"], ["Gardening", "정원 가꾸기"], ["Baking", "베이킹"], ["Surfing", "서핑"], ["Pottery", "도예"],
+const everydayObjectAnswers: Pair[] = [
+  ["Toothbrush", "칫솔"], ["Umbrella", "우산"], ["Wallet", "지갑"], ["Keychain", "열쇠고리"], ["Water Bottle", "물병"],
+  ["Phone Charger", "휴대폰 충전기"], ["Earbuds", "무선 이어폰"], ["Power Bank", "보조 배터리"], ["Remote Control", "리모컨"], ["Alarm Clock", "알람시계"],
+  ["Hair Dryer", "헤어드라이어"], ["Electric Shaver", "전기면도기"], ["Makeup Mirror", "화장 거울"], ["Nail Clippers", "손톱깎이"], ["Comb", "빗"],
+  ["Coffee Mug", "커피 머그잔"], ["Frying Pan", "프라이팬"], ["Rice Cooker", "전기밥솥"], ["Bottle Opener", "병따개"], ["Lunch Box", "도시락통"],
+  ["Backpack", "백팩"], ["Suitcase", "여행 가방"], ["Sunglasses", "선글라스"], ["Baseball Cap", "야구 모자"], ["Wristwatch", "손목시계"],
+  ["Notebook", "공책"], ["Sticky Notes", "포스트잇"], ["Highlighter", "형광펜"], ["Stapler", "스테이플러"], ["Scissors", "가위"],
+  ["Flashlight", "손전등"], ["Measuring Tape", "줄자"], ["Screwdriver", "드라이버"], ["Padlock", "자물쇠"], ["Extension Cord", "멀티탭"],
+  ["Vacuum Cleaner", "진공청소기"], ["Laundry Basket", "빨래 바구니"], ["Clothes Hanger", "옷걸이"], ["Iron", "다리미"], ["Doormat", "현관 매트"],
+  ["Tissue Box", "휴지 상자"], ["Bandage", "반창고"], ["Hand Sanitizer", "손 소독제"], ["Face Mask", "마스크"], ["Thermometer", "체온계"],
+  ["Selfie Stick", "셀카봉"], ["Tripod", "삼각대"], ["Bluetooth Speaker", "블루투스 스피커"], ["Smartwatch", "스마트워치"], ["Tablet", "태블릿"],
+  ["Rubber Duck", "고무 오리"], ["Snow Globe", "스노글로브"], ["Piggy Bank", "돼지 저금통"], ["Board Game", "보드게임"], ["Deck of Cards", "트럼프 카드"],
 ];
-const hobbyVariants: Pair[] = [["", ""], ["Class", "수업"], ["Club", "동호회"], ["Competition", "대회"], ["Weekend Session", "주말 모임"]];
 
-const entertainmentBases: Pair[] = [
-  ["Horror Movie", "공포 영화"], ["Romantic Comedy", "로맨틱 코미디"], ["Action Movie", "액션 영화"], ["Reality Show", "리얼리티 쇼"],
-  ["K-pop Concert", "케이팝 콘서트"], ["Netflix Series", "넷플릭스 시리즈"], ["Music Festival", "음악 축제"], ["Talent Show", "장기자랑"],
-  ["Animation", "애니메이션"], ["Musical", "뮤지컬"], ["Comedy Show", "코미디 쇼"], ["Documentary", "다큐멘터리"],
-  ["Award Show", "시상식"], ["Fan Meeting", "팬 미팅"], ["Movie Premiere", "영화 시사회"], ["Talk Show", "토크 쇼"],
-  ["Live Stream", "라이브 방송"], ["Web Drama", "웹드라마"], ["Street Performance", "거리 공연"], ["Magic Show", "마술 쇼"],
+const landmarkAnswers: Pair[] = [
+  ["Eiffel Tower", "에펠탑"], ["Statue of Liberty", "자유의 여신상"], ["Great Wall of China", "만리장성"], ["Taj Mahal", "타지마할"], ["Sydney Opera House", "시드니 오페라 하우스"],
+  ["Colosseum", "콜로세움"], ["Big Ben", "빅벤"], ["Machu Picchu", "마추픽추"], ["Christ the Redeemer", "구세주 그리스도상"], ["Burj Khalifa", "부르즈 할리파"],
+  ["Sagrada Familia", "사그라다 파밀리아"], ["Leaning Tower of Pisa", "피사의 사탑"], ["Golden Gate Bridge", "금문교"], ["Mount Fuji", "후지산"], ["Angkor Wat", "앙코르와트"],
+  ["Pyramids of Giza", "기자의 피라미드"], ["Petra", "페트라"], ["Niagara Falls", "나이아가라 폭포"], ["Grand Canyon", "그랜드 캐니언"], ["Stonehenge", "스톤헨지"],
+  ["Louvre Museum", "루브르 박물관"], ["Times Square", "타임스스퀘어"], ["Hollywood Sign", "할리우드 사인"], ["Mount Rushmore", "러시모어산"], ["Las Vegas Strip", "라스베이거스 스트립"],
+  ["Brandenburg Gate", "브란덴부르크 문"], ["Arc de Triomphe", "개선문"], ["Neuschwanstein Castle", "노이슈반슈타인성"], ["Acropolis", "아크로폴리스"], ["Pompeii", "폼페이"],
+  ["Santorini", "산토리니"], ["Blue Mosque", "블루 모스크"], ["Hagia Sophia", "아야 소피아"], ["The Kremlin", "크렘린궁"], ["Prague Castle", "프라하성"],
+  ["CN Tower", "CN 타워"], ["Chichen Itza", "치첸이트사"], ["Moai Statues", "모아이 석상"], ["Salar de Uyuni", "우유니 소금사막"], ["Panama Canal", "파나마 운하"],
+  ["Marina Bay Sands", "마리나 베이 샌즈"], ["Petronas Towers", "페트로나스 트윈 타워"], ["Gardens by the Bay", "가든스 바이 더 베이"], ["Ha Long Bay", "하롱베이"], ["Banaue Rice Terraces", "바나우에 계단식 논"],
+  ["Gyeongbokgung Palace", "경복궁"], ["N Seoul Tower", "남산서울타워"], ["Lotte World Tower", "롯데월드타워"], ["Jeju Seongsan Ilchulbong", "제주 성산일출봉"], ["Busan Gwangan Bridge", "부산 광안대교"],
+  ["Fushimi Inari Shrine", "후시미 이나리 신사"], ["Tokyo Skytree", "도쿄 스카이트리"], ["Shibuya Crossing", "시부야 스크램블 교차로"], ["Forbidden City", "자금성"], ["Terracotta Army", "진시황 병마용"],
 ];
-const entertainmentVariants: Pair[] = [["", ""], ["Night", "나이트"], ["Party", "파티"], ["Marathon", "몰아보기"], ["Fan Event", "팬 행사"]];
 
 const commonQuestionTemplates: Pair[] = [
   ["Have you experienced this before?", "이것을 경험해 본 적 있나요?"],
@@ -201,18 +237,14 @@ const categoryQuestionSeeds: Record<SpyfallCategoryId, Pair[]> = {
   countries: [["Have you ever visited this country?", "이 나라에 가본 적 있나요?"], ["Is the food famous?", "음식이 유명한가요?"], ["Is it expensive to travel there?", "여행 비용이 비싼가요?"], ["Would you like to live there?", "그 나라에 살고 싶나요?"], ["Is the weather usually warm?", "보통 날씨가 따뜻한가요?"]],
   jobs: [["Does this job require special training?", "이 직업은 전문 교육이 필요한가요?"], ["Do people wear a uniform?", "유니폼을 입나요?"], ["Is the work stressful?", "업무 스트레스가 큰가요?"], ["Do they work with many people?", "많은 사람과 일하나요?"], ["Would you choose this career?", "이 직업을 선택하고 싶나요?"]],
   movies: [["Would you watch this more than once?", "이 영화를 여러 번 볼 것 같나요?"], ["Is it suitable for children?", "아이들이 보기에도 괜찮나요?"], ["Is the soundtrack memorable?", "음악이 기억에 남나요?"], ["Would you watch it in a theater?", "영화관에서 보고 싶나요?"], ["Does it have a happy ending?", "결말이 행복한가요?"]],
-  animals: [["Could this animal live near people?", "이 동물은 사람 가까이 살 수 있나요?"], ["Is it dangerous?", "위험한 동물인가요?"], ["Can it swim?", "수영할 수 있나요?"], ["Would you see it in a zoo?", "동물원에서 볼 수 있나요?"], ["Is it active at night?", "밤에 활동하나요?"]],
-  foods: [["Would you eat this for breakfast?", "아침으로 먹을 만한가요?"], ["Is it usually spicy?", "보통 매운 음식인가요?"], ["Can you cook it at home?", "집에서 만들 수 있나요?"], ["Is it eaten with your hands?", "손으로 먹는 음식인가요?"], ["Would you order it for delivery?", "배달로 주문할 만한가요?"]],
   sports: [["Do you need a team?", "팀이 필요한 운동인가요?"], ["Is special equipment required?", "특별한 장비가 필요한가요?"], ["Can people play it indoors?", "실내에서도 할 수 있나요?"], ["Is it in the Olympics?", "올림픽 종목인가요?"], ["Is it physically demanding?", "체력 소모가 큰가요?"]],
   celebrities: [["Is this person known worldwide?", "이 사람은 세계적으로 유명한가요?"], ["Are they active on social media?", "SNS 활동을 많이 하나요?"], ["Have they won major awards?", "큰 상을 받은 적이 있나요?"], ["Would young people recognize them?", "젊은 세대도 알아볼까요?"], ["Are they mainly known for entertainment?", "주로 연예 활동으로 유명한가요?"]],
   brands: [["Is this brand expensive?", "이 브랜드는 비싼 편인가요?"], ["Do you own something from this brand?", "이 브랜드 제품을 가지고 있나요?"], ["Is it available worldwide?", "전 세계에서 살 수 있나요?"], ["Is its logo easy to recognize?", "로고를 쉽게 알아볼 수 있나요?"], ["Would you recommend its products?", "이 브랜드 제품을 추천하나요?"]],
   history: [["Did this happen more than a century ago?", "100년도 더 전에 일어난 일인가요?"], ["Did it change the world?", "세상을 바꾼 사건인가요?"], ["Is it taught in school?", "학교에서 배우나요?"], ["Are famous leaders connected to it?", "유명 지도자와 관련 있나요?"], ["Can people visit related sites today?", "오늘날 관련 장소를 방문할 수 있나요?"]],
   space: [["Can it be seen without a telescope?", "망원경 없이 볼 수 있나요?"], ["Is it inside our solar system?", "태양계 안에 있나요?"], ["Could humans travel there?", "인간이 그곳에 갈 수 있나요?"], ["Is it larger than Earth?", "지구보다 큰가요?"], ["Does it produce light?", "스스로 빛을 내나요?"]],
-  "school-subjects": [["Did you study this at school?", "학교에서 이 과목을 배웠나요?"], ["Does it involve a lot of writing?", "글을 많이 써야 하나요?"], ["Is it useful in daily life?", "일상생활에 유용한가요?"], ["Does it require calculations?", "계산이 필요한가요?"], ["Would you choose it as a major?", "전공으로 선택하고 싶나요?"]],
-  "dating-relationships": [["Is this usually a good experience?", "보통 좋은 경험인가요?"], ["Have you experienced this before?", "경험해 본 적 있나요?"], ["Would you talk about this with your friends?", "친구들과 이것에 대해 이야기하나요?"], ["Can this make someone nervous?", "이것 때문에 긴장할 수 있나요?"], ["Does this happen often in relationships?", "연애할 때 자주 일어나나요?"]],
-  "funny-situations": [["Has this ever happened to you?", "이런 일을 겪어본 적 있나요?"], ["Would you feel embarrassed?", "창피할 것 같나요?"], ["Would your friends laugh?", "친구들이 웃을 것 같나요?"], ["Is this something you can avoid?", "피할 수 있는 상황인가요?"], ["Would you tell someone about it?", "다른 사람에게 이야기할 것 같나요?"]],
-  "hobbies-activities": [["Do you need special equipment?", "특별한 장비가 필요한가요?"], ["Can you do this alone?", "혼자 할 수 있나요?"], ["Is it expensive?", "비용이 많이 드나요?"], ["Is it physically tiring?", "체력적으로 힘든가요?"], ["Would you recommend it to beginners?", "초보자에게 추천하나요?"]],
-  "movies-entertainment": [["Is this popular among young people?", "젊은 사람들에게 인기가 많나요?"], ["Can you enjoy this at home?", "집에서도 즐길 수 있나요?"], ["Would you do this with friends?", "친구들과 함께 하나요?"], ["Does it usually cost money?", "보통 돈이 드나요?"], ["Is this something you enjoy often?", "자주 즐기는 편인가요?"]],
+  transportation: [["Does it travel on land?", "땅 위로 이동하나요?"], ["Can many people ride it together?", "여러 사람이 함께 탈 수 있나요?"], ["Would you use it for a long trip?", "장거리 여행에 이용할 수 있나요?"], ["Does it need a professional driver?", "전문 운전자가 필요한가요?"], ["Is it faster than a car?", "자동차보다 빠른가요?"]],
+  "everyday-objects": [["Do you use this every day?", "매일 사용하는 물건인가요?"], ["Can you carry it in a bag?", "가방에 넣고 다닐 수 있나요?"], ["Does it need electricity?", "전기가 필요한가요?"], ["Would you find it in a kitchen?", "주방에서 볼 수 있나요?"], ["Is it easy to lose?", "잃어버리기 쉬운 물건인가요?"]],
+  "famous-landmarks": [["Have you seen this in a movie?", "영화에서 본 적 있나요?"], ["Is it in Asia?", "아시아에 있나요?"], ["Was it built more than a century ago?", "100년도 더 전에 지어졌나요?"], ["Would you take a photo there?", "그곳에서 사진을 찍고 싶나요?"], ["Is it a UNESCO World Heritage site?", "유네스코 세계유산인가요?"]],
 };
 
 function questionsFor(categoryId: SpyfallCategoryId): SpyfallExampleQuestion[] {
@@ -224,25 +256,33 @@ function questionsFor(categoryId: SpyfallCategoryId): SpyfallExampleQuestion[] {
   }));
 }
 
-const legacyCategories = (legacyCategoryData as LegacyCategory[]).map((category): SpyfallCategory => ({
+const retainedCategoryIds: SpyfallCategoryId[] = [
+  "places", "countries", "jobs", "movies", "sports", "celebrities", "brands", "history", "space",
+];
+
+const legacyCategories = (legacyCategoryData as LegacyCategory[])
+  .filter((category) => retainedCategoryIds.includes(category.id as SpyfallCategoryId))
+  .map((category): SpyfallCategory => ({
   id: category.id as SpyfallCategoryId,
   title: category.title,
   titleKo: category.titleKo,
-  items: category.items.map((english, index) => ({
-    id: `${category.id}-${slug(english)}-${String(index + 1).padStart(3, "0")}`,
-    english,
-    korean: legacyKorean(category, english, index),
-    category: category.id as SpyfallCategoryId,
-    difficulty: difficultyFor(index),
-  })),
+  items: uniqueAnswers([
+    ...category.items.map((english, index) => ({
+      id: `${category.id}-${slug(english)}-${String(index + 1).padStart(3, "0")}`,
+      english,
+      korean: legacyKorean(category, english, index),
+      category: category.id as SpyfallCategoryId,
+      difficulty: difficultyFor(index),
+    })),
+    ...answersFromPairs(category.id as SpyfallCategoryId, extraAnswers[category.id as SpyfallCategoryId] ?? []),
+  ]),
   questions: questionsFor(category.id as SpyfallCategoryId),
 }));
 
 const addedCategories: SpyfallCategory[] = [
-  { id: "dating-relationships", title: "Dating & Relationships ❤️", titleKo: "연애와 인간관계", items: answersFromPairs("dating-relationships", expandPairs(relationshipBases, relationshipVariants)), questions: questionsFor("dating-relationships") },
-  { id: "funny-situations", title: "Funny Situations 😂", titleKo: "재미있는 상황", items: answersFromPairs("funny-situations", expandPairs(funnyBases, funnyVariants)), questions: questionsFor("funny-situations") },
-  { id: "hobbies-activities", title: "Hobbies & Activities 🎯", titleKo: "취미와 활동", items: answersFromPairs("hobbies-activities", expandPairs(hobbyBases, hobbyVariants)), questions: questionsFor("hobbies-activities") },
-  { id: "movies-entertainment", title: "Movies & Entertainment 🎬", titleKo: "영화와 엔터테인먼트", items: answersFromPairs("movies-entertainment", expandPairs(entertainmentBases, entertainmentVariants)), questions: questionsFor("movies-entertainment") },
+  { id: "transportation", title: "Transportation", titleKo: "교통수단", items: answersFromPairs("transportation", transportationAnswers), questions: questionsFor("transportation") },
+  { id: "everyday-objects", title: "Everyday Objects", titleKo: "일상 물건", items: answersFromPairs("everyday-objects", everydayObjectAnswers), questions: questionsFor("everyday-objects") },
+  { id: "famous-landmarks", title: "Famous Landmarks", titleKo: "세계 명소", items: answersFromPairs("famous-landmarks", landmarkAnswers), questions: questionsFor("famous-landmarks") },
 ];
 
 export const spyfallContent: SpyfallCategory[] = [...legacyCategories, ...addedCategories];
