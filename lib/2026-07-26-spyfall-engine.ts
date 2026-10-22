@@ -1,11 +1,12 @@
-import categoryData from "../data/2026-07-26-spyfall-categories.json";
+import { spyfallContent } from "../data/2026-10-23-spyfall-content";
 import type {
+  SpyfallAnswer,
   SpyfallCategory,
   SpyfallVoteResult,
   SpyfallWinner,
 } from "../types/2026-07-26-spyfall";
 
-export const spyfallCategories = categoryData as SpyfallCategory[];
+export const spyfallCategories = spyfallContent;
 export const SPYFALL_CANDIDATE_COUNT = 20;
 
 export function normalizeSpyfallAnswer(value: string) {
@@ -30,26 +31,26 @@ export function chooseSpyfallAnswer(
   random = Math.random,
 ) {
   const recent = new Set(Array.isArray(recentAnswers) ? recentAnswers : recentAnswers ? [recentAnswers] : []);
-  const choices = category.items.filter((item) => !recent.has(item));
+  const choices = category.items.filter((item) => !recent.has(item.id));
   const pool = choices.length ? choices : category.items;
   return pool[Math.floor(random() * pool.length)];
 }
 
 export function buildSpyfallCandidates(
   category: SpyfallCategory,
-  answer: string,
+  answer: SpyfallAnswer,
   count = SPYFALL_CANDIDATE_COUNT,
   random = Math.random,
 ) {
-  const uniqueItems = [...new Set(category.items)];
-  if (!uniqueItems.includes(answer)) {
-    throw new Error(`Spyfall answer "${answer}" is not in category "${category.id}".`);
+  const uniqueItems = [...new Map(category.items.map((item) => [item.id, item])).values()];
+  if (!uniqueItems.some((item) => item.id === answer.id)) {
+    throw new Error(`Spyfall answer "${answer.id}" is not in category "${category.id}".`);
   }
   if (uniqueItems.length < count) {
     throw new Error(`Spyfall category "${category.id}" needs at least ${count} items.`);
   }
   const distractors = shuffleSpyfallItems(
-    uniqueItems.filter((item) => item !== answer),
+    uniqueItems.filter((item) => item.id !== answer.id),
     random,
   ).slice(0, count - 1);
   return shuffleSpyfallItems([...distractors, answer], random);
@@ -87,8 +88,10 @@ export function evaluateSpyfallVote(
   return { winner: null, eliminate: votedPlayer, continueToRoundTwo: true };
 }
 
-export function evaluateSpyfallGuess(input: string, answer: string): SpyfallWinner {
-  return normalizeSpyfallAnswer(input) === normalizeSpyfallAnswer(answer)
+export function evaluateSpyfallGuess(input: string, answer: SpyfallAnswer): SpyfallWinner {
+  const normalizedInput = normalizeSpyfallAnswer(input);
+  return normalizedInput === normalizeSpyfallAnswer(answer.english)
+    || normalizedInput === normalizeSpyfallAnswer(answer.korean)
     ? "spies"
     : "citizens";
 }
@@ -99,12 +102,19 @@ export function validateSpyfallCategories() {
   spyfallCategories.forEach((category) => {
     if (ids.has(category.id)) errors.push(`Duplicate category id: ${category.id}`);
     ids.add(category.id);
-    const minimum = category.id === "places" ? 300 : 50;
+    const expandedCategory = ["dating-relationships", "funny-situations", "hobbies-activities", "movies-entertainment"].includes(category.id);
+    const minimum = category.id === "places" ? 300 : expandedCategory ? 100 : 50;
     if (category.items.length < minimum) {
       errors.push(`${category.id} has ${category.items.length}; expected at least ${minimum}`);
     }
-    if (new Set(category.items.map(normalizeSpyfallAnswer)).size !== category.items.length) {
+    if (new Set(category.items.map((item) => item.id)).size !== category.items.length) {
       errors.push(`${category.id} contains duplicate items`);
+    }
+    if (category.items.some((item) => !item.id || !item.english.trim() || !item.korean.trim())) {
+      errors.push(`${category.id} contains incomplete answers`);
+    }
+    if (category.questions.length < 30 || category.questions.some((question) => !question.english.trim() || !question.korean.trim())) {
+      errors.push(`${category.id} needs at least 30 complete bilingual questions`);
     }
   });
   return errors;

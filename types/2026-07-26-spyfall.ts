@@ -10,28 +10,39 @@ export type SpyfallCategoryId =
   | "brands"
   | "history"
   | "space"
-  | "school-subjects";
+  | "school-subjects"
+  | "dating-relationships"
+  | "funny-situations"
+  | "hobbies-activities"
+  | "movies-entertainment";
+
+export type SpyfallDifficulty = "beginner" | "intermediate" | "advanced";
+
+export type SpyfallAnswer = {
+  id: string;
+  english: string;
+  korean: string;
+  category: SpyfallCategoryId;
+  difficulty: SpyfallDifficulty;
+};
+
+export type SpyfallExampleQuestion = {
+  id: string;
+  english: string;
+  korean: string;
+};
 
 export type SpyfallCategory = {
   id: SpyfallCategoryId;
   title: string;
   titleKo: string;
-  items: string[];
+  items: SpyfallAnswer[];
+  questions: SpyfallExampleQuestion[];
 };
 
 export type SpyfallRound = 1 | 2;
 export type SpyfallWinner = "citizens" | "spies";
 export type SpyfallVoteStage = "mid" | "final";
-
-export type SpyfallQuestionLog = {
-  id: string;
-  round: SpyfallRound;
-  asker: number;
-  target: number;
-  question: string;
-  answer: string;
-  createdAt: number;
-};
 
 export type SpyfallVoteResult = {
   totals: Record<number, number>;

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import {
-  ArrowLeft, ChevronDown, ChevronRight, Eye, EyeOff, MessageCircle,
+  ArrowLeft, ChevronDown, ChevronRight, Eye, EyeOff,
   Pause, Play, RotateCcw, ShieldQuestion, SkipForward, Sparkles, Target,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -15,22 +15,26 @@ import {
   chooseSpyfallAnswer,
   evaluateSpyfallGuess,
   evaluateSpyfallVote,
+  shuffleSpyfallItems,
   spyfallCategories,
 } from "@/lib/2026-07-26-spyfall-engine";
 import {
   clearSpyfallSession,
   loadSpyfallAnswerHistory,
   loadLastSpyfallLocationId,
+  loadSpyfallQuestionHistory,
   loadSpyfallSession,
   loadSpyfallSettings,
   saveLastSpyfallLocationId,
   saveSpyfallAnswerHistory,
+  saveSpyfallQuestionHistory,
   saveSpyfallSession,
   type SpyfallSessionSnapshot,
   type SpyfallSettings,
 } from "@/lib/2026-07-26-spyfall-storage";
 import type {
-  SpyfallQuestionLog,
+  SpyfallAnswer,
+  SpyfallExampleQuestion,
   SpyfallRound,
   SpyfallVoteStage,
   SpyfallWinner,
@@ -44,7 +48,7 @@ const rules = [
   ["한 사람을 지목해 질문할 수 있습니다.", "Choose one player to answer."],
   ["정답을 직접 말하면 안 됩니다.", "Never say the answer directly."],
   ["너무 구체적인 질문은 피해야 합니다.", "Avoid questions that are too specific."],
-  ["답변자는 자연스럽게 답하고 질문과 답변을 로그에 남깁니다.", "Answer naturally and save each exchange in the log."],
+  ["답변자는 정답을 직접 말하지 않고 자연스럽게 답합니다.", "Answer naturally without saying the secret answer."],
   ["스파이는 언제든 정답 맞추기에 도전할 수 있습니다.", "A spy may guess the answer at any time."],
 ];
 
@@ -74,8 +78,9 @@ export function SpyfallGame() {
   const [settings, setSettings] = useState<SpyfallSettings | null>(null);
   const [phase, setPhase] = useState<Phase>("setup");
   const [selectedCategoryId, setSelectedCategoryId] = useState("places");
-  const [answer, setAnswer] = useState("");
-  const [candidates, setCandidates] = useState<string[]>([]);
+  const [answer, setAnswer] = useState<SpyfallAnswer | null>(null);
+  const [candidates, setCandidates] = useState<SpyfallAnswer[]>([]);
+  const [exampleQuestions, setExampleQuestions] = useState<SpyfallExampleQuestion[]>([]);
   const [playerCount, setPlayerCount] = useState(4);
   const [playerNames, setPlayerNames] = useState(["Player 1", "Player 2", "Player 3", "Player 4"]);
   const [durationMinutes, setDurationMinutes] = useState<5 | 8 | 10>(8);
@@ -92,7 +97,6 @@ export function SpyfallGame() {
   const [accusedPlayer, setAccusedPlayer] = useState<number | null>(null);
   const [revealedRole, setRevealedRole] = useState<"citizen" | "spy" | null>(null);
   const [eliminatedPlayers, setEliminatedPlayers] = useState<number[]>([]);
-  const [questionLogs, setQuestionLogs] = useState<SpyfallQuestionLog[]>([]);
   const [winner, setWinner] = useState<SpyfallWinner | null>(null);
   const [winnerReason, setWinnerReason] = useState<WinnerReason>(null);
   const [resumeSnapshot, setResumeSnapshot] = useState<SpyfallSessionSnapshot | null>(null);
@@ -100,10 +104,6 @@ export function SpyfallGame() {
   const [questionsOpen, setQuestionsOpen] = useState(false);
   const [guessOpen, setGuessOpen] = useState(false);
   const [guessInput, setGuessInput] = useState("");
-  const [logAsker, setLogAsker] = useState(1);
-  const [logTarget, setLogTarget] = useState(2);
-  const [logQuestion, setLogQuestion] = useState("");
-  const [logAnswer, setLogAnswer] = useState("");
   const endSoundPlayed = useRef(false);
 
   const categories = useMemo(() => {
@@ -112,8 +112,16 @@ export function SpyfallGame() {
       if (category.id !== "places") return category;
       const adminPlaces = settings.locations
         .filter((location) => location.active)
-        .map((location) => location.nameEn);
-      return { ...category, items: [...new Set([...category.items, ...adminPlaces])] };
+        .map((location, index): SpyfallAnswer => ({
+          id: `places-admin-${location.id}`,
+          english: location.nameEn,
+          korean: location.nameKo,
+          category: "places",
+          difficulty: index % 3 === 0 ? "intermediate" : "beginner",
+        }));
+      const byEnglish = new Map(category.items.map((item) => [item.english.toLowerCase(), item]));
+      adminPlaces.forEach((item) => byEnglish.set(item.english.toLowerCase(), item));
+      return { ...category, items: [...byEnglish.values()] };
     });
   }, [settings]);
   const category = categories.find((item) => item.id === selectedCategoryId) ?? categories[0];
@@ -125,11 +133,6 @@ export function SpyfallGame() {
   );
   const voters = alivePlayers;
   const voteResult = useMemo(() => calculateSpyfallVote(votes, alivePlayers), [votes, alivePlayers]);
-  const answerKo = useMemo(() => {
-    if (selectedCategoryId !== "places" || !settings) return null;
-    return settings.locations.find((location) => location.nameEn === answer)?.nameKo ?? null;
-  }, [selectedCategoryId, settings, answer]);
-
   useEffect(() => {
     queueMicrotask(() => {
       const loaded = loadSpyfallSettings();
@@ -149,6 +152,7 @@ export function SpyfallGame() {
     setSelectedCategoryId(snapshot.categoryId);
     setAnswer(snapshot.answer);
     setCandidates(snapshot.candidates);
+    setExampleQuestions(snapshot.exampleQuestions);
     setRoleIndex(snapshot.roleIndex);
     setQuestioner(snapshot.questioner);
     setSecondsLeft(snapshot.secondsLeft);
@@ -158,7 +162,6 @@ export function SpyfallGame() {
     setRound(snapshot.round);
     setVoteStage(snapshot.voteStage);
     setEliminatedPlayers(snapshot.eliminatedPlayers);
-    setQuestionLogs(snapshot.questionLogs);
     setAccusedPlayer(snapshot.accusedPlayer);
     setRevealedRole(snapshot.revealedRole);
     setWinner(snapshot.winner);
@@ -191,7 +194,7 @@ export function SpyfallGame() {
   useEffect(() => {
     if (phase === "setup" || !answer || !settings) return;
     saveSpyfallSession({
-      version: 3,
+      version: 4,
       phase: phase === "reveal" ? "handoff" : phase,
       playerCount,
       playerNames,
@@ -200,6 +203,7 @@ export function SpyfallGame() {
       categoryId: selectedCategoryId,
       answer,
       candidates,
+      exampleQuestions,
       durationMinutes,
       roleIndex,
       questioner,
@@ -210,14 +214,13 @@ export function SpyfallGame() {
       round,
       voteStage,
       eliminatedPlayers,
-      questionLogs,
       accusedPlayer,
       revealedRole,
       winner,
       winnerReason,
       savedAt: Date.now(),
     });
-  }, [phase, answer, settings, playerCount, playerNames, spyCount, spyNumbers, selectedCategoryId, candidates, durationMinutes, roleIndex, questioner, secondsLeft, timerRunning, votes, voterIndex, round, voteStage, eliminatedPlayers, questionLogs, accusedPlayer, revealedRole, winner, winnerReason]);
+  }, [phase, answer, settings, playerCount, playerNames, spyCount, spyNumbers, selectedCategoryId, candidates, exampleQuestions, durationMinutes, roleIndex, questioner, secondsLeft, timerRunning, votes, voterIndex, round, voteStage, eliminatedPlayers, accusedPlayer, revealedRole, winner, winnerReason]);
 
   function changePlayerCount(nextCount: number) {
     const safeCount = Math.max(4, Math.min(12, nextCount));
@@ -234,10 +237,15 @@ export function SpyfallGame() {
     const recentAnswers = loadSpyfallAnswerHistory(category.id);
     const chosenAnswer = chooseSpyfallAnswer(category, recentAnswers.length ? recentAnswers : loadLastSpyfallLocationId());
     const chosenCandidates = buildSpyfallCandidates(category, chosenAnswer);
-    saveLastSpyfallLocationId(chosenAnswer);
-    saveSpyfallAnswerHistory(category.id, chosenAnswer);
+    const recentQuestionIds = new Set(loadSpyfallQuestionHistory(category.id));
+    const freshQuestions = category.questions.filter((question) => !recentQuestionIds.has(question.id));
+    const chosenQuestions = shuffleSpyfallItems(freshQuestions.length >= 5 ? freshQuestions : category.questions).slice(0, 5);
+    saveLastSpyfallLocationId(chosenAnswer.id);
+    saveSpyfallAnswerHistory(category.id, chosenAnswer.id);
+    saveSpyfallQuestionHistory(category.id, chosenQuestions.map((question) => question.id));
     setAnswer(chosenAnswer);
     setCandidates(chosenCandidates);
+    setExampleQuestions(chosenQuestions);
     setSpyNumbers(createSpyfallSpyNumbers(playerCount, spyCount));
     setRoleIndex(0);
     setQuestioner(1);
@@ -250,7 +258,6 @@ export function SpyfallGame() {
     setAccusedPlayer(null);
     setRevealedRole(null);
     setEliminatedPlayers([]);
-    setQuestionLogs([]);
     setWinner(null);
     setWinnerReason(null);
     setTimerRunning(false);
@@ -314,7 +321,7 @@ export function SpyfallGame() {
   }
 
   function submitSpyGuess() {
-    if (!guessInput.trim()) return;
+    if (!guessInput.trim() || !answer) return;
     const result = evaluateSpyfallGuess(guessInput, answer);
     setWinner(result);
     setWinnerReason(result === "spies" ? "guess-correct" : "guess-wrong");
@@ -323,37 +330,20 @@ export function SpyfallGame() {
     setPhase("final");
   }
 
-  function saveQuestionLog() {
-    if (!logQuestion.trim() || !logAnswer.trim()) return;
-    setQuestionLogs((logs) => [...logs, {
-      id: `spyfall-log-${Date.now()}`,
-      round,
-      asker: logAsker,
-      target: logTarget,
-      question: logQuestion.trim(),
-      answer: logAnswer.trim(),
-      createdAt: Date.now(),
-    }]);
-    setLogQuestion("");
-    setLogAnswer("");
-  }
-
   function nextQuestioner() {
     const currentIndex = alivePlayers.indexOf(questioner);
     const next = alivePlayers[(currentIndex + 1) % alivePlayers.length] ?? alivePlayers[0];
     setQuestioner(next);
-    setLogAsker(next);
-    setLogTarget(alivePlayers.find((number) => number !== next) ?? next);
   }
 
   function startOver(keepPlayers: boolean) {
     clearSpyfallSession();
     setPhase("setup");
-    setAnswer("");
+    setAnswer(null);
     setCandidates([]);
+    setExampleQuestions([]);
     setSpyNumbers([]);
     setVotes([]);
-    setQuestionLogs([]);
     setEliminatedPlayers([]);
     setWinner(null);
     setWinnerReason(null);
@@ -393,6 +383,7 @@ export function SpyfallGame() {
       <p>Most players receive the same word. The spy doesn&apos;t know the answer.<small>대부분의 플레이어는 같은 단어를 받지만, 스파이는 정답을 알 수 없습니다.</small></p>
       <p>Ask questions and give clues without making the answer too obvious.<small>정답이 너무 티 나지 않도록 질문하고 힌트를 주세요.</small></p>
       <fieldset className="spyfall-category-picker"><legend>Category<small>카테고리 · 어떤 종류의 정답으로 플레이할지 선택하세요.</small></legend><div>
+        <button className="spyfall-random-category" onClick={() => setSelectedCategoryId(categories[secureIndex(categories.length)].id)}><b>Random Category 🎲</b><small>랜덤 카테고리</small></button>
         {categories.map((item) => <button
           aria-pressed={selectedCategoryId === item.id}
           className={selectedCategoryId === item.id ? "is-active" : ""}
@@ -420,7 +411,7 @@ export function SpyfallGame() {
       <button className="button button-primary spyfall-main-button" onClick={() => setPhase("reveal")}><Eye/>{roleIndex === 0 ? "TAP TO REVEAL ROLE · 역할 확인하기" : "I'M READY · 준비됐어요"}</button>
     </section>}
 
-    {phase === "reveal" && <><div className="spyfall-role-toolbar"><button className="button spyfall-hide-button" onClick={hideRole}><EyeOff/>HIDE ROLE · 확인 완료</button></div><section className={`spyfall-card spyfall-role ${spyNumbers.includes(roleIndex + 1) ? "is-spy" : "is-citizen"}`}>
+    {phase === "reveal" && answer && <><div className="spyfall-role-toolbar"><button className="button spyfall-hide-button" onClick={hideRole}><EyeOff/>HIDE ROLE · 확인 완료</button></div><section className={`spyfall-card spyfall-role ${spyNumbers.includes(roleIndex + 1) ? "is-spy" : "is-citizen"}`}>
       <div className="spyfall-progress">Participant {roleIndex + 1} / {playerCount}</div>
       <span className="spyfall-category-badge">{category.titleKo} · {category.title}</span>
       {spyNumbers.includes(roleIndex + 1) ? <>
@@ -429,10 +420,11 @@ export function SpyfallGame() {
         <SpyfallCandidateGrid candidates={candidates} compact/>
       </> : <>
         <span className="spyfall-role-emoji">🧑‍🤝‍🧑</span><small>YOUR ROLE · 당신의 역할</small><h2>PLAYER<small>일반 플레이어</small></h2>
-        <span>SECRET WORD<small>비밀 단어</small></span><h1>{answer}</h1>{answerKo && <p>{answerKo}</p>}<p>Keep the word secret.<small>단어를 다른 사람에게 보여주지 마세요.</small></p>
+        <span>SECRET WORD<small>비밀 단어</small></span><h1>{answer.english}<small>{answer.korean}</small></h1><p>Keep the word secret.<small>단어를 다른 사람에게 보여주지 마세요.</small></p>
         <SpyfallCandidateGrid answer={answer} candidates={candidates} compact/>
       </>}
       <button className="button spyfall-hide-button" onClick={hideRole}><EyeOff/>HIDE ROLE · 확인 완료</button>
+      <p className="spyfall-hide-instruction"><b>After checking your role, tap &quot;Hide Role&quot; and pass the phone to the next player.</b><small>역할을 확인한 후 &apos;확인 완료&apos; 버튼을 누르고 옆 사람에게 휴대폰을 넘겨주세요.</small></p>
     </section></>}
 
     {phase === "ready" && <section className="spyfall-card spyfall-ready">
@@ -443,6 +435,7 @@ export function SpyfallGame() {
 
     {phase === "playing" && <section className="spyfall-game-layout">
       <div className="spyfall-round-heading"><span>ROUND {round}<small>라운드 {round}</small></span><b>{category.title}<small>{category.titleKo}</small></b></div>
+      <section className="spyfall-shared-candidates"><h2>20 Possible Answers<small>정답 후보 20개</small></h2><p>The answer is in this list.<small>정답은 이 목록 안에 있습니다.</small></p><SpyfallCandidateGrid candidates={candidates}/></section>
       <div className="spyfall-game-top">
         <span>Time Remaining<small>남은 시간</small></span><strong role="timer" aria-live="polite">{formatTime(secondsLeft)}</strong>
         {secondsLeft <= 10 && <b>10 seconds left!<small>10초 남았습니다!</small></b>}
@@ -453,23 +446,11 @@ export function SpyfallGame() {
       </div>
       <SpyfallPlayerBoard currentQuestioner={questioner} eliminatedPlayers={eliminatedPlayers} playerCount={playerCount} playerNames={playerNames}/>
       <div className="spyfall-questioner"><span>Current Questioner<small>현재 질문할 참가자</small></span><strong>{playerName(questioner)}</strong><button onClick={nextQuestioner}><SkipForward/>Next Player<small>다음 참가자</small></button></div>
-      <section className="spyfall-shared-candidates"><h2>20 Possible Answers<small>정답 후보 20개</small></h2><p>The answer is in this list.<small>정답은 이 목록 안에 있습니다.</small></p><SpyfallCandidateGrid candidates={candidates}/></section>
-      <section className="spyfall-question-log">
-        <header><div><MessageCircle/><h2>Question Log<small>질문 로그</small></h2></div><span>{questionLogs.length}</span></header>
-        <div className="spyfall-log-form">
-          <label>Asker<small>질문자</small><select value={logAsker} onChange={(event) => setLogAsker(Number(event.target.value))}>{alivePlayers.map((number) => <option key={number} value={number}>{playerName(number)}</option>)}</select></label>
-          <label>Answerer<small>답변자</small><select value={logTarget} onChange={(event) => setLogTarget(Number(event.target.value))}>{alivePlayers.map((number) => <option key={number} value={number}>{playerName(number)}</option>)}</select></label>
-          <input placeholder="Question in English" value={logQuestion} onChange={(event) => setLogQuestion(event.target.value)}/>
-          <input placeholder="Answer" value={logAnswer} onChange={(event) => setLogAnswer(event.target.value)}/>
-          <button onClick={saveQuestionLog} disabled={!logQuestion.trim() || !logAnswer.trim()}>Add to Log<small>로그 추가</small></button>
-        </div>
-        <div className="spyfall-chat">{questionLogs.length ? questionLogs.map((log) => <article key={log.id}><span>R{log.round} · {playerName(log.asker)} → {playerName(log.target)}</span><b>{log.question}</b><p>{log.answer}</p></article>) : <p>No questions saved yet.<small>아직 저장된 질문이 없습니다.</small></p>}</div>
-      </section>
       <div className="spyfall-accordions">
         <button onClick={() => setRulesOpen((open) => !open)} aria-expanded={rulesOpen}>How to Play <small>게임 규칙</small><ChevronDown/></button>
         {rulesOpen && <ul>{rules.map(([ko, en]) => <li key={en}><b>{en}</b><span>{ko}</span></li>)}</ul>}
         <button onClick={() => setQuestionsOpen((open) => !open)} aria-expanded={questionsOpen}>Question Examples <small>질문 예시</small><ChevronDown/></button>
-        {questionsOpen && <ol>{settings.questions.filter((question) => question.active).map((question) => <li key={question.id}><b>{question.questionEn}</b><span>{question.questionKo}</span></li>)}</ol>}
+        {questionsOpen && <ol>{exampleQuestions.map((question) => <li key={question.id}><b>{question.english}</b><span>{question.korean}</span></li>)}</ol>}
       </div>
       <div className="spyfall-game-actions">
         <button className="spyfall-guess-button" onClick={() => setGuessOpen(true)}><Target/>Guess the Answer<small>정답 맞추기</small></button>
@@ -495,7 +476,7 @@ export function SpyfallGame() {
       <button className="button button-primary spyfall-main-button" onClick={startRoundTwo}>Start Round 2<small>2라운드 시작</small></button>
     </section>}
 
-    {phase === "final" && winner && <section className={`spyfall-card spyfall-final is-animated ${winner === "citizens" ? "citizens-win" : "spies-win"}`}>
+    {phase === "final" && winner && answer && <section className={`spyfall-card spyfall-final is-animated ${winner === "citizens" ? "citizens-win" : "spies-win"}`}>
       <span>{winner === "citizens" ? "🎉" : "🕵️"}</span>
       <h1>{winner === "citizens" ? "Citizens Win!" : "Spies Win!"}<small>{winner === "citizens" ? "일반 참가자 승리!" : "스파이 승리!"}</small></h1>
       <p>{winnerReason === "guess-correct" ? "The spy guessed the answer."
@@ -505,7 +486,7 @@ export function SpyfallGame() {
           : winnerReason === "guess-wrong" ? "스파이가 정답 맞히기에 실패했습니다."
           : winnerReason === "vote" ? "투표로 스파이를 찾아냈습니다."
           : "최종 투표에서도 스파이를 찾지 못했습니다."}</small></p>
-      <dl><div><dt>Category<small>카테고리</small></dt><dd>{category.title}<small>{category.titleKo}</small></dd></div><div><dt>Answer<small>정답</small></dt><dd>{answer}{answerKo && <small>{answerKo}</small>}</dd></div><div><dt>Spies<small>스파이</small></dt><dd>{spyNumbers.map(playerName).join(", ")}</dd></div></dl>
+      <dl><div><dt>Category<small>카테고리</small></dt><dd>{category.title}<small>{category.titleKo}</small></dd></div><div><dt>Answer<small>정답</small></dt><dd>{answer.english}<small>{answer.korean}</small></dd></div><div><dt>Spies<small>스파이</small></dt><dd>{spyNumbers.map(playerName).join(", ")}</dd></div></dl>
       <SpyfallPlayerBoard eliminatedPlayers={eliminatedPlayers} playerCount={playerCount} playerNames={playerNames}/>
       <button className="button button-primary" onClick={() => startOver(true)}>Play Again with Same Players<small>같은 인원으로 다시 하기</small></button>
       <button className="button button-secondary" onClick={() => startOver(false)}>Create a New Game<small>새로운 게임 만들기</small></button>

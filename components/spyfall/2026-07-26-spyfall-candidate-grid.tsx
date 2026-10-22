@@ -1,6 +1,8 @@
+import type { SpyfallAnswer } from "@/types/2026-07-26-spyfall";
+
 type SpyfallCandidateGridProps = {
-  candidates: string[];
-  answer?: string;
+  candidates: SpyfallAnswer[];
+  answer?: SpyfallAnswer;
   compact?: boolean;
 };
 
@@ -11,12 +13,13 @@ export function SpyfallCandidateGrid({
 }: SpyfallCandidateGridProps) {
   return <div className={`spyfall-candidate-grid ${compact ? "is-compact" : ""}`}>
     {candidates.map((candidate, index) => <div
-      className={answer === candidate ? "is-answer" : ""}
-      key={candidate}
+      className={answer?.id === candidate.id ? "is-answer" : ""}
+      key={candidate.id}
     >
       <span>{index + 1}</span>
-      <b>{candidate}</b>
-      {answer === candidate && <small>ANSWER · 정답</small>}
+      <b>{candidate.english}</b>
+      <small className="spyfall-candidate-korean">{candidate.korean}</small>
+      {answer?.id === candidate.id && <small className="spyfall-candidate-answer">ANSWER · 정답</small>}
     </div>)}
   </div>;
 }

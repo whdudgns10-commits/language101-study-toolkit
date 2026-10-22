@@ -6,7 +6,8 @@ import {
   type SpyfallQuestion,
 } from "@/data/2026-07-26-spyfall";
 import type {
-  SpyfallQuestionLog,
+  SpyfallAnswer,
+  SpyfallExampleQuestion,
   SpyfallRound,
   SpyfallVoteStage,
   SpyfallWinner,
@@ -16,6 +17,7 @@ export const SPYFALL_SETTINGS_KEY = "language101-spyfall-settings";
 export const SPYFALL_SESSION_KEY = "language101-spyfall-active-session";
 export const SPYFALL_LAST_LOCATION_KEY = "language101-spyfall-last-location";
 export const SPYFALL_ANSWER_HISTORY_KEY = "language101-spyfall-answer-history";
+export const SPYFALL_QUESTION_HISTORY_KEY = "language101-spyfall-question-history";
 
 export type SpyfallSettings = {
   locations: SpyfallLocation[];
@@ -25,15 +27,16 @@ export type SpyfallSettings = {
 };
 
 export type SpyfallSessionSnapshot = {
-  version: 3;
+  version: 4;
   phase: "handoff" | "reveal" | "ready" | "playing" | "voting" | "vote-summary" | "round-result" | "final";
   playerCount: number;
   playerNames: string[];
   spyCount: number;
   spyNumbers: number[];
   categoryId: string;
-  answer: string;
-  candidates: string[];
+  answer: SpyfallAnswer;
+  candidates: SpyfallAnswer[];
+  exampleQuestions: SpyfallExampleQuestion[];
   durationMinutes: 5 | 8 | 10;
   roleIndex: number;
   questioner: number;
@@ -44,7 +47,6 @@ export type SpyfallSessionSnapshot = {
   round: SpyfallRound;
   voteStage: SpyfallVoteStage;
   eliminatedPlayers: number[];
-  questionLogs: SpyfallQuestionLog[];
   accusedPlayer: number | null;
   revealedRole: "citizen" | "spy" | null;
   winner: SpyfallWinner | null;
@@ -100,10 +102,10 @@ export function loadSpyfallSession(): SpyfallSessionSnapshot | null {
   if (!isBrowser()) return null;
   try {
     const parsed = JSON.parse(localStorage.getItem(SPYFALL_SESSION_KEY) ?? "null") as SpyfallSessionSnapshot | null;
-    if (!parsed || ![2, 3].includes(Number(parsed.version))) return null;
+    if (!parsed || Number(parsed.version) !== 4) return null;
     return {
       ...parsed,
-      version: 3,
+      version: 4,
       playerNames: Array.isArray(parsed.playerNames) && parsed.playerNames.length === parsed.playerCount
         ? parsed.playerNames
         : Array.from({ length: parsed.playerCount }, (_, index) => `Player ${index + 1}`),
@@ -145,7 +147,25 @@ export function saveSpyfallAnswerHistory(categoryId: string, answer: string) {
   if (!isBrowser()) return;
   let value: Record<string, string[]> = {};
   try { value = JSON.parse(localStorage.getItem(SPYFALL_ANSWER_HISTORY_KEY) ?? "{}"); } catch { value = {}; }
-  const limit = categoryId === "places" ? 50 : 30;
+  const limit = 50;
   value[categoryId] = [answer, ...(value[categoryId] ?? []).filter((item) => item !== answer)].slice(0, limit);
   localStorage.setItem(SPYFALL_ANSWER_HISTORY_KEY, JSON.stringify(value));
+}
+
+export function loadSpyfallQuestionHistory(categoryId: string) {
+  if (!isBrowser()) return [];
+  try {
+    const value = JSON.parse(localStorage.getItem(SPYFALL_QUESTION_HISTORY_KEY) ?? "{}") as Record<string, string[]>;
+    return Array.isArray(value[categoryId]) ? value[categoryId] : [];
+  } catch {
+    return [];
+  }
+}
+
+export function saveSpyfallQuestionHistory(categoryId: string, questionIds: string[]) {
+  if (!isBrowser()) return;
+  let value: Record<string, string[]> = {};
+  try { value = JSON.parse(localStorage.getItem(SPYFALL_QUESTION_HISTORY_KEY) ?? "{}"); } catch { value = {}; }
+  value[categoryId] = [...questionIds, ...(value[categoryId] ?? []).filter((id) => !questionIds.includes(id))].slice(0, 20);
+  localStorage.setItem(SPYFALL_QUESTION_HISTORY_KEY, JSON.stringify(value));
 }
