@@ -23,11 +23,22 @@ const GuessingWordsGame=dynamic(()=>import("@/components/2026-08-20-guessing-wor
 export function ActivityDetail({ activity }: { activity:Activity }) {
   const { language, t } = useLanguage();
   const localized = localizeActivity(activity, language);
+  const categoryLabel=t(`activity.category.${activity.category}`);
+  const groupLabels=activity.groupSizes.map(size=>size
+    .replace("2 people",t("activity.group.two"))
+    .replace("3–4 people",t("activity.group.small"))
+    .replace("5–8 people",t("activity.group.medium"))
+    .replace("2–10 people",t("activity.group.twoToTen"))
+    .replace("2–20 people",t("activity.group.twoToTwenty"))
+    .replace("4–12 people",t("activity.group.fourToTwelve"))
+    .replace("4–20 people",t("activity.group.fourToTwenty")));
+  const funnyQuestionCountLabel=language==="en"?"250 Questions":`250 ${t("activity.questionsCount")}`;
+  const baseLevelLabel=language==="en"?activity.level:language==="ko"?(activity.level==="Beginner"?"초급":activity.level==="Intermediate"?"중급":activity.level==="Upper-Intermediate"?"중상급":"전체 레벨"):language==="ja"?(activity.level==="Beginner"?"初級":activity.level==="Intermediate"?"中級":activity.level==="Upper-Intermediate"?"中上級":"全レベル"):(activity.level==="Beginner"?"初级":activity.level==="Intermediate"?"中级":activity.level==="Upper-Intermediate"?"中高级":"所有级别");
   const levelLabel = activity.id === "debate-pros-cons"
     ? language === "ko" ? "중상급–고급" : language === "zh" ? "中高级–高级" : language === "ja" ? "中上級–上級" : "Intermediate–Advanced"
     : activity.id === "words-game"
     ? language === "en" ? "All Levels" : language === "ko" ? "전체 레벨" : language === "zh" ? "所有级别" : "全レベル"
-    : activity.level;
+    : baseLevelLabel;
 
   useEffect(() => {
     const timer = setTimeout(() => recordSessionActivity(activity.id), 0);
@@ -42,8 +53,8 @@ export function ActivityDetail({ activity }: { activity:Activity }) {
     <main className="detail-page compact-activity-detail"><div className="detail-shell">
       <Link href="/activities" className="back-link"><ArrowLeft size={18}/>{t("activity.back")}</Link>
       <article className="detail-card">
-        <div className="detail-top"><div><ActivityIcon iconKey={activity.iconKey} size="md" className="detail-activity-icon"/><span className="eyebrow">{activity.category}</span><h1>{localized.title}</h1><p className="activity-summary">{localized.description}</p></div><FavoriteButton id={activity.id} label/></div>
-        <div className="compact-detail-meta"><span>{t("activity.level")} · <b>{levelLabel}</b></span><span><Clock3/>{activity.id === "debate-pros-cons" ? "20–40" : activity.id === "funny-questions" ? "15–40" : activity.id === "rank-it" ? "15–30" : activity.durationMinutes} min</span><span><Users/>{activity.groupSizes.join(", ")}</span>{activity.id === "funny-questions"&&<span>250 Questions</span>}</div>
+        <div className="detail-top"><div><ActivityIcon iconKey={activity.iconKey} size="md" className="detail-activity-icon"/><span className="eyebrow">{categoryLabel}</span><h1>{localized.title}</h1><p className="activity-summary">{localized.description}</p></div><FavoriteButton id={activity.id} label/></div>
+        <div className="compact-detail-meta"><span>{t("activity.level")} · <b>{levelLabel}</b></span><span><Clock3/>{activity.id === "debate-pros-cons" ? "20–40" : activity.id === "funny-questions" ? "15–40" : activity.id === "rank-it" ? "15–30" : activity.durationMinutes} {t("activity.minutes")}</span><span><Users/>{groupLabels.join(", ")}</span>{activity.id === "funny-questions"&&<span>{funnyQuestionCountLabel}</span>}</div>
         {activity.sourceType === "interactive" && <a className="button button-primary compact-start" href={activity.externalUrl}><Play/>{t("activity.startPractice")}</a>}
       </article>
       <ActivityAccordion title={t("activity.viewHowToPlay")} openTitle={t("activity.hideHowToPlay")} icon={<HelpCircle/>}><ol className="compact-instructions">{localized.instructions.map((instruction, index) => <li key={instruction}><span>{index + 1}</span><p>{instruction}</p></li>)}</ol></ActivityAccordion>

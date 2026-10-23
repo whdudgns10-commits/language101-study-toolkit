@@ -6,9 +6,11 @@ import type { Activity } from "@/types/activity";
 import { FavoriteButton } from "./favorite-button";
 import { ActivityIcon } from "@/components/activity/activity-icon";
 import { useLanguage } from "@/hooks/use-language";
+import { localizeActivity } from "@/lib/activity-localization";
 
 export function ActivityCard({ activity }: { activity: Activity }) {
-  const {t}=useLanguage();
+  const {language,t}=useLanguage();
+  const localized=localizeActivity(activity,language);
   return (
     <article className="activity-card">
       <div className="activity-card-top">
@@ -16,8 +18,8 @@ export function ActivityCard({ activity }: { activity: Activity }) {
         <FavoriteButton id={activity.id} />
       </div>
       <div>
-        <h3>{activity.title}</h3>
-        <p>{activity.description}</p>
+        <h3>{localized.title}</h3>
+        <p>{localized.description}</p>
       </div>
       <div className="activity-meta">
         <span>{activity.level}</span>
