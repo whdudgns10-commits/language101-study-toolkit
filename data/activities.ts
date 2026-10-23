@@ -359,7 +359,7 @@ export const activities: Activity[] = [
 ];
 
 const uniqueById=(items:Activity[])=>[...new Map(items.map(item=>[item.id,item])).values()];
-export const FEATURED_ACTIVITY_IDS=["true-or-false","ice-breaking-3","never-have-i-ever","30-second-speaking","time-challenge","3-things-5-seconds","spyfall","secret-mission","20-questions","what-if-challenge","funny-questions","fun-discuss","guessing-words","word-battle","balance-game","rank-it","words-game","debate-pros-cons","choose-one-out-of-three","useful-expressions","describing-picture-game","topic-practice"] as const;
+export const FEATURED_ACTIVITY_IDS=["spyfall","true-or-false","guessing-words","balance-game","rank-it","ice-breaking-3","funny-questions","never-have-i-ever","30-second-speaking","time-challenge","3-things-5-seconds","secret-mission","20-questions","what-if-challenge","choose-one-out-of-three","useful-expressions","debate-pros-cons","word-battle","words-game","topic-practice","fun-discuss","describing-picture-game"] as const;
 const enabledActivities=uniqueById(activities).filter(activity=>activity.enabled!==false&&activity.id.trim()&&activity.title.trim());
 export const activeActivities=FEATURED_ACTIVITY_IDS.map(id=>enabledActivities.find(activity=>activity.id===id)).filter((activity):activity is Activity=>Boolean(activity));
 export const randomEligibleActivities=activeActivities.filter(activity=>activity.randomEligible!==false);

@@ -50,12 +50,13 @@ export function GuessingWordsGame(){
   <div className="guessing-levels">
    <button type="button" onClick={()=>begin("beginner")}><span className="level-dot beginner"/><strong>Beginner</strong><small>500 Words</small><Play/></button>
    <button type="button" onClick={()=>begin("intermediate")}><span className="level-dot intermediate"/><strong>Intermediate</strong><small>500 Words</small><Play/></button>
+   <button type="button" onClick={()=>begin("upper-intermediate")}><span className="level-dot upper-intermediate"/><strong>Upper Intermediate</strong><small>500 Words · TOEIC &amp; Practical</small><Play/></button>
    <button type="button" onClick={()=>begin("advanced")}><span className="level-dot advanced"/><strong>Advanced</strong><small>500 Words</small><Play/></button>
   </div>
  </section>;
 
  return <section className="guessing-game guessing-round" data-no-activity-translate>
-  <header><button type="button" onClick={exitGame} aria-label="Back to level selection"><ChevronLeft/></button><div><p>GUESSING WORDS</p><h1>{level}</h1></div><span>Word {Math.min(stats.played+1,500)} / 500</span></header>
+  <header><button type="button" onClick={exitGame} aria-label="Back to level selection"><ChevronLeft/></button><div><p>GUESSING WORDS</p><h1>{level==="upper-intermediate"?"Upper Intermediate":level}</h1></div><span>Word {Math.min(stats.played+1,500)} / 500</span></header>
   <div className="guessing-stats" aria-label="Game statistics"><span><b>{stats.played}</b> Played</span><span><b>{stats.correct}</b> Correct</span><span><b>{stats.skipped}</b> Skipped</span></div>
   <div className={`guessing-clock${timeUp?" is-up":""}`} style={{"--timer-progress":`${progress*360}deg`} as React.CSSProperties}><strong>{timeUp?"TIME'S UP!":clock}</strong></div>
   <button type="button" className={`guessing-word-card${revealed?" is-revealed":""}`} onClick={reveal} aria-label={revealed?`Revealed word: ${current.word}`:"Tap to reveal the word"}>

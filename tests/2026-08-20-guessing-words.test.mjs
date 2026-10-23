@@ -2,22 +2,23 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
-test("Guessing Words contains exactly fifteen hundred bilingual learning words",async()=>{
+test("Guessing Words contains two thousand bilingual learning words across four levels",async()=>{
  const data=await import(new URL(`../data/2026-08-20-guessing-words.ts?test=${Date.now()}`,import.meta.url));
  assert.equal(data.beginnerGuessingWords.length,500);
  assert.equal(data.intermediateGuessingWords.length,500);
+ assert.equal(data.upperIntermediateGuessingWords.length,500);
  assert.equal(data.advancedGuessingWords.length,500);
- assert.equal(data.guessingWords.length,1500);
- assert.equal(new Set(data.guessingWords.map(item=>item.word.trim().toLowerCase())).size,1500);
- assert.equal(new Set(data.guessingWords.map(item=>item.id)).size,1500);
+ assert.equal(data.guessingWords.length,2000);
+ assert.equal(new Set(data.guessingWords.map(item=>item.word.trim().toLowerCase())).size,2000);
+ assert.equal(new Set(data.guessingWords.map(item=>item.id)).size,2000);
  assert.equal(data.guessingWords.filter(item=>item.word.trim().split(/\s+/).length!==1||/\s/.test(item.word)).length,0);
  assert.ok(data.guessingWords.every(item=>/^[A-Za-z]+$/.test(item.word)));
- assert.ok(data.guessingWords.every(item=>item.word&&item.korean&&item.level&&item.speakingQuestions.length===2&&item.speakingQuestions.every(Boolean)));
- assert.equal(data.guessingWords.reduce((total,item)=>total+item.speakingQuestions.length,0),3000);
+ assert.ok(data.guessingWords.every(item=>item.word&&item.korean&&item.level&&item.speakingQuestions.length===3&&item.speakingQuestions.every(Boolean)));
+ assert.equal(data.guessingWords.reduce((total,item)=>total+item.speakingQuestions.length,0),6000);
  assert.deepEqual(data.validateGuessingWords(),[]);
- assert.equal(data.guessingWordsStats.koreanMeanings,1500);
+ assert.equal(data.guessingWordsStats.koreanMeanings,2000);
  assert.equal(data.guessingWordsStats.missingKorean,0);
- assert.equal(data.guessingWordsStats.speakingQuestions,3000);
+ assert.equal(data.guessingWordsStats.speakingQuestions,6000);
  assert.equal(data.guessingWordsStats.missingQuestions,0);
 });
 
@@ -43,6 +44,8 @@ test("Guessing Words implements reveal-first random play, timer controls, scorin
  for(const contract of ["TAP TO REVEAL","Tap when you&apos;re ready","DESCRIBE THIS WORD IN ENGLISH!","SPEAKING QUESTIONS","TIME'S UP!","CORRECT","SKIP","Pause","Resume","Reset","Math.random","usedIds"])assert.ok(game.includes(contract),`missing ${contract}`);
  assert.match(game,/current\.korean/);
  assert.match(game,/500 Words/);
+ assert.match(game,/Upper Intermediate/);
+ assert.match(game,/TOEIC &amp; Practical/);
  assert.match(game,/\/ 500/);
  for(const seconds of [30,45,60,90,0])assert.match(game,new RegExp(`\\b${seconds}\\b`));
  assert.match(css,/@media\(max-width:520px\)/);
